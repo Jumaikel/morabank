@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model accounts {
+  iban                                                 String         @id @db.VarChar(24)
+  bank_code                                            String         @db.VarChar(5)
+  account_holder                                       String         @db.VarChar(100)
+  balance                                              Decimal        @default(0.00) @db.Decimal(15, 2)
+  state                                                accounts_state @default(ACTIVE)
+  created_at                                           DateTime       @default(dbgenerated("(now(6))")) @db.DateTime(6)
+  updated_at                                           DateTime       @default(dbgenerated("'now(6)'")) @db.DateTime(6)
+  banks                                                banks          @relation(fields: [bank_code], references: [bank_code], map: "fk_account_bank")
+  transactions_transactions_destination_ibanToaccounts transactions[] @relation("transactions_destination_ibanToaccounts")
+  transactions_transactions_origin_ibanToaccounts      transactions[] @relation("transactions_origin_ibanToaccounts")
+  users                                                users[]
+
+  @@index([bank_code], map: "idx_accounts_bank")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model banks {
+  bank_code                                   String      @id @db.VarChar(5)
+  name                                        String      @db.VarChar(100)
+  address                                     String?     @db.VarChar(255)
+  created_at                                  DateTime    @default(dbgenerated("(now(6))")) @db.DateTime(6)
+  updated_at                                  DateTime    @default(dbgenerated("'now(6)'")) @db.DateTime(6)
+  accounts                                    accounts[]
+  hmac_keys_hmac_keys_destination_bankTobanks hmac_keys[] @relation("hmac_keys_destination_bankTobanks")
+  hmac_keys_hmac_keys_origin_bankTobanks      hmac_keys[] @relation("hmac_keys_origin_bankTobanks")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model hmac_keys {
+  origin_bank                             String   @db.VarChar(5)
+  destination_bank                        String   @db.VarChar(5)
+  secret_key                              Bytes    @db.VarBinary(255)
+  created_at                              DateTime @default(dbgenerated("(now(6))")) @db.DateTime(6)
+  banks_hmac_keys_destination_bankTobanks banks    @relation("hmac_keys_destination_bankTobanks", fields: [destination_bank], references: [bank_code], onDelete: Cascade, map: "fk_hmac_destination")
+  banks_hmac_keys_origin_bankTobanks      banks    @relation("hmac_keys_origin_bankTobanks", fields: [origin_bank], references: [bank_code], onDelete: Cascade, map: "fk_hmac_origin")
+
+  @@id([origin_bank, destination_bank])
+  @@index([destination_bank], map: "fk_hmac_destination")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model mfa_codes {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  mfa_code   String   @db.VarChar(6)
+  created_at DateTime @default(dbgenerated("(now(6))")) @db.DateTime(6)
+  expires_at DateTime @db.DateTime(6)
+  used       Boolean  @default(false)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_mfa_user")
+
+  @@index([mfa_code], map: "idx_mfa_code")
+  @@index([user_id], map: "idx_mfa_user")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model transactions {
+  transaction_id                                   String             @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  created_at                                       DateTime           @default(dbgenerated("(now(6))")) @db.DateTime(6)
+  origin_iban                                      String             @db.VarChar(24)
+  destination_iban                                 String             @db.VarChar(24)
+  amount                                           Decimal            @db.Decimal(15, 2)
+  currency                                         String             @default("CRC") @db.VarChar(3)
+  state                                            transactions_state @default(PENDING)
+  reason                                           String?            @db.VarChar(255)
+  hmac_md5                                         String             @db.VarChar(32)
+  updated_at                                       DateTime           @default(dbgenerated("'now(6)'")) @db.DateTime(6)
+  accounts_transactions_destination_ibanToaccounts accounts           @relation("transactions_destination_ibanToaccounts", fields: [destination_iban], references: [iban], map: "fk_trans_destination")
+  accounts_transactions_origin_ibanToaccounts      accounts           @relation("transactions_origin_ibanToaccounts", fields: [origin_iban], references: [iban], map: "fk_trans_origin")
+
+  @@index([destination_iban], map: "idx_trans_destination")
+  @@index([origin_iban], map: "idx_trans_origin")
+  @@index([created_at], map: "idx_trans_timestamp")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model users {
+  id            Int         @id @default(autoincrement())
+  phone         String      @unique(map: "uq_user_phone") @db.VarChar(15)
+  account_iban  String      @db.VarChar(24)
+  email         String      @unique(map: "uq_user_email") @db.VarChar(100)
+  password_hash String      @db.VarChar(255)
+  created_at    DateTime    @default(dbgenerated("(now(6))")) @db.DateTime(6)
+  updated_at    DateTime    @default(dbgenerated("'now(6)'")) @db.DateTime(6)
+  mfa_codes     mfa_codes[]
+  accounts      accounts    @relation(fields: [account_iban], references: [iban], map: "fk_user_account")
+
+  @@index([account_iban], map: "idx_user_account")
+}
+
+enum accounts_state {
+  ACTIVE
+  BLOCKED
+  CLOSED
+}
+
+enum transactions_state {
+  PENDING
+  COMPLETED
+  REJECTED
+}
