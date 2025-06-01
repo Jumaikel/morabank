@@ -54,12 +54,12 @@ model hmac_keys {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model mfa_codes {
   id         Int      @id @default(autoincrement())
-  user_id    Int
+  user_id    String   @db.VarChar(20)
   mfa_code   String   @db.VarChar(6)
   created_at DateTime @default(dbgenerated("(now(6))")) @db.DateTime(6)
   expires_at DateTime @db.DateTime(6)
   used       Boolean  @default(false)
-  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_mfa_user")
+  users      users    @relation(fields: [user_id], references: [identification], onDelete: Cascade, map: "fk_mfa_user")
 
   @@index([mfa_code], map: "idx_mfa_code")
   @@index([user_id], map: "idx_mfa_user")
@@ -88,15 +88,17 @@ model transactions {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model users {
-  id            Int         @id @default(autoincrement())
-  phone         String      @unique(map: "uq_user_phone") @db.VarChar(15)
-  account_iban  String      @db.VarChar(24)
-  email         String      @unique(map: "uq_user_email") @db.VarChar(100)
-  password_hash String      @db.VarChar(255)
-  created_at    DateTime    @default(dbgenerated("(now(6))")) @db.DateTime(6)
-  updated_at    DateTime    @default(dbgenerated("'now(6)'")) @db.DateTime(6)
-  mfa_codes     mfa_codes[]
-  accounts      accounts    @relation(fields: [account_iban], references: [iban], map: "fk_user_account")
+  identification String      @id @db.VarChar(20)
+  name           String      @db.VarChar(100)
+  last_name      String      @db.VarChar(100)
+  phone          String      @unique(map: "uq_user_phone") @db.VarChar(15)
+  account_iban   String      @db.VarChar(24)
+  email          String      @unique(map: "uq_user_email") @db.VarChar(100)
+  password_hash  String      @db.VarChar(255)
+  created_at     DateTime    @default(dbgenerated("(now(6))")) @db.DateTime(6)
+  updated_at     DateTime    @default(dbgenerated("'now(6)'")) @db.DateTime(6)
+  mfa_codes      mfa_codes[]
+  accounts       accounts    @relation(fields: [account_iban], references: [iban], map: "fk_user_account")
 
   @@index([account_iban], map: "idx_user_account")
 }
