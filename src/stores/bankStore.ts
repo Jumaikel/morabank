@@ -1,14 +1,14 @@
 import { create } from 'zustand';
 import { Bank } from '@/models/entities';
 import {
-  getAllBanks,
+  getLastBank,
   getBankByCode,
   createBank,
   updateBank,
   deleteBank,
   NewBank,
   UpdateBank,
-} from '../services/bankService';
+} from '@/services/bankService';
 
 interface BankStore {
   banks: Bank[];
@@ -16,7 +16,7 @@ interface BankStore {
   loading: boolean;
   error: string | null;
 
-  fetchBanks: () => Promise<void>;
+  getBank: () => Promise<void>;
   fetchBank: (bankCode: string) => Promise<void>;
   addBank: (newBank: NewBank) => Promise<void>;
   editBank: (bankCode: string, updates: UpdateBank) => Promise<void>;
@@ -29,11 +29,11 @@ export const useBankStore = create<BankStore>((set, get) => ({
   loading: false,
   error: null,
 
-  fetchBanks: async () => {
+  getBank: async () => {
     set({ loading: true, error: null });
     try {
-      const data = await getAllBanks();
-      set({ banks: data, loading: false });
+      const data = await getLastBank();
+      set({ selectedBank: data, loading: false });
     } catch (err: any) {
       set({ error: err.message || 'Error fetching banks', loading: false });
     }
@@ -105,3 +105,5 @@ export const useBankStore = create<BankStore>((set, get) => ({
     }
   },
 }));
+
+export default useBankStore;

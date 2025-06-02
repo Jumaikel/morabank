@@ -27,7 +27,7 @@ CREATE TABLE
 
 INSERT IGNORE INTO banks (bank_code, name, address)
 VALUES
-  ('MRBK', 'MoraBank', 'MoraBank Headquarters');
+  ('0117', 'MoraBank', 'MoraBank Headquarters');
 
 -- ------------------------------------------------------------
 -- 3) Table: accounts
@@ -43,9 +43,6 @@ CREATE TABLE
     updated_at DATETIME (6) NOT NULL DEFAULT (CURRENT_TIMESTAMP(6)) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'Record last update timestamp',
     PRIMARY KEY (iban),
     INDEX idx_accounts_bank (bank_code),
-    CONSTRAINT chk_account_iban CHECK (
-      iban REGEXP '^[A-Z]{2}[0-9]{2}[0-9]{4}[0-9]{4}[0-9]{2}[0-9]{10}$'
-    ),
     CONSTRAINT fk_account_bank FOREIGN KEY (bank_code) REFERENCES banks (bank_code) ON UPDATE CASCADE ON DELETE RESTRICT,
     CHECK (balance >= 0)
   ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Table of bank accounts (stores full IBAN)';

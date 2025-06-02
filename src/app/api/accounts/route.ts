@@ -71,8 +71,10 @@ export async function POST(req: NextRequest) {
       iban: String(iban),
       bank_code: String(bank_code),
       account_holder: encryptText(String(account_holder)),
-      balance: balance !== undefined ? Number(balance) : undefined,
-      state: state !== undefined ? String(state) : undefined,
+      balance: 0,
+      state: "ACTIVE",
+      created_at: new Date(),
+      updated_at: new Date(),
     };
 
     const nuevaCuenta = await prisma.accounts.create({

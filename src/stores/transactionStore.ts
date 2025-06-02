@@ -1,5 +1,3 @@
-// stores/transactionStore.ts
-
 import { create } from "zustand";
 import { Transaction } from "@/models/entities";
 import {
@@ -125,3 +123,5 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
     }
   },
 }));
+
+export default useTransactionStore;

@@ -3,7 +3,7 @@ import { Transaction } from '@/models/entities';
 import {
   receiveTransfer as receiveTransferService,
   ReceiveTransferRequest,
-} from '../services/receiveTransferService';
+} from '@/services/receiveTransferService';
 
 interface ReceiveTransferStore {
   incomingTransfers: Transaction[];
@@ -43,3 +43,5 @@ export const useReceiveTransferStore = create<ReceiveTransferStore>((set, get) =
     set({ error: null, lastReceivedTransfer: null });
   },
 }));
+
+export default useReceiveTransferStore;

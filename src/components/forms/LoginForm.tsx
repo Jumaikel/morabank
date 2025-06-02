@@ -1,28 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import Image from "next/image";
 import { LoginFormSkeleton } from "./LoginFormSkeleton";
+import useAuthStore from "@/stores/authStore";
 
 export const LoginForm = () => {
+  const router = useRouter();
   const [identification, setIdentification] = useState("");
   const [password, setPassword] = useState("");
+
+  const login = useAuthStore((state) => state.login);
+
   const [loading, setLoading] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setLoading(true);
 
     try {
-      console.log("Enviando credenciales:", { identification, password });
-      await new Promise((res) => setTimeout(res, 1500));
+      await login({ identification, password });
+      router.push("/otp");
     } catch (err) {
-      console.error("Error al iniciar sesión:", err);
+      console.error("Error logging in:", err);
     } finally {
       setLoading(false);
     }

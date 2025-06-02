@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
         origin_bank: origin_bank,
         destination_bank: destination_bank,
         secret_key: bufferKey,
+        created_at: new Date(),
       },
     });
 

@@ -66,6 +66,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
       datosAActualizar.state = String(state);
     }
 
+    datosAActualizar.updated_at = new Date();
+
     const cuentaActualizada = await prisma.accounts.update({
       where: { iban },
       data: datosAActualizar,

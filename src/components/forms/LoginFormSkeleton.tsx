@@ -1,5 +1,3 @@
-import Image from "next/image"
-
 export const LoginFormSkeleton = () => {
   return (
     <div className="relative flex flex-col md:flex-row w-full max-w-4xl rounded-xl shadow-lg overflow-hidden bg-white animate-pulse">

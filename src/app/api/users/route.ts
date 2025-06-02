@@ -169,6 +169,8 @@ export async function POST(req: NextRequest) {
         account_iban,
         email,
         password_hash,
+        created_at: new Date(),
+        updated_at: new Date(),
       },
     });
 

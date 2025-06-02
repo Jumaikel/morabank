@@ -97,3 +97,5 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
     }
   },
 }));
+
+export default useAccountStore;

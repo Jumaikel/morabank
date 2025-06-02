@@ -144,6 +144,9 @@ export async function POST(req: NextRequest) {
         currency: currency ? currency : "CRC",
         reason: reason ? reason : null,
         hmac_md5: hmac_md5,
+        state: "COMPLETED",
+        created_at: new Date(),
+        updated_at: new Date(),
       },
     });
 

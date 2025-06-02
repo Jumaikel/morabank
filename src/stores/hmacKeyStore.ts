@@ -8,7 +8,7 @@ import {
   deleteHmacKey,
   NewHmacKey,
   UpdateHmacKey,
-} from '../services/hmacKeyService';
+} from '@/services/hmacKeyService';
 
 interface HmacKeyStore {
   hmacKeys: HmacKey[];
@@ -131,3 +131,5 @@ export const useHmacKeyStore = create<HmacKeyStore>((set, get) => ({
     }
   },
 }));
+
+export default useHmacKeyStore;

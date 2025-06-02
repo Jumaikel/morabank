@@ -3,14 +3,17 @@ import prisma from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
   try {
-    const bancos = await prisma.banks.findMany({
-      orderBy: { bank_code: "asc" },
+    const lastBank = await prisma.banks.findFirst({
+      orderBy: { created_at: 'desc' },
     });
-    return NextResponse.json(bancos, { status: 200 });
+    if (!lastBank) {
+      return NextResponse.json({ error: 'No existen bancos registrados' }, { status: 404 });
+    }
+    return NextResponse.json(lastBank, { status: 200 });
   } catch (error) {
-    console.error("Error en GET /api/banks:", error);
+    console.error('Error en GET /api/banks/last:', error);
     return NextResponse.json(
-      { error: "Error al leer lista de bancos" },
+      { error: 'Error al obtener el último banco' },
       { status: 500 }
     );
   }
@@ -33,6 +36,8 @@ export async function POST(req: NextRequest) {
         bank_code: String(bank_code),
         name: String(name),
         address: address !== undefined ? String(address) : null,
+        created_at: new Date(),
+        updated_at: new Date(),
       },
     });
 

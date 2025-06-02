@@ -1,3 +1,5 @@
+// services/bankService.ts
+
 import { Bank } from "@/models/entities";
 
 const BASE_URL = "/api/banks";
@@ -13,13 +15,23 @@ export interface UpdateBank {
   address?: string | null;
 }
 
-export async function getAllBanks(): Promise<Bank[]> {
-  const res = await fetch(BASE_URL);
+function mapRawToBank(raw: any): Bank {
+  return {
+    bankCode: raw.bank_code,
+    name: raw.name,
+    address: raw.address,
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+  };
+}
+
+export async function getLastBank(): Promise<Bank> {
+  const res = await fetch(`${BASE_URL}`);
   if (!res.ok) {
-    throw new Error(`Error fetching banks: ${res.statusText}`);
+    throw new Error(`Error fetching last bank: ${res.statusText}`);
   }
-  const data: Bank[] = await res.json();
-  return data;
+  const raw = await res.json();
+  return mapRawToBank(raw);
 }
 
 export async function getBankByCode(bankCode: string): Promise<Bank> {
@@ -30,8 +42,8 @@ export async function getBankByCode(bankCode: string): Promise<Bank> {
     }
     throw new Error(`Error fetching bank: ${res.statusText}`);
   }
-  const data: Bank = await res.json();
-  return data;
+  const raw = await res.json();
+  return mapRawToBank(raw);
 }
 
 export async function createBank(bank: NewBank): Promise<Bank> {
@@ -54,8 +66,8 @@ export async function createBank(bank: NewBank): Promise<Bank> {
     );
   }
 
-  const data: Bank = await res.json();
-  return data;
+  const raw = await res.json();
+  return mapRawToBank(raw);
 }
 
 export async function updateBank(
@@ -84,8 +96,8 @@ export async function updateBank(
     );
   }
 
-  const data: Bank = await res.json();
-  return data;
+  const raw = await res.json();
+  return mapRawToBank(raw);
 }
 
 export async function deleteBank(bankCode: string): Promise<void> {

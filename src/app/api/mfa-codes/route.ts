@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { use } from "react";
 
 interface MfaCodeRequest {
   user_id: string;
@@ -84,6 +85,8 @@ export async function POST(req: NextRequest) {
         user_id: user_id,
         mfa_code: mfa_code,
         expires_at: expiresDate,
+        used: false,
+        created_at: new Date(),
       },
     });
 

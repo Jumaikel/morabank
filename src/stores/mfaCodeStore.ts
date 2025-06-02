@@ -8,7 +8,7 @@ import {
   deleteMfaCode,
   NewMfaCode,
   UpdateMfaCode,
-} from '../services/mfaCodeService';
+} from '@/services/mfaCodeService';
 
 interface MfaCodeStore {
   mfaCodes: MfaCode[];
@@ -101,3 +101,5 @@ export const useMfaCodeStore = create<MfaCodeStore>((set, get) => ({
     }
   },
 }));
+
+export default useMfaCodeStore;

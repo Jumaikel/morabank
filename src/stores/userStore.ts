@@ -105,3 +105,5 @@ export const useUserStore = create<UserStore>((set, get) => ({
     }
   },
 }));
+
+export default useUserStore;

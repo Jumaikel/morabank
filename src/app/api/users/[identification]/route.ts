@@ -192,6 +192,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
       dataToUpdate.password_hash = newHash;
     }
 
+    dataToUpdate.updated_at = new Date();
+
     const updatedUser = await prisma.users.update({
       where: { identification },
       data: dataToUpdate,

@@ -109,6 +109,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
       dataToUpdate.currency = currency;
     }
 
+    dataToUpdate.updated_at = new Date();
+
     const updatedTx = await prisma.transactions.update({
       where: { transaction_id },
       data: dataToUpdate,
