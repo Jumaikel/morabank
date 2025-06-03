@@ -1,3 +1,4 @@
+import { InternalTransactionForm } from "@/components/forms/InternalTransactionForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -6,8 +7,8 @@ export const metadata: Metadata = {
 
 export default function ChangePasswordPage() {
   return (
-    <main>
-      
-    </main>
+    <div>
+      <InternalTransactionForm />
+    </div>
   );
 }

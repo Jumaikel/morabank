@@ -1,3 +1,4 @@
+import { UserAccountInfo } from "@/components/layout/UserAccountInfo";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -6,8 +7,8 @@ export const metadata: Metadata = {
 
 export default function AccountPage() {
   return (
-    <main>
-      
-    </main>
+    <div>
+      <UserAccountInfo />
+    </div>
   );
 }

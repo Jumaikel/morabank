@@ -1,3 +1,4 @@
+import { SinpeTransactionForm } from "@/components/forms/SinpeTransactionForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -6,8 +7,8 @@ export const metadata: Metadata = {
 
 export default function SinpeMovilPage() {
   return (
-    <main>
-      
-    </main>
+    <div>
+      <SinpeTransactionForm />
+    </div>
   );
 }

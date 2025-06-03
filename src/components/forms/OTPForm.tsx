@@ -5,8 +5,11 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { OTPFormSkeleton } from "@/components/forms/OTPFormSkeleton";
 import useAuthStore from "@/stores/authStore";
+import { useRouter } from "next/navigation";
 
 export const OTPForm = () => {
+  const router = useRouter();
+
   const [mfaCode, setMfaCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
@@ -19,6 +22,7 @@ export const OTPForm = () => {
 
     try {
       await verifyMfa(mfaCode);
+      router.push("/internet-banking/account");
     } catch (err) {
       console.error("Error verifying MFA code:", err);
     } finally {
