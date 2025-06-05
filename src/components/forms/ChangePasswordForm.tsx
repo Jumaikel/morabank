@@ -4,7 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { authService, SendOtpRequest, ChangePasswordRequest } from "@/services/authService";
+import {
+  authService,
+  SendOtpRequest,
+  ChangePasswordRequest,
+} from "@/services/authService";
+import { toast } from "sonner";
+import { ChangePasswordFormSkeleton } from "./ChangePasswordFormSkeleton";
 
 export const ChangePasswordForm = () => {
   const router = useRouter();
@@ -17,12 +23,14 @@ export const ChangePasswordForm = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [otpCode, setOtpCode] = useState("");
 
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const intervalRef = useRef<number | null>(null);
-
+  const [loadingPage, setLoadingPage] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setLoadingPage(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
   const startCountdown = () => {
     setSecondsLeft(300);
     setOtpSent(true);
@@ -37,44 +45,47 @@ export const ChangePasswordForm = () => {
       });
     }, 1000);
   };
+
   useEffect(() => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
-  const handleSendOtp = async () => {
-    setError(null);
-    setSuccess(null);
 
+  const handleSendOtp = async () => {
     if (!identification.trim()) {
-      setError("La identificación es obligatoria para enviar el código OTP.");
+      toast.error(
+        "La identificación es obligatoria para enviar el código OTP."
+      );
       return;
     }
 
-    try {
-      const payload: SendOtpRequest = { identification: identification.trim() };
-      const response = await authService.sendOtp(payload);
-      if (typeof response === "string") {
-        throw new Error(response);
-      }
-      startCountdown();
-      setSuccess("Código OTP enviado. Revisa tu correo.");
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Error al solicitar OTP.");
+    const payload: SendOtpRequest = { identification: identification.trim() };
+    const ok = await authService.sendOtp(payload);
+    if (!ok) {
+      toast.error(
+        "Error al solicitar OTP. Verifica la identificación e inténtalo de nuevo."
+      );
+      return;
     }
+    startCountdown();
+    toast.success("Código OTP enviado. Revisa tu correo.");
   };
+
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
 
-    if (!identification.trim() || !otpCode.trim() || !newPassword || !confirmPassword) {
-      setError("Todos los campos son obligatorios.");
+    if (
+      !identification.trim() ||
+      !otpCode.trim() ||
+      !newPassword ||
+      !confirmPassword
+    ) {
+      toast.error("Todos los campos son obligatorios.");
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError("Las contraseñas no coinciden.");
+      toast.error("Las contraseñas no coinciden.");
       return;
     }
 
@@ -85,14 +96,20 @@ export const ChangePasswordForm = () => {
         otp: otpCode.trim(),
         newPassword,
       };
-      const response = await authService.changePassword(payload);
-      if (typeof response === "string") {
-        throw new Error(response);
+      const ok = await authService.changePassword(payload);
+      if (!ok) {
+        toast.error(
+          "Error al cambiar contraseña. Verifica el código OTP y los datos."
+        );
+        return;
       }
-      router.push("/login");
+      toast.success(
+        "Contraseña cambiada exitosamente. Serás redirigido al login."
+      );
+      setTimeout(() => router.push("/login"), 1500);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Error al cambiar contraseña.");
+      toast.error("Error inesperado al cambiar contraseña.");
     } finally {
       setSubmitting(false);
     }
@@ -105,16 +122,15 @@ export const ChangePasswordForm = () => {
     const s = (secs % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   };
+  if (loadingPage) {
+    return <ChangePasswordFormSkeleton />;
+  }
 
   return (
     <div className="flex flex-col w-full max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden p-8">
       <h2 className="text-2xl font-bold text-center text-neutral-950 mb-6">
         Cambiar Contraseña
       </h2>
-
-      {error && <p className="text-sm text-red-500 text-center mb-4">{error}</p>}
-      {success && <p className="text-sm text-green-600 text-center mb-4">{success}</p>}
-
       <form onSubmit={handleChangePassword} className="space-y-6">
         <div>
           <Input

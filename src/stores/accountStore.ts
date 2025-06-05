@@ -12,11 +12,11 @@ interface AccountStore {
   loading: boolean;
   error: string | null;
 
-  fetchAccounts: () => Promise<void>;
-  fetchAccount: (iban: string) => Promise<void>;
-  addAccount: (newAccount: NewAccount) => Promise<void>;
-  editAccount: (iban: string, updates: UpdateAccount) => Promise<void>;
-  removeAccount: (iban: string) => Promise<void>;
+  fetchAccounts: () => Promise<boolean>;
+  fetchAccount: (iban: string) => Promise<boolean>;
+  addAccount: (newAccount: NewAccount) => Promise<boolean>;
+  editAccount: (iban: string, updates: UpdateAccount) => Promise<boolean>;
+  removeAccount: (iban: string) => Promise<boolean>;
 }
 
 export const useAccountStore = create<AccountStore>((set, get) => ({
@@ -30,8 +30,10 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
     const response = await accountService.getAll();
     if (typeof response === "string") {
       set({ error: response, loading: false });
+      return false;
     } else {
       set({ accounts: response, loading: false });
+      return true;
     }
   },
 
@@ -40,8 +42,10 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
     const response = await accountService.getByIban(iban);
     if (typeof response === "string") {
       set({ error: response, loading: false });
+      return false;
     } else {
       set({ selectedAccount: response, loading: false });
+      return true;
     }
   },
 
@@ -50,12 +54,14 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
     const response = await accountService.create(newAccount);
     if (typeof response === "string") {
       set({ error: response, loading: false });
+      return false;
     } else {
       const { accounts } = get();
       set({
         accounts: [...accounts, response],
         loading: false,
       });
+      return true;
     }
   },
 
@@ -64,6 +70,7 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
     const response = await accountService.update(iban, updates);
     if (typeof response === "string") {
       set({ error: response, loading: false });
+      return false;
     } else {
       const { accounts, selectedAccount } = get();
       const updatedList = accounts.map((acc) =>
@@ -75,6 +82,7 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
           selectedAccount?.iban === iban ? response : selectedAccount,
         loading: false,
       });
+      return true;
     }
   },
 
@@ -86,6 +94,7 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
         error: `Error al eliminar la cuenta con IBAN ${iban}`,
         loading: false,
       });
+      return false;
     } else {
       const { accounts, selectedAccount } = get();
       const filtered = accounts.filter((acc) => acc.iban !== iban);
@@ -95,6 +104,7 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
           selectedAccount?.iban === iban ? null : selectedAccount,
         loading: false,
       });
+      return true;
     }
   },
 }));

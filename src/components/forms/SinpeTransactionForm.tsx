@@ -6,6 +6,8 @@ import useAccountStore from "@/stores/accountStore";
 import { NewSinpeTransfer, sinpeService } from "@/services/sinpeService";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { toast } from "sonner";
+import { SinpeTransactionFormSkeleton } from "./SinpeTransactionFormSkeleton";
 
 export const SinpeTransactionForm = () => {
   const identification = useAuthStore((state) => state.identification);
@@ -19,31 +21,34 @@ export const SinpeTransactionForm = () => {
   const [destPhone, setDestPhone] = useState("");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingPage, setLoadingPage] = useState(true);
 
   useEffect(() => {
-    // No necesitas fetch extra si el store ya tiene la cuenta cargada.
-    // Si necesitas cargarla, llama fetchAccount() aquí.
+    const timer = setTimeout(() => setLoadingPage(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (identification) {
+      fetchAccount(identification);
+    }
   }, [identification, token, fetchAccount, selectedAccount]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
 
     if (!selectedAccount) {
-      setError("Tu cuenta no está cargada aún.");
+      toast.error("Tu cuenta no está cargada aún.");
       return;
     }
     if (!destPhone || !amount) {
-      setError("Número de celular destino y monto son obligatorios.");
+      toast.error("Número de celular destino y monto son obligatorios.");
       return;
     }
     const montoNum = parseFloat(amount);
     if (isNaN(montoNum) || montoNum <= 0) {
-      setError("El monto debe ser un número válido mayor a 0.");
+      toast.error("El monto debe ser un número válido mayor a 0.");
       return;
     }
 
@@ -59,16 +64,16 @@ export const SinpeTransactionForm = () => {
 
       const response = await sinpeService.create(payload);
       if (typeof response === "string") {
-        setError(response);
-      } else {
-        setSuccess("Transferencia SINPE realizada con éxito.");
-        setDestPhone("");
-        setAmount("");
-        setReason("");
+        toast.error(response || "Error al realizar la transferencia SINPE.");
+        return;
       }
+      toast.success("Transferencia SINPE realizada con éxito.");
+      setDestPhone("");
+      setAmount("");
+      setReason("");
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Error al realizar la transferencia SINPE.");
+      toast.error(err.message || "Error inesperado al realizar la transferencia SINPE.");
     } finally {
       setSubmitting(false);
     }
@@ -84,6 +89,10 @@ export const SinpeTransactionForm = () => {
     return <p className="text-center text-gray-500">No se encontró tu cuenta.</p>;
   }
 
+  if (loadingPage) {
+    return <SinpeTransactionFormSkeleton />;
+  }
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -92,9 +101,6 @@ export const SinpeTransactionForm = () => {
       <h2 className="text-xl font-semibold mb-4 text-center text-neutral-950">
         Transferencia SINPE Móvil
       </h2>
-
-      {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-      {success && <p className="text-green-600 text-sm mb-2">{success}</p>}
 
       <div className="mb-4">
         <Input

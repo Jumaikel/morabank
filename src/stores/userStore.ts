@@ -12,11 +12,11 @@ interface UserStore {
   loading: boolean;
   error: string | null;
 
-  fetchUsers: () => Promise<void>;
-  fetchUser: (identification: string) => Promise<void>;
-  addUser: (newUser: NewUser) => Promise<void>;
-  editUser: (identification: string, updates: UpdateUser) => Promise<void>;
-  removeUser: (identification: string) => Promise<void>;
+  fetchUsers: () => Promise<boolean>;
+  fetchUser: (identification: string) => Promise<boolean>;
+  addUser: (newUser: NewUser) => Promise<boolean>;
+  editUser: (identification: string, updates: UpdateUser) => Promise<boolean>;
+  removeUser: (identification: string) => Promise<boolean>;
 }
 
 export const useUserStore = create<UserStore>((set, get) => ({
@@ -30,8 +30,10 @@ export const useUserStore = create<UserStore>((set, get) => ({
     const response = await userService.getAll();
     if (typeof response === "string") {
       set({ error: response, loading: false });
+      return false;
     } else {
       set({ users: response, loading: false });
+      return true;
     }
   },
 
@@ -40,8 +42,10 @@ export const useUserStore = create<UserStore>((set, get) => ({
     const response = await userService.getById(identification);
     if (typeof response === "string") {
       set({ error: response, loading: false });
+      return false;
     } else {
       set({ selectedUser: response, loading: false });
+      return true;
     }
   },
 
@@ -50,12 +54,14 @@ export const useUserStore = create<UserStore>((set, get) => ({
     const response = await userService.create(newUser);
     if (typeof response === "string") {
       set({ error: response, loading: false });
+      return false;
     } else {
       const { users } = get();
       set({
         users: [...users, response],
         loading: false,
       });
+      return true;
     }
   },
 
@@ -64,6 +70,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
     const response = await userService.update(identification, updates);
     if (typeof response === "string") {
       set({ error: response, loading: false });
+      return false;
     } else {
       const { users, selectedUser } = get();
       const updatedList = users.map((u) =>
@@ -77,6 +84,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
             : selectedUser,
         loading: false,
       });
+      return true;
     }
   },
 
@@ -88,6 +96,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
         error: `Error al eliminar el usuario con ID ${identification}`,
         loading: false,
       });
+      return false;
     } else {
       const { users, selectedUser } = get();
       const filtered = users.filter((u) => u.identification !== identification);
@@ -99,6 +108,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
             : selectedUser,
         loading: false,
       });
+      return true;
     }
   },
 }));

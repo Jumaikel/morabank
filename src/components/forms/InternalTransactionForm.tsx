@@ -7,6 +7,8 @@ import useAccountStore from "@/stores/accountStore";
 import { NewTransaction, transactionService } from "@/services/transactionService";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { toast } from "sonner";
+import { InternalTransactionFormSkeleton } from "./InternalTransactionFormSkeleton";
 
 export const InternalTransactionForm = () => {
   const identification = useAuthStore((state) => state.identification);
@@ -23,9 +25,13 @@ export const InternalTransactionForm = () => {
   const [destinationIban, setDestinationIban] = useState("");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingPage, setLoadingPage] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoadingPage(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (identification && token && !selectedUser) {
@@ -41,20 +47,18 @@ export const InternalTransactionForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
 
     if (!selectedAccount) {
-      setError("Tu cuenta no está cargada aún.");
+      toast.error("Tu cuenta no está cargada aún.");
       return;
     }
     if (!destinationIban || !amount) {
-      setError("Destino y monto son obligatorios.");
+      toast.error("Destino y monto son obligatorios.");
       return;
     }
     const montoNum = parseFloat(amount);
     if (isNaN(montoNum) || montoNum <= 0) {
-      setError("El monto debe ser un número válido mayor a 0.");
+      toast.error("El monto debe ser un número válido mayor a 0.");
       return;
     }
 
@@ -71,16 +75,16 @@ export const InternalTransactionForm = () => {
 
       const response = await transactionService.create(payload);
       if (typeof response === "string") {
-        setError(response);
-      } else {
-        setSuccess("Transacción realizada con éxito.");
-        setDestinationIban("");
-        setAmount("");
-        setReason("");
+        toast.error(response || "Error al realizar la transacción.");
+        return;
       }
+      toast.success("Transacción realizada con éxito.");
+      setDestinationIban("");
+      setAmount("");
+      setReason("");
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Error al realizar la transacción.");
+      toast.error(err.message || "Error inesperado al realizar la transacción.");
     } finally {
       setSubmitting(false);
     }
@@ -95,6 +99,10 @@ export const InternalTransactionForm = () => {
     );
   }
 
+  if (loadingPage) {
+    return <InternalTransactionFormSkeleton />;
+  }
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -103,9 +111,6 @@ export const InternalTransactionForm = () => {
       <h2 className="text-xl font-semibold mb-4 text-center text-neutral-950">
         Transferencia Interna
       </h2>
-
-      {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-      {success && <p className="text-green-600 text-sm mb-2">{success}</p>}
 
       <div className="mb-4">
         <Input

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { OTPFormSkeleton } from "@/components/forms/OTPFormSkeleton";
 import useAuthStore from "@/stores/authStore";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export const OTPForm = () => {
   const router = useRouter();
@@ -24,10 +25,15 @@ export const OTPForm = () => {
     setLoading(true);
 
     try {
-      await verifyMfa(mfaCode);
+      const ok = await verifyMfa(mfaCode);
+      if (!ok) {
+        toast.error("El código OTP es incorrecto o expiró.");
+        return;
+      }
       router.push("/internet-banking/account");
     } catch (err) {
       console.error("Error verifying MFA code:", err);
+      toast.error("Error inesperado al verificar el código OTP.");
     } finally {
       setLoading(false);
     }

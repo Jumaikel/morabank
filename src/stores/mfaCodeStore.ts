@@ -12,11 +12,11 @@ interface MfaCodeStore {
   loading: boolean;
   error: string | null;
 
-  fetchMfaCodes: () => Promise<void>;
-  fetchMfaCode: (id: number) => Promise<void>;
-  addMfaCode: (newCode: NewMfaCode) => Promise<void>;
-  editMfaCode: (id: number, updates: UpdateMfaCode) => Promise<void>;
-  removeMfaCode: (id: number) => Promise<void>;
+  fetchMfaCodes: () => Promise<boolean>;
+  fetchMfaCode: (id: number) => Promise<boolean>;
+  addMfaCode: (newCode: NewMfaCode) => Promise<boolean>;
+  editMfaCode: (id: number, updates: UpdateMfaCode) => Promise<boolean>;
+  removeMfaCode: (id: number) => Promise<boolean>;
 }
 
 export const useMfaCodeStore = create<MfaCodeStore>((set, get) => ({
@@ -30,8 +30,10 @@ export const useMfaCodeStore = create<MfaCodeStore>((set, get) => ({
     const response = await mfaCodeService.getAll();
     if (typeof response === "string") {
       set({ error: response, loading: false });
+      return false;
     } else {
       set({ mfaCodes: response, loading: false });
+      return true;
     }
   },
 
@@ -40,8 +42,10 @@ export const useMfaCodeStore = create<MfaCodeStore>((set, get) => ({
     const response = await mfaCodeService.getById(id);
     if (typeof response === "string") {
       set({ error: response, loading: false });
+      return false;
     } else {
       set({ selectedMfaCode: response, loading: false });
+      return true;
     }
   },
 
@@ -50,12 +54,14 @@ export const useMfaCodeStore = create<MfaCodeStore>((set, get) => ({
     const response = await mfaCodeService.create(newCode);
     if (typeof response === "string") {
       set({ error: response, loading: false });
+      return false;
     } else {
       const { mfaCodes } = get();
       set({
         mfaCodes: [...mfaCodes, response],
         loading: false,
       });
+      return true;
     }
   },
 
@@ -64,6 +70,7 @@ export const useMfaCodeStore = create<MfaCodeStore>((set, get) => ({
     const response = await mfaCodeService.update(id, updates);
     if (typeof response === "string") {
       set({ error: response, loading: false });
+      return false;
     } else {
       const { mfaCodes, selectedMfaCode } = get();
       const updatedList = mfaCodes.map((c) =>
@@ -75,6 +82,7 @@ export const useMfaCodeStore = create<MfaCodeStore>((set, get) => ({
           selectedMfaCode?.id === id ? response : selectedMfaCode,
         loading: false,
       });
+      return true;
     }
   },
 
@@ -86,6 +94,7 @@ export const useMfaCodeStore = create<MfaCodeStore>((set, get) => ({
         error: `Error al eliminar el código MFA con ID ${id}`,
         loading: false,
       });
+      return false;
     } else {
       const { mfaCodes, selectedMfaCode } = get();
       const filtered = mfaCodes.filter((c) => c.id !== id);
@@ -95,6 +104,7 @@ export const useMfaCodeStore = create<MfaCodeStore>((set, get) => ({
           selectedMfaCode?.id === id ? null : selectedMfaCode,
         loading: false,
       });
+      return true;
     }
   },
 }));

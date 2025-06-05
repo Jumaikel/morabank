@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import Image from "next/image";
 import { RegisterFormSkeleton } from "@/components/forms/RegisterFormSkeleton";
 import useUserStore from "@/stores/userStore";
+import { toast } from "sonner";
 
 export const RegisterForm = () => {
   const router = useRouter();
@@ -35,12 +36,13 @@ export const RegisterForm = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
+      toast.error("Las contraseñas no coinciden.");
       return;
     }
 
     setLoading(true);
     try {
-      await registerUser({
+      const ok = await registerUser({
         identification,
         name,
         lastName,
@@ -51,9 +53,16 @@ export const RegisterForm = () => {
         accountType,
       });
 
-      router.push("/internet-banking/admin");
+      if (!ok) {
+        toast.error("No se pudo registrar el usuario. Verifica los datos.");
+        return;
+      }
+
+      toast.success("Usuario registrado correctamente.");
+      setTimeout(() => router.push("/internet-banking/admin"), 1200);
     } catch (err: any) {
       console.error("Error during registration:", err);
+      toast.error("Error inesperado al registrar usuario.");
     } finally {
       setLoading(false);
     }
@@ -131,6 +140,7 @@ export const RegisterForm = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
+
           <div className="flex flex-col space-y-1 text-neutral-700">
             <label className="text-sm font-medium text-neutral-950">Tipo de Cuenta</label>
             <select

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { AccountCardSkeleton } from "./AccountCardSkeleton";
 
 interface AccountCardProps {
   iban: string;
@@ -31,6 +32,12 @@ export const AccountCard: React.FC<AccountCardProps> = ({
 }) => {
   const formattedCardNumber = formatCardNumber(accountNumber);
   const formattedIban = formatIban(iban);
+  const [loadingPage, setLoadingPage] = React.useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setLoadingPage(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const statusColor =
     status === "ACTIVO"
@@ -38,6 +45,10 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       : status === "BLOQUEADO"
       ? "bg-red-500"
       : "bg-gray-500";
+
+  if (loadingPage) {
+    return <AccountCardSkeleton />;
+  }
 
   return (
     <button

@@ -8,7 +8,6 @@ import {
   ChangePasswordRequest,
   VerifyMfaResponse,
 } from "@/services/authService";
-
 interface AuthStore {
   identification: string | null;
   token: string | null;
@@ -18,10 +17,10 @@ interface AuthStore {
   isAuthenticated: boolean;
   userType?: string;
 
-  login: (credentials: LoginCredentials) => Promise<void>;
-  sendOtp: (identification: string) => Promise<void>;
-  verifyMfa: (mfaCode: string) => Promise<void>;
-  changePassword: (payload: ChangePasswordRequest) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<boolean>;
+  sendOtp: (identification: string) => Promise<boolean>;
+  verifyMfa: (mfaCode: string) => Promise<boolean>;
+  changePassword: (payload: ChangePasswordRequest) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -45,6 +44,7 @@ export const useAuthStore = create<AuthStore>()(
             awaitingMfa: false,
             isAuthenticated: false,
           });
+          return false;
         } else {
           set({
             identification: credentials.identification,
@@ -52,6 +52,7 @@ export const useAuthStore = create<AuthStore>()(
             loading: false,
             isAuthenticated: false,
           });
+          return true;
         }
       },
 
@@ -63,11 +64,13 @@ export const useAuthStore = create<AuthStore>()(
             error: response,
             loading: false,
           });
+          return false;
         } else {
           set({
             awaitingMfa: true,
             loading: false,
           });
+          return true;
         }
       },
 
@@ -79,7 +82,7 @@ export const useAuthStore = create<AuthStore>()(
             error: "No hay identificación almacenada para verificar MFA",
             loading: false,
           });
-          return;
+          return false;
         }
         const response = await authService.verifyMfa({
           identification: ident,
@@ -91,6 +94,7 @@ export const useAuthStore = create<AuthStore>()(
             loading: false,
             isAuthenticated: false,
           });
+          return false;
         } else {
           const token = (response as VerifyMfaResponse).token;
           const userType = (response as VerifyMfaResponse).userType;
@@ -101,8 +105,8 @@ export const useAuthStore = create<AuthStore>()(
             loading: false,
             isAuthenticated: true,
           });
-          // ---- GUARDA EL TOKEN EN COOKIE ----
-          Cookies.set("auth-token", token, { expires: 1 / 24 }); // 1 hora
+          Cookies.set("auth-token", token, { expires: 1 / 24 });
+          return true;
         }
       },
 
@@ -114,6 +118,7 @@ export const useAuthStore = create<AuthStore>()(
             error: response,
             loading: false,
           });
+          return false;
         } else {
           set({
             identification: null,
@@ -122,8 +127,8 @@ export const useAuthStore = create<AuthStore>()(
             loading: false,
             isAuthenticated: false,
           });
-          // ---- ELIMINA LA COOKIE ----
           Cookies.remove("auth-token");
+          return true;
         }
       },
 
@@ -136,7 +141,6 @@ export const useAuthStore = create<AuthStore>()(
           awaitingMfa: false,
           isAuthenticated: false,
         });
-        // ---- ELIMINA LA COOKIE ----
         Cookies.remove("auth-token");
       },
     }),

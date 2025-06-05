@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { LoginFormSkeleton } from "./LoginFormSkeleton";
 import useAuthStore from "@/stores/authStore";
+import { toast } from "sonner";
 
 export const LoginForm = () => {
   const router = useRouter();
@@ -24,10 +25,15 @@ export const LoginForm = () => {
     setLoading(true);
 
     try {
-      const resp = await login({ identification, password });
+      const ok = await login({ identification, password });
+      if (!ok) {
+        toast.error("Identificación o contraseña incorrectas.");
+        return;
+      }
       router.push("/otp");
     } catch (err) {
       console.error("Error logging in:", err);
+      toast.error("Error inesperado al iniciar sesión.");
     } finally {
       setLoading(false);
     }
