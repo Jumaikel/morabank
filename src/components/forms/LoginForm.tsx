@@ -24,7 +24,7 @@ export const LoginForm = () => {
     setLoading(true);
 
     try {
-      await login({ identification, password });
+      const resp = await login({ identification, password });
       router.push("/otp");
     } catch (err) {
       console.error("Error logging in:", err);

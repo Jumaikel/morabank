@@ -7,7 +7,6 @@ export interface NewUser {
   name: string;
   lastName: string;
   phone: string;
-  accountIban: string;
   email: string;
   password: string;
 }
@@ -16,7 +15,6 @@ export interface UpdateUser {
   name?: string;
   lastName?: string;
   phone?: string;
-  accountIban?: string;
   email?: string;
   password?: string;
 }
@@ -67,7 +65,6 @@ export const userService = {
         name: user.name,
         last_name: user.lastName,
         phone: user.phone,
-        account_iban: user.accountIban,
         email: user.email,
         password: user.password,
       };
@@ -104,9 +101,6 @@ export const userService = {
       }
       if (updates.phone !== undefined) {
         payload.phone = updates.phone;
-      }
-      if (updates.accountIban !== undefined) {
-        payload.account_iban = updates.accountIban;
       }
       if (updates.email !== undefined) {
         payload.email = updates.email;

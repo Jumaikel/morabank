@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import useAuthStore from "@/stores/authStore";
 import useUserStore from "@/stores/userStore";
 import useAccountStore from "@/stores/accountStore";
-import { sendExternalTransfer, ExternalTransferRequest } from "@/services/externalTransactionService";
+import { externalTransferService,ExternalTransferRequest } from "@/services/externalTransactionService";
 
 export const ExternalIbanTransactionForm = () => {
   const { identification, token } = useAuthStore((state) => ({
@@ -89,7 +89,7 @@ export const ExternalIbanTransactionForm = () => {
         description: description.trim() || "",
         hmac_md5: "",
       };
-      await sendExternalTransfer(payload);
+      await externalTransferService.send(payload);
       setSuccess("Transferencia externa enviada con éxito.");
       setDestIban("");
       setDestBankCode("");

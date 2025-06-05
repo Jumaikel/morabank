@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import useAuthStore from "@/stores/authStore";
 import useAccountStore from "@/stores/accountStore";
-import { sendSinpeTransfer, SinpeTransferRequest } from "@/services/sinpeTransactionService";
+import { sinpeService, SinpeTransferRequest } from "@/services/sinpeTransactionService";
 
 export const SinpeTransactionForm = () => {
   const identification = useAuthStore((state) => state.identification);
@@ -55,7 +55,7 @@ export const SinpeTransactionForm = () => {
         currency: "CRC",
         reason: reason.trim() || undefined,
       };
-      await sendSinpeTransfer(payload);
+      await sinpeService.send(payload);
       setSuccess("Transferencia SINPE realizada con éxito.");
       setDestPhone("");
       setAmount("");

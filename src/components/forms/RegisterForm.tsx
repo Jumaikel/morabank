@@ -1,30 +1,12 @@
-// components/forms/RegisterForm.tsx
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import Link from "next/link";
 import Image from "next/image";
 import { RegisterFormSkeleton } from "@/components/forms/RegisterFormSkeleton";
 import useUserStore from "@/stores/userStore";
-import useAccountStore from "@/stores/accountStore";
-import useBankStore from "@/stores/bankStore";
-
-function generateCostaRicaIban(bankCode: string): string {
-  // Aseguramos que el código tenga exactamente 4 dígitos (ceros a la izquierda si hace falta)
-  const bankPart = bankCode.padStart(4, "0").slice(-4);
-  // Generamos 14 dígitos aleatorios para el número de cuenta
-  let accountPart = "";
-  for (let i = 0; i < 14; i++) {
-    accountPart += Math.floor(Math.random() * 10).toString();
-  }
-  // Para simplificar, ponemos "00" como dígitos de control (en producción habría que calcularlos)
-  const controlPart = "00";
-  return `CR${controlPart}${bankPart}${accountPart}`;
-}
 
 export const RegisterForm = () => {
   const router = useRouter();
@@ -35,85 +17,32 @@ export const RegisterForm = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const [iban, setIban] = useState("");
-  const [bankCode, setBankCode] = useState("");
-  const [accountHolder, setAccountHolder] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const registerUser = useUserStore((state) => state.addUser);
-  const registerAccount = useAccountStore((state) => state.addAccount);
-
-  const getBank = useBankStore((state) => state.getBank);
-  const selectedBank = useBankStore((state) => state.selectedBank);
-  const bankLoading = useBankStore((state) => state.loading);
-  const bankError = useBankStore((state) => state.error);
 
   const [loading, setLoading] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoadingPage(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    getBank();
-  }, [getBank]);
-
-  useEffect(() => {
-    if (selectedBank) {
-      const code4 = selectedBank.bankCode.padStart(4, "0").slice(-4);
-      setBankCode(code4);
-
-      const newIban = generateCostaRicaIban(code4);
-      setIban(newIban);
-    }
-  }, [selectedBank]);
-
-  useEffect(() => {
-    const fullName = `${name.trim()} ${lastName.trim()}`.trim();
-    setAccountHolder(fullName);
-  }, [name, lastName]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
-    if (
-      !identification ||
-      !name ||
-      !lastName ||
-      !phone ||
-      !email ||
-      !password
-    ) {
-      setError("All fields are required");
-      return;
-    }
-    if (!selectedBank) {
-      setError("Bank information is still loading");
-      return;
-    }
-    if (!iban || !bankCode || !accountHolder) {
-      setError("Account data is not ready");
+    if (password !== confirmPassword) {
       return;
     }
 
     setLoading(true);
     try {
-      await registerAccount({
-        iban,
-        bankCode,
-        accountHolder,
-      });
-
       await registerUser({
         identification,
         name,
         lastName,
         phone,
-        accountIban: iban,
         email,
         password,
       });
@@ -121,7 +50,6 @@ export const RegisterForm = () => {
       router.push("/login");
     } catch (err: any) {
       console.error("Error during registration:", err);
-      setError(err.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -149,39 +77,37 @@ export const RegisterForm = () => {
       <div className="w-full md:w-1/2 px-6 md:px-12 py-12 md:py-32 space-y-5 order-2 md:order-1">
         <form onSubmit={handleSubmit} className="space-y-5">
           <h2 className="text-3xl font-bold text-center text-neutral-950">
-            Create Account &amp; User
+            Crear Usuario
           </h2>
-
-          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
 
           <Input
             required
-            label="Identification"
-            placeholder="e.g. 1234567890"
+            label="Identificación"
+            placeholder="ejemplo: 1234567890"
             value={identification}
             onChange={(e) => setIdentification(e.target.value)}
           />
 
           <Input
             required
-            label="First Name"
-            placeholder="e.g. John"
+            label="Nombre"
+            placeholder="ejemplo: Juan"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
 
           <Input
             required
-            label="Last Name"
-            placeholder="e.g. Doe"
+            label="Apellido"
+            placeholder="ejemplo: Doe"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
           />
 
           <Input
             required
-            label="Phone"
-            placeholder="e.g. +50671234567"
+            label="Teléfono"
+            placeholder="ejemplo: 71234567"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
@@ -190,14 +116,14 @@ export const RegisterForm = () => {
             required
             label="Email"
             type="email"
-            placeholder="e.g. john.doe@example.com"
+            placeholder="ejemplo: john.doe@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
 
           <Input
             required
-            label="Password"
+            label="Contraseña"
             type="password"
             placeholder="********"
             value={password}
@@ -206,36 +132,14 @@ export const RegisterForm = () => {
 
           <Input
             required
-            disabled
-            label="Bank Code"
-            value={bankCode}
-            placeholder="Bank code (auto)"
+            label="Confirmar Contraseña"
+            type="password"
+            placeholder="********"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
           />
-          {bankLoading && (
-            <p className="text-sm text-gray-500">Loading bank data...</p>
-          )}
-          {!bankLoading && bankError && (
-            <p className="text-sm text-red-500">{bankError}</p>
-          )}
-
-          <Input
-            required
-            disabled
-            label="Account Holder"
-            value={accountHolder}
-            placeholder="Account holder (auto)"
-          />
-
-          <Input
-            required
-            disabled
-            label="IBAN"
-            value={iban}
-            placeholder="IBAN (auto-generated)"
-          />
-
           <Button type="submit" isLoading={loading} className="w-full">
-            Register
+            Registrar
           </Button>
         </form>
       </div>
