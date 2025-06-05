@@ -1,14 +1,10 @@
-import { create } from 'zustand';
-import { HmacKey } from '@/models/entities';
+import { create } from "zustand";
+import { HmacKey } from "@/models/entities";
 import {
-  getAllHmacKeys,
-  getHmacKey,
-  createHmacKey,
-  updateHmacKey,
-  deleteHmacKey,
+  hmacKeyService,
   NewHmacKey,
   UpdateHmacKey,
-} from '@/services/hmacKeyService';
+} from "@/services/hmacKeyService";
 
 interface HmacKeyStore {
   hmacKeys: HmacKey[];
@@ -35,48 +31,52 @@ export const useHmacKeyStore = create<HmacKeyStore>((set, get) => ({
 
   fetchHmacKeys: async () => {
     set({ loading: true, error: null });
-    try {
-      const data = await getAllHmacKeys();
-      set({ hmacKeys: data, loading: false });
-    } catch (err: any) {
-      set({ error: err.message || 'Error fetching HMAC keys', loading: false });
+    const response = await hmacKeyService.getAll();
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
+      set({ hmacKeys: response, loading: false });
     }
   },
 
   fetchHmacKey: async (originBank, destinationBank) => {
     set({ loading: true, error: null });
-    try {
-      const key = await getHmacKey(originBank, destinationBank);
-      set({ selectedHmacKey: key, loading: false });
-    } catch (err: any) {
-      set({
-        error:
-          err.message ||
-          `Error fetching HMAC key for ${originBank} -> ${destinationBank}`,
-        loading: false,
-      });
+    const response = await hmacKeyService.get(originBank, destinationBank);
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
+      set({ selectedHmacKey: response, loading: false });
     }
   },
 
   addHmacKey: async (newKey) => {
     set({ loading: true, error: null });
-    try {
-      const created = await createHmacKey(newKey);
+    const response = await hmacKeyService.create(newKey);
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
       const { hmacKeys } = get();
-      set({ hmacKeys: [...hmacKeys, created], loading: false });
-    } catch (err: any) {
-      set({ error: err.message || 'Error creating HMAC key', loading: false });
+      set({
+        hmacKeys: [...hmacKeys, response],
+        loading: false,
+      });
     }
   },
 
   editHmacKey: async (originBank, destinationBank, updates) => {
     set({ loading: true, error: null });
-    try {
-      const updated = await updateHmacKey(originBank, destinationBank, updates);
+    const response = await hmacKeyService.update(
+      originBank,
+      destinationBank,
+      updates
+    );
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
       const { hmacKeys, selectedHmacKey } = get();
       const updatedList = hmacKeys.map((k) =>
         k.originBank === originBank && k.destinationBank === destinationBank
-          ? updated
+          ? response
           : k
       );
       set({
@@ -85,15 +85,8 @@ export const useHmacKeyStore = create<HmacKeyStore>((set, get) => ({
           selectedHmacKey &&
           selectedHmacKey.originBank === originBank &&
           selectedHmacKey.destinationBank === destinationBank
-            ? updated
+            ? response
             : selectedHmacKey,
-        loading: false,
-      });
-    } catch (err: any) {
-      set({
-        error:
-          err.message ||
-          `Error updating HMAC key for ${originBank} -> ${destinationBank}`,
         loading: false,
       });
     }
@@ -101,8 +94,13 @@ export const useHmacKeyStore = create<HmacKeyStore>((set, get) => ({
 
   removeHmacKey: async (originBank, destinationBank) => {
     set({ loading: true, error: null });
-    try {
-      await deleteHmacKey(originBank, destinationBank);
+    const success = await hmacKeyService.remove(originBank, destinationBank);
+    if (!success) {
+      set({
+        error: `Error al eliminar la clave HMAC para ${originBank} → ${destinationBank}`,
+        loading: false,
+      });
+    } else {
       const { hmacKeys, selectedHmacKey } = get();
       const filtered = hmacKeys.filter(
         (k) =>
@@ -119,13 +117,6 @@ export const useHmacKeyStore = create<HmacKeyStore>((set, get) => ({
           selectedHmacKey.destinationBank === destinationBank
             ? null
             : selectedHmacKey,
-        loading: false,
-      });
-    } catch (err: any) {
-      set({
-        error:
-          err.message ||
-          `Error deleting HMAC key for ${originBank} -> ${destinationBank}`,
         loading: false,
       });
     }

@@ -34,30 +34,46 @@ export interface ExternalTransferResponse {
   updatedAt: string;
 }
 
-export async function sendExternalTransfer(
-  payload: ExternalTransferRequest
-): Promise<ExternalTransferResponse> {
-  const destBank = payload.receiver.bank_code;
-  const endpoint = BANK_ENDPOINTS[destBank];
-  if (!endpoint) {
-    throw new Error(`No se encontró endpoint para banco ${destBank}`);
-  }
+export const externalTransferService = {
+  async send(
+    payload: ExternalTransferRequest
+  ): Promise<ExternalTransferResponse | string> {
+    try {
+      const destBank = payload.receiver.bank_code;
+      const endpoint = BANK_ENDPOINTS[destBank];
+      if (!endpoint) {
+        console.error(
+          "[SEND_EXTERNAL_TRANSFER_ERROR]",
+          `No se encontró endpoint para banco ${destBank}`
+        );
+        return `No se encontró endpoint para banco ${destBank}`;
+      }
 
-  const res = await fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(
-      `Error al enviar transferencia a banco ${destBank}: ${
-        errorData.error || res.statusText
-      }`
-    );
-  }
+      if (!response.ok) {
+        console.error(
+          "[SEND_EXTERNAL_TRANSFER_ERROR]",
+          response
+        );
+        let errorMsg = response.statusText;
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.error || response.statusText;
+        } catch {
+          // Mantener statusText si no es JSON
+        }
+        return `Error al enviar transferencia a banco ${destBank}: ${errorMsg}`;
+      }
 
-  const data: ExternalTransferResponse = await res.json();
-  return data;
-}
+      return await response.json();
+    } catch (error: any) {
+      console.error("[SEND_EXTERNAL_TRANSFER_ERROR]", error);
+      return "Error al procesar transferencia externa";
+    }
+  },
+};

@@ -1,6 +1,6 @@
-import { HmacKey } from '@/models/entities';
+import { HmacKey } from "@/models/entities";
 
-const BASE_URL = '/api/hmac-keys';
+const URL = "/api/hmac-keys";
 
 export interface NewHmacKey {
   originBank: string;
@@ -12,100 +12,124 @@ export interface UpdateHmacKey {
   secretKey: string; // Base64 string
 }
 
-export async function getAllHmacKeys(): Promise<HmacKey[]> {
-  const res = await fetch(BASE_URL);
-  if (!res.ok) {
-    throw new Error(`Error fetching HMAC keys: ${res.statusText}`);
-  }
-  const data: HmacKey[] = await res.json();
-  return data;
-}
-
-export async function getHmacKey(
-  originBank: string,
-  destinationBank: string
-): Promise<HmacKey> {
-  const url = `${BASE_URL}/${encodeURIComponent(
-    originBank
-  )}/${encodeURIComponent(destinationBank)}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    if (res.status === 404) {
-      throw new Error(
-        `HMAC key for ${originBank} -> ${destinationBank} not found`
-      );
+export const hmacKeyService = {
+  async getAll(): Promise<HmacKey[] | string> {
+    try {
+      const response = await fetch(URL);
+      if (!response.ok) {
+        console.error("[GET_ALL_HMAC_KEYS_ERROR]", response);
+        return "Error al obtener las claves HMAC";
+      }
+      return await response.json();
+    } catch (error: any) {
+      console.error("[GET_ALL_HMAC_KEYS_ERROR]", error);
+      return "Error al obtener las claves HMAC";
     }
-    throw new Error(`Error fetching HMAC key: ${res.statusText}`);
-  }
-  const data: HmacKey = await res.json();
-  return data;
-}
+  },
 
-export async function createHmacKey(key: NewHmacKey): Promise<HmacKey> {
-  const payload = {
-    origin_bank: key.originBank,
-    destination_bank: key.destinationBank,
-    secret_key: key.secretKey,
-  };
+  async get(
+    originBank: string,
+    destinationBank: string
+  ): Promise<HmacKey | string> {
+    try {
+      const url = `${URL}/${encodeURIComponent(
+        originBank
+      )}/${encodeURIComponent(destinationBank)}`;
+      const response = await fetch(url);
 
-  const res = await fetch(BASE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.error(
+            "[GET_HMAC_KEY_NOT_FOUND]",
+            originBank,
+            destinationBank
+          );
+          return `Clave HMAC para ${originBank} → ${destinationBank} no encontrada`;
+        }
+        console.error("[GET_HMAC_KEY_ERROR]", response);
+        return "Error al obtener la clave HMAC";
+      }
 
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(
-      `Error creating HMAC key: ${errorData.error || res.statusText}`
-    );
-  }
+      return await response.json();
+    } catch (error: any) {
+      console.error("[GET_HMAC_KEY_ERROR]", error);
+      return "Error al obtener la clave HMAC";
+    }
+  },
 
-  const data: HmacKey = await res.json();
-  return data;
-}
+  async create(data: NewHmacKey): Promise<HmacKey | string> {
+    try {
+      const payload = {
+        origin_bank: data.originBank,
+        destination_bank: data.destinationBank,
+        secret_key: data.secretKey,
+      };
 
-export async function updateHmacKey(
-  originBank: string,
-  destinationBank: string,
-  update: UpdateHmacKey
-): Promise<HmacKey> {
-  const payload = {
-    secret_key: update.secretKey,
-  };
-  const url = `${BASE_URL}/${encodeURIComponent(
-    originBank
-  )}/${encodeURIComponent(destinationBank)}`;
+      const response = await fetch(URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+      if (!response.ok) {
+        console.error("[CREATE_HMAC_KEY_ERROR]", response);
+        return "Error al crear la clave HMAC";
+      }
 
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(
-      `Error updating HMAC key: ${errorData.error || res.statusText}`
-    );
-  }
+      return await response.json();
+    } catch (error: any) {
+      console.error("[CREATE_HMAC_KEY_ERROR]", error);
+      return "Error al crear la clave HMAC";
+    }
+  },
 
-  const data: HmacKey = await res.json();
-  return data;
-}
+  async update(
+    originBank: string,
+    destinationBank: string,
+    update: UpdateHmacKey
+  ): Promise<HmacKey | string> {
+    try {
+      const payload = { secret_key: update.secretKey };
+      const url = `${URL}/${encodeURIComponent(
+        originBank
+      )}/${encodeURIComponent(destinationBank)}`;
 
-export async function deleteHmacKey(
-  originBank: string,
-  destinationBank: string
-): Promise<void> {
-  const url = `${BASE_URL}/${encodeURIComponent(
-    originBank
-  )}/${encodeURIComponent(destinationBank)}`;
-  const res = await fetch(url, { method: 'DELETE' });
-  if (!res.ok && res.status !== 204) {
-    const errorData = await res.json();
-    throw new Error(
-      `Error deleting HMAC key: ${errorData.error || res.statusText}`
-    );
-  }
-}
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        console.error("[UPDATE_HMAC_KEY_ERROR]", response);
+        return "Error al actualizar la clave HMAC";
+      }
+
+      return await response.json();
+    } catch (error: any) {
+      console.error("[UPDATE_HMAC_KEY_ERROR]", error);
+      return "Error al actualizar la clave HMAC";
+    }
+  },
+
+  async remove(
+    originBank: string,
+    destinationBank: string
+  ): Promise<boolean> {
+    try {
+      const url = `${URL}/${encodeURIComponent(
+        originBank
+      )}/${encodeURIComponent(destinationBank)}`;
+      const response = await fetch(url, { method: "DELETE" });
+
+      if (!response.ok && response.status !== 204) {
+        console.error("[DELETE_HMAC_KEY_ERROR]", response);
+        return false;
+      }
+      return true;
+    } catch (error: any) {
+      console.error("[DELETE_HMAC_KEY_ERROR]", error);
+      return false;
+    }
+  },
+};

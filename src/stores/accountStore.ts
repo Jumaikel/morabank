@@ -1,14 +1,10 @@
-import { create } from 'zustand';
-import { Account } from '@/models/entities';
+import { create } from "zustand";
+import { Account } from "@/models/entities";
 import {
-  getAllAccounts,
-  getAccountByIban,
-  createAccount,
-  updateAccount,
-  deleteAccount,
+  accountService,
   NewAccount,
   UpdateAccount,
-} from '@/services/accountService';
+} from "@/services/accountService";
 
 interface AccountStore {
   accounts: Account[];
@@ -31,69 +27,74 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
 
   fetchAccounts: async () => {
     set({ loading: true, error: null });
-    try {
-      const data = await getAllAccounts();
-      set({ accounts: data, loading: false });
-    } catch (err: any) {
-      set({ error: err.message || 'Error fetching accounts', loading: false });
+    const response = await accountService.getAll();
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
+      set({ accounts: response, loading: false });
     }
   },
 
   fetchAccount: async (iban: string) => {
     set({ loading: true, error: null });
-    try {
-      const account = await getAccountByIban(iban);
-      set({ selectedAccount: account, loading: false });
-    } catch (err: any) {
-      set({ error: err.message || `Error fetching account ${iban}`, loading: false });
+    const response = await accountService.getByIban(iban);
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
+      set({ selectedAccount: response, loading: false });
     }
   },
 
   addAccount: async (newAccount) => {
     set({ loading: true, error: null });
-    try {
-      const created = await createAccount(newAccount);
+    const response = await accountService.create(newAccount);
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
       const { accounts } = get();
       set({
-        accounts: [...accounts, created],
+        accounts: [...accounts, response],
         loading: false,
       });
-    } catch (err: any) {
-      set({ error: err.message || 'Error creating account', loading: false });
     }
   },
 
   editAccount: async (iban, updates) => {
     set({ loading: true, error: null });
-    try {
-      const updated = await updateAccount(iban, updates);
+    const response = await accountService.update(iban, updates);
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
       const { accounts, selectedAccount } = get();
       const updatedList = accounts.map((acc) =>
-        acc.iban === iban ? updated : acc
+        acc.iban === iban ? response : acc
       );
       set({
         accounts: updatedList,
-        selectedAccount: selectedAccount?.iban === iban ? updated : selectedAccount,
+        selectedAccount:
+          selectedAccount?.iban === iban ? response : selectedAccount,
         loading: false,
       });
-    } catch (err: any) {
-      set({ error: err.message || `Error updating account ${iban}`, loading: false });
     }
   },
 
   removeAccount: async (iban) => {
     set({ loading: true, error: null });
-    try {
-      await deleteAccount(iban);
+    const success = await accountService.remove(iban);
+    if (!success) {
+      set({
+        error: `Error al eliminar la cuenta con IBAN ${iban}`,
+        loading: false,
+      });
+    } else {
       const { accounts, selectedAccount } = get();
       const filtered = accounts.filter((acc) => acc.iban !== iban);
       set({
         accounts: filtered,
-        selectedAccount: selectedAccount?.iban === iban ? null : selectedAccount,
+        selectedAccount:
+          selectedAccount?.iban === iban ? null : selectedAccount,
         loading: false,
       });
-    } catch (err: any) {
-      set({ error: err.message || `Error deleting account ${iban}`, loading: false });
     }
   },
 }));

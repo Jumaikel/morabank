@@ -1,6 +1,6 @@
-import { Transaction } from '@/models/entities';
+import { Transaction } from "@/models/entities";
 
-const BASE_URL = '/api/transactions';
+const URL = "/api/transactions";
 
 export interface NewTransaction {
   originIban: string;
@@ -12,116 +12,128 @@ export interface NewTransaction {
 }
 
 export interface UpdateTransaction {
-  state?: 'PENDING' | 'COMPLETED' | 'REJECTED';
+  state?: "PENDING" | "COMPLETED" | "REJECTED";
   reason?: string | null;
   currency?: string;
 }
 
-export async function getAllTransactions(): Promise<Transaction[]> {
-  const res = await fetch(BASE_URL);
-  if (!res.ok) {
-    throw new Error(`Error fetching transactions: ${res.statusText}`);
-  }
-  const data: Transaction[] = await res.json();
-  return data;
-}
-
-export async function getTransactionById(
-  transactionId: string
-): Promise<Transaction> {
-  const res = await fetch(
-    `${BASE_URL}/${encodeURIComponent(transactionId)}`
-  );
-  if (!res.ok) {
-    if (res.status === 404) {
-      throw new Error(`Transaction ${transactionId} not found`);
+export const transactionService = {
+  async getAll(): Promise<Transaction[] | string> {
+    try {
+      const response = await fetch(URL);
+      if (!response.ok) {
+        console.error("[GET_ALL_TRANSACTIONS_ERROR]", response);
+        return "Error al obtener las transacciones";
+      }
+      return await response.json();
+    } catch (error: any) {
+      console.error("[GET_ALL_TRANSACTIONS_ERROR]", error);
+      return "Error al obtener las transacciones";
     }
-    throw new Error(`Error fetching transaction: ${res.statusText}`);
-  }
-  const data: Transaction = await res.json();
-  return data;
-}
+  },
 
-export async function createTransaction(
-  tx: NewTransaction
-): Promise<Transaction> {
-  const payload = {
-    origin_iban: tx.originIban,
-    destination_iban: tx.destinationIban,
-    amount: tx.amount,
-    currency: tx.currency,
-    reason: tx.reason,
-    hmac_md5: tx.hmacMd5,
-  };
-
-  const res = await fetch(BASE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(
-      `Error creating transaction: ${errorData.error || res.statusText}`
-    );
-  }
-
-  const data: Transaction = await res.json();
-  return data;
-}
-
-export async function updateTransaction(
-  transactionId: string,
-  updates: UpdateTransaction
-): Promise<Transaction> {
-  const payload: Record<string, unknown> = {};
-
-  if (updates.state !== undefined) {
-    payload.state = updates.state;
-  }
-  if (updates.reason !== undefined) {
-    payload.reason = updates.reason;
-  }
-  if (updates.currency !== undefined) {
-    payload.currency = updates.currency;
-  }
-
-  const res = await fetch(
-    `${BASE_URL}/${encodeURIComponent(transactionId)}`,
-    {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+  async getById(transactionId: string): Promise<Transaction | string> {
+    try {
+      const response = await fetch(
+        `${URL}/${encodeURIComponent(transactionId)}`
+      );
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.error(
+            "[GET_TRANSACTION_BY_ID_NOT_FOUND]",
+            transactionId
+          );
+          return `Transacción ${transactionId} no encontrada`;
+        }
+        console.error("[GET_TRANSACTION_BY_ID_ERROR]", response);
+        return "Error al obtener la transacción";
+      }
+      return await response.json();
+    } catch (error: any) {
+      console.error("[GET_TRANSACTION_BY_ID_ERROR]", error);
+      return "Error al obtener la transacción";
     }
-  );
+  },
 
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(
-      `Error updating transaction: ${
-        errorData.error || res.statusText
-      }`
-    );
-  }
+  async create(tx: NewTransaction): Promise<Transaction | string> {
+    try {
+      const payload = {
+        origin_iban: tx.originIban,
+        destination_iban: tx.destinationIban,
+        amount: tx.amount,
+        currency: tx.currency,
+        reason: tx.reason,
+        hmac_md5: tx.hmacMd5,
+      };
 
-  const data: Transaction = await res.json();
-  return data;
-}
+      const response = await fetch(URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-export async function deleteTransaction(
-  transactionId: string
-): Promise<void> {
-  const res = await fetch(
-    `${BASE_URL}/${encodeURIComponent(transactionId)}`,
-    {
-      method: 'DELETE',
+      if (!response.ok) {
+        console.error("[CREATE_TRANSACTION_ERROR]", response);
+        return "Error al crear la transacción";
+      }
+      return await response.json();
+    } catch (error: any) {
+      console.error("[CREATE_TRANSACTION_ERROR]", error);
+      return "Error al crear la transacción";
     }
-  );
-  if (!res.ok && res.status !== 204) {
-    const errorData = await res.json();
-    throw new Error(
-      `Error deleting transaction: ${errorData.error || res.statusText}`
-    );
-  }
-}
+  },
+
+  async update(
+    transactionId: string,
+    updates: UpdateTransaction
+  ): Promise<Transaction | string> {
+    try {
+      const payload: Record<string, unknown> = {};
+
+      if (updates.state !== undefined) {
+        payload.state = updates.state;
+      }
+      if (updates.reason !== undefined) {
+        payload.reason = updates.reason;
+      }
+      if (updates.currency !== undefined) {
+        payload.currency = updates.currency;
+      }
+
+      const response = await fetch(
+        `${URL}/${encodeURIComponent(transactionId)}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("[UPDATE_TRANSACTION_ERROR]", response);
+        return "Error al actualizar la transacción";
+      }
+      return await response.json();
+    } catch (error: any) {
+      console.error("[UPDATE_TRANSACTION_ERROR]", error);
+      return "Error al actualizar la transacción";
+    }
+  },
+
+  async remove(transactionId: string): Promise<boolean> {
+    try {
+      const response = await fetch(
+        `${URL}/${encodeURIComponent(transactionId)}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok && response.status !== 204) {
+        console.error("[DELETE_TRANSACTION_ERROR]", response);
+        return false;
+      }
+      return true;
+    } catch (error: any) {
+      console.error("[DELETE_TRANSACTION_ERROR]", error);
+      return false;
+    }
+  },
+};

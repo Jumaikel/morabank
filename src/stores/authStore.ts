@@ -1,10 +1,10 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import {
-  login as loginService,
-  verifyMfa as verifyMfaService,
+  authService,
   LoginCredentials,
-} from '../services/authService';
+  VerifyMfaResponse,
+} from "@/services/authService";
 
 interface AuthStore {
   identification: string | null;
@@ -29,44 +29,45 @@ export const useAuthStore = create<AuthStore>()(
 
       login: async (credentials) => {
         set({ loading: true, error: null });
-        try {
-          await loginService({
-            identification: credentials.identification,
-            password: credentials.password,
+        const response = await authService.login(credentials);
+        if (typeof response === "string") {
+          set({
+            error: response,
+            loading: false,
+            awaitingMfa: false,
           });
+        } else {
           set({
             identification: credentials.identification,
             awaitingMfa: true,
             loading: false,
-          });
-        } catch (err: any) {
-          set({
-            error: err.message || 'Error during login',
-            loading: false,
-            awaitingMfa: false,
           });
         }
       },
 
       verifyMfa: async (mfaCode) => {
         set({ loading: true, error: null });
-        try {
-          const ident = get().identification;
-          if (!ident) {
-            throw new Error('No identification stored for MFA verification');
-          }
-          const response = await verifyMfaService({
-            identification: ident,
-            mfaCode,
-          });
+        const ident = get().identification;
+        if (!ident) {
           set({
-            token: response.token,
-            awaitingMfa: false,
+            error: "No hay identificación almacenada para verificar MFA",
             loading: false,
           });
-        } catch (err: any) {
+          return;
+        }
+        const response = await authService.verifyMfa({
+          identification: ident,
+          mfaCode,
+        });
+        if (typeof response === "string") {
           set({
-            error: err.message || 'Error verifying MFA code',
+            error: response,
+            loading: false,
+          });
+        } else {
+          set({
+            token: (response as VerifyMfaResponse).token,
+            awaitingMfa: false,
             loading: false,
           });
         }
@@ -83,7 +84,7 @@ export const useAuthStore = create<AuthStore>()(
       },
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
       partialize: (state) => ({
         identification: state.identification,
         token: state.token,

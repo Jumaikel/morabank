@@ -1,14 +1,10 @@
-import { create } from 'zustand';
-import { MfaCode } from '@/models/entities';
+import { create } from "zustand";
+import { MfaCode } from "@/models/entities";
 import {
-  getAllMfaCodes,
-  getMfaCodeById,
-  createMfaCode,
-  updateMfaCode,
-  deleteMfaCode,
+  mfaCodeService,
   NewMfaCode,
   UpdateMfaCode,
-} from '@/services/mfaCodeService';
+} from "@/services/mfaCodeService";
 
 interface MfaCodeStore {
   mfaCodes: MfaCode[];
@@ -31,52 +27,52 @@ export const useMfaCodeStore = create<MfaCodeStore>((set, get) => ({
 
   fetchMfaCodes: async () => {
     set({ loading: true, error: null });
-    try {
-      const data = await getAllMfaCodes();
-      set({ mfaCodes: data, loading: false });
-    } catch (err: any) {
-      set({ error: err.message || 'Error fetching MFA codes', loading: false });
+    const response = await mfaCodeService.getAll();
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
+      set({ mfaCodes: response, loading: false });
     }
   },
 
   fetchMfaCode: async (id) => {
     set({ loading: true, error: null });
-    try {
-      const code = await getMfaCodeById(id);
-      set({ selectedMfaCode: code, loading: false });
-    } catch (err: any) {
-      set({
-        error: err.message || `Error fetching MFA code ${id}`,
-        loading: false,
-      });
+    const response = await mfaCodeService.getById(id);
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
+      set({ selectedMfaCode: response, loading: false });
     }
   },
 
   addMfaCode: async (newCode) => {
     set({ loading: true, error: null });
-    try {
-      const created = await createMfaCode(newCode);
+    const response = await mfaCodeService.create(newCode);
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
       const { mfaCodes } = get();
-      set({ mfaCodes: [...mfaCodes, created], loading: false });
-    } catch (err: any) {
-      set({ error: err.message || 'Error creating MFA code', loading: false });
+      set({
+        mfaCodes: [...mfaCodes, response],
+        loading: false,
+      });
     }
   },
 
   editMfaCode: async (id, updates) => {
     set({ loading: true, error: null });
-    try {
-      const updated = await updateMfaCode(id, updates);
+    const response = await mfaCodeService.update(id, updates);
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
       const { mfaCodes, selectedMfaCode } = get();
-      const updatedList = mfaCodes.map((c) => (c.id === id ? updated : c));
+      const updatedList = mfaCodes.map((c) =>
+        c.id === id ? response : c
+      );
       set({
         mfaCodes: updatedList,
-        selectedMfaCode: selectedMfaCode?.id === id ? updated : selectedMfaCode,
-        loading: false,
-      });
-    } catch (err: any) {
-      set({
-        error: err.message || `Error updating MFA code ${id}`,
+        selectedMfaCode:
+          selectedMfaCode?.id === id ? response : selectedMfaCode,
         loading: false,
       });
     }
@@ -84,18 +80,19 @@ export const useMfaCodeStore = create<MfaCodeStore>((set, get) => ({
 
   removeMfaCode: async (id) => {
     set({ loading: true, error: null });
-    try {
-      await deleteMfaCode(id);
+    const success = await mfaCodeService.remove(id);
+    if (!success) {
+      set({
+        error: `Error al eliminar el código MFA con ID ${id}`,
+        loading: false,
+      });
+    } else {
       const { mfaCodes, selectedMfaCode } = get();
       const filtered = mfaCodes.filter((c) => c.id !== id);
       set({
         mfaCodes: filtered,
-        selectedMfaCode: selectedMfaCode?.id === id ? null : selectedMfaCode,
-        loading: false,
-      });
-    } catch (err: any) {
-      set({
-        error: err.message || `Error deleting MFA code ${id}`,
+        selectedMfaCode:
+          selectedMfaCode?.id === id ? null : selectedMfaCode,
         loading: false,
       });
     }

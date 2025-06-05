@@ -1,18 +1,14 @@
-import { create } from 'zustand';
-import { User } from '@/models/entities';
+import { create } from "zustand";
+import { User } from "@/models/entities";
 import {
-  getAllUsers,
-  getUserById,
-  createUser,
-  updateUser,
-  deleteUser,
+  userService,
   NewUser,
   UpdateUser,
-} from '@/services/userService';
+} from "@/services/userService";
 
 interface UserStore {
-  users: Omit<User, 'passwordHash'>[];
-  selectedUser: Omit<User, 'passwordHash'> | null;
+  users: Omit<User, "passwordHash">[];
+  selectedUser: Omit<User, "passwordHash"> | null;
   loading: boolean;
   error: string | null;
 
@@ -31,55 +27,52 @@ export const useUserStore = create<UserStore>((set, get) => ({
 
   fetchUsers: async () => {
     set({ loading: true, error: null });
-    try {
-      const data = await getAllUsers();
-      set({ users: data, loading: false });
-    } catch (err: any) {
-      set({ error: err.message || 'Error fetching users', loading: false });
+    const response = await userService.getAll();
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
+      set({ users: response, loading: false });
     }
   },
 
   fetchUser: async (identification) => {
     set({ loading: true, error: null });
-    try {
-      const user = await getUserById(identification);
-      set({ selectedUser: user, loading: false });
-    } catch (err: any) {
-      set({
-        error: err.message || `Error fetching user ${identification}`,
-        loading: false,
-      });
+    const response = await userService.getById(identification);
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
+      set({ selectedUser: response, loading: false });
     }
   },
 
   addUser: async (newUser) => {
     set({ loading: true, error: null });
-    try {
-      const created = await createUser(newUser);
+    const response = await userService.create(newUser);
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
       const { users } = get();
-      set({ users: [...users, created], loading: false });
-    } catch (err: any) {
-      set({ error: err.message || 'Error creating user', loading: false });
+      set({
+        users: [...users, response],
+        loading: false,
+      });
     }
   },
 
   editUser: async (identification, updates) => {
     set({ loading: true, error: null });
-    try {
-      const updated = await updateUser(identification, updates);
+    const response = await userService.update(identification, updates);
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+    } else {
       const { users, selectedUser } = get();
       const updatedList = users.map((u) =>
-        u.identification === identification ? updated : u
+        u.identification === identification ? response : u
       );
       set({
         users: updatedList,
         selectedUser:
-          selectedUser?.identification === identification ? updated : selectedUser,
-        loading: false,
-      });
-    } catch (err: any) {
-      set({
-        error: err.message || `Error updating user ${identification}`,
+          selectedUser?.identification === identification ? response : selectedUser,
         loading: false,
       });
     }
@@ -87,19 +80,19 @@ export const useUserStore = create<UserStore>((set, get) => ({
 
   removeUser: async (identification) => {
     set({ loading: true, error: null });
-    try {
-      await deleteUser(identification);
+    const success = await userService.remove(identification);
+    if (!success) {
+      set({
+        error: `Error al eliminar el usuario con ID ${identification}`,
+        loading: false,
+      });
+    } else {
       const { users, selectedUser } = get();
       const filtered = users.filter((u) => u.identification !== identification);
       set({
         users: filtered,
         selectedUser:
           selectedUser?.identification === identification ? null : selectedUser,
-        loading: false,
-      });
-    } catch (err: any) {
-      set({
-        error: err.message || `Error deleting user ${identification}`,
         loading: false,
       });
     }
