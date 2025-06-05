@@ -63,10 +63,11 @@ export const UserAccountInfo = () => {
         <div className="flex justify-center p-4">
           <AccountCard
             iban={selectedAccount.iban}
-            bankCode={selectedAccount.bankCode}
+            accountNumber={selectedAccount.accountNumber}
+            accountType={selectedAccount.accountType}
             accountHolder={selectedAccount.accountHolder}
             balance={selectedAccount.balance}
-            state={selectedAccount.state}
+            status={selectedAccount.status}
             onClick={() => setIsModalOpen(true)}
           />
         </div>

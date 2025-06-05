@@ -4,27 +4,32 @@ import React from "react";
 
 interface AccountCardProps {
   iban: string;
-  bankCode: string;
+  accountNumber: string;
+  accountType: "CORRIENTE" | "AHORROS";
   accountHolder: string;
   balance: number;
-  state: "ACTIVE" | "BLOCKED" | "CLOSED";
+  status: "ACTIVE" | "BLOCKED" | "CLOSED";
   onClick?: () => void;
 }
 
 export const AccountCard: React.FC<AccountCardProps> = ({
   iban,
-  bankCode,
+  accountNumber,
+  accountType,
   accountHolder,
   balance,
-  state,
+  status,
   onClick,
 }) => {
+  // Mask all but the last 4 characters of the IBAN
   const maskedIban = iban.slice(-4).padStart(iban.length, "•");
+  // Mask all but the last 4 digits of the local account number
+  const maskedAccountNumber = accountNumber.slice(-4).padStart(accountNumber.length, "•");
 
-  const stateColor =
-    state === "ACTIVE"
+  const statusColor =
+    status === "ACTIVE"
       ? "bg-green-500"
-      : state === "BLOCKED"
+      : status === "BLOCKED"
       ? "bg-red-500"
       : "bg-gray-500";
 
@@ -35,17 +40,22 @@ export const AccountCard: React.FC<AccountCardProps> = ({
     >
       <div className="flex flex-col space-y-4 text-white">
         <div className="flex justify-between items-center">
-          <span className="text-sm uppercase tracking-widest">{bankCode}</span>
+          <span className="text-sm uppercase tracking-widest">{accountType}</span>
           <span
-            className={`px-2 py-0.5 text-xs rounded-full ${stateColor} bg-opacity-90`}
+            className={`px-2 py-0.5 text-xs rounded-full ${statusColor} bg-opacity-90`}
           >
-            {state}
+            {status}
           </span>
         </div>
 
         <div>
           <p className="text-xs opacity-80">Account Holder</p>
           <p className="text-lg font-semibold">{accountHolder}</p>
+        </div>
+
+        <div>
+          <p className="text-xs opacity-80">Local Account #</p>
+          <p className="text-sm tracking-wider">{maskedAccountNumber}</p>
         </div>
 
         <div>

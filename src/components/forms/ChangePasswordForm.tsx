@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { authService, SendOtpRequest, ChangePasswordRequest } from "@/services/authService";
 
 export const ChangePasswordForm = () => {
   const router = useRouter();
@@ -36,32 +37,25 @@ export const ChangePasswordForm = () => {
       });
     }, 1000);
   };
-
-  // Limpiar interval al desmontar
   useEffect(() => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
-
-  // Función para solicitar el envío del OTP
   const handleSendOtp = async () => {
     setError(null);
+    setSuccess(null);
+
     if (!identification.trim()) {
       setError("La identificación es obligatoria para enviar el código OTP.");
       return;
     }
 
     try {
-      // Llamada al endpoint que envía el OTP (por ejemplo, /api/auth/send-otp)
-      const res = await fetch("/api/auth/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identification: identification.trim() }),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Error al enviar OTP");
+      const payload: SendOtpRequest = { identification: identification.trim() };
+      const response = await authService.sendOtp(payload);
+      if (typeof response === "string") {
+        throw new Error(response);
       }
       startCountdown();
       setSuccess("Código OTP enviado. Revisa tu correo.");
@@ -70,8 +64,6 @@ export const ChangePasswordForm = () => {
       setError(err.message || "Error al solicitar OTP.");
     }
   };
-
-  // Función para cambiar la contraseña
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -88,21 +80,15 @@ export const ChangePasswordForm = () => {
 
     setSubmitting(true);
     try {
-      // Llamada al endpoint que valida OTP y cambia contraseña
-      const res = await fetch("/api/auth/change-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          identification: identification.trim(),
-          otp: otpCode.trim(),
-          newPassword,
-        }),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Error al cambiar contraseña");
+      const payload: ChangePasswordRequest = {
+        identification: identification.trim(),
+        otp: otpCode.trim(),
+        newPassword,
+      };
+      const response = await authService.changePassword(payload);
+      if (typeof response === "string") {
+        throw new Error(response);
       }
-      // Éxito: redirigir a /login
       router.push("/login");
     } catch (err: any) {
       console.error(err);
@@ -112,7 +98,6 @@ export const ChangePasswordForm = () => {
     }
   };
 
-  // Formatea el tiempo en MM:SS
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60)
       .toString()
@@ -131,7 +116,6 @@ export const ChangePasswordForm = () => {
       {success && <p className="text-sm text-green-600 text-center mb-4">{success}</p>}
 
       <form onSubmit={handleChangePassword} className="space-y-6">
-        {/* IDENTIFICACIÓN */}
         <div>
           <Input
             required
@@ -141,8 +125,6 @@ export const ChangePasswordForm = () => {
             onChange={(e) => setIdentification(e.target.value)}
           />
         </div>
-
-        {/* BOTÓN ENVIAR OTP */}
         <div className="flex items-center space-x-4">
           <Button
             type="button"
@@ -155,8 +137,6 @@ export const ChangePasswordForm = () => {
               : "Enviar OTP"}
           </Button>
         </div>
-
-        {/* NUEVA CONTRASEÑA */}
         <div>
           <Input
             required
@@ -167,8 +147,6 @@ export const ChangePasswordForm = () => {
             onChange={(e) => setNewPassword(e.target.value)}
           />
         </div>
-
-        {/* CONFIRMAR CONTRASEÑA */}
         <div>
           <Input
             required
@@ -179,8 +157,6 @@ export const ChangePasswordForm = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
         </div>
-
-        {/* CÓDIGO OTP */}
         <div>
           <Input
             required
@@ -190,8 +166,6 @@ export const ChangePasswordForm = () => {
             onChange={(e) => setOtpCode(e.target.value)}
           />
         </div>
-
-        {/* BOTÓN CAMBIAR CONTRASEÑA */}
         <Button type="submit" isLoading={submitting} className="w-full">
           Cambiar Contraseña
         </Button>

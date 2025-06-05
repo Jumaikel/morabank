@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import useAuthStore from "@/stores/authStore";
 import useUserStore from "@/stores/userStore";
 import useAccountStore from "@/stores/accountStore";
-import { NewTransaction,transactionService } from "@/services/transactionService";
+import { NewTransaction, transactionService } from "@/services/transactionService";
 
 export const InternalTransactionForm = () => {
   const identification = useAuthStore((state) => state.identification);
@@ -66,11 +66,16 @@ export const InternalTransactionForm = () => {
         reason: reason.trim() || undefined,
         hmacMd5: "",
       };
-      await transactionService.create(payload);
-      setSuccess("Transacción realizada con éxito.");
-      setDestinationIban("");
-      setAmount("");
-      setReason("");
+
+      const response = await transactionService.create(payload);
+      if (typeof response === "string") {
+        setError(response);
+      } else {
+        setSuccess("Transacción realizada con éxito.");
+        setDestinationIban("");
+        setAmount("");
+        setReason("");
+      }
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Error al realizar la transacción.");

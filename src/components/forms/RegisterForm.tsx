@@ -18,6 +18,7 @@ export const RegisterForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [accountType, setAccountType] = useState<"CORRIENTE" | "AHORROS">("CORRIENTE");
 
   const registerUser = useUserStore((state) => state.addUser);
 
@@ -45,6 +46,7 @@ export const RegisterForm = () => {
         phone,
         email,
         password,
+        accountType,
       });
 
       router.push("/login");
@@ -120,6 +122,21 @@ export const RegisterForm = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
+          
+          <div className="flex flex-col">
+            <label className="mb-1 font-medium">Tipo de Cuenta</label>
+            <select
+              required
+              value={accountType}
+              onChange={(e) =>
+                setAccountType(e.target.value as "CORRIENTE" | "AHORROS")
+              }
+              className="border border-neutral-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="CORRIENTE">Corriente</option>
+              <option value="AHORROS">Ahorros</option>
+            </select>
+          </div>
 
           <Input
             required
@@ -138,6 +155,7 @@ export const RegisterForm = () => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
+
           <Button type="submit" isLoading={loading} className="w-full">
             Registrar
           </Button>

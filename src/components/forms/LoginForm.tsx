@@ -82,7 +82,7 @@ export const LoginForm = () => {
 
           <div className="flex justify-end text-sm">
             <Link
-              href="/Change-Password"
+              href="/change-password"
               className="text-neutral-500 underline hover:text-neutral-950"
             >
               ¿Olvidaste tu contraseña?

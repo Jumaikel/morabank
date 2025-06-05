@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { getAllTransactions } from "@/services/transactionService";
+import { transactionService } from "@/services/transactionService";
 import { Transaction } from "@/models/entities";
 
 interface AccountHistoryModalProps {
@@ -30,8 +30,8 @@ export const AccountHistoryModal: React.FC<AccountHistoryModalProps> = ({
       setLoading(true);
       setError(null);
       try {
-        const all = await getAllTransactions();
-        if (!isCancelled) {
+        const all = await transactionService.getAll();
+        if (!isCancelled && Array.isArray(all)) {
           setTransactions(all);
         }
       } catch (err: any) {
@@ -113,7 +113,7 @@ export const AccountHistoryModal: React.FC<AccountHistoryModalProps> = ({
                         {isSent ? "-" : "+"}
                         {tx.amount.toFixed(2)} {tx.currency}
                       </td>
-                      <td className="px-3 py-2 text-sm">{tx.state}</td>
+                      <td className="px-3 py-2 text-sm">{tx.status}</td>
                     </tr>
                   );
                 })}

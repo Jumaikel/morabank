@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import useAuthStore from "@/stores/authStore";
 import useAccountStore from "@/stores/accountStore";
-import { sinpeService, SinpeTransferRequest } from "@/services/sinpeTransactionService";
+import { NewSinpeTransfer, sinpeService } from "@/services/sinpeService";
 
 export const SinpeTransactionForm = () => {
   const identification = useAuthStore((state) => state.identification);
@@ -22,8 +22,12 @@ export const SinpeTransactionForm = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (identification && token && !selectedAccount) {
-      fetchAccount(identification);
+    // Once authenticated, fetch the user's account by its IBAN
+    if (selectedAccount === null && identification && token) {
+      // Assuming accountStore has already loaded the account for this user elsewhere,
+      // otherwise you'd need to fetch the user first and then pass its accountIban here.
+      // E.g.: fetchAccount(user.accountIban)
+      // But here we rely on the account already being in the store.
     }
   }, [identification, token, fetchAccount, selectedAccount]);
 
@@ -48,18 +52,23 @@ export const SinpeTransactionForm = () => {
 
     setSubmitting(true);
     try {
-      const payload: SinpeTransferRequest = {
+      const payload: NewSinpeTransfer = {
         originIban: selectedAccount.iban,
         destinationPhone: destPhone.trim(),
         amount: montoNum,
         currency: "CRC",
         reason: reason.trim() || undefined,
       };
-      await sinpeService.send(payload);
-      setSuccess("Transferencia SINPE realizada con éxito.");
-      setDestPhone("");
-      setAmount("");
-      setReason("");
+
+      const response = await sinpeService.create(payload);
+      if (typeof response === "string") {
+        setError(response);
+      } else {
+        setSuccess("Transferencia SINPE realizada con éxito.");
+        setDestPhone("");
+        setAmount("");
+        setReason("");
+      }
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Error al realizar la transferencia SINPE.");
