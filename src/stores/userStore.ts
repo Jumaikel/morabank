@@ -72,7 +72,9 @@ export const useUserStore = create<UserStore>((set, get) => ({
       set({
         users: updatedList,
         selectedUser:
-          selectedUser?.identification === identification ? response : selectedUser,
+          selectedUser?.identification === identification
+            ? response
+            : selectedUser,
         loading: false,
       });
     }
@@ -92,7 +94,9 @@ export const useUserStore = create<UserStore>((set, get) => ({
       set({
         users: filtered,
         selectedUser:
-          selectedUser?.identification === identification ? null : selectedUser,
+          selectedUser?.identification === identification
+            ? null
+            : selectedUser,
         loading: false,
       });
     }

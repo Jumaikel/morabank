@@ -14,6 +14,17 @@ export interface UpdateMfaCode {
   used?: boolean;
 }
 
+function mapRawToEntity(raw: any): MfaCode {
+  return {
+    id: raw.id,
+    userId: raw.user_id,
+    mfaCode: raw.mfa_code,
+    createdAt: raw.created_at,
+    expiresAt: raw.expires_at,
+    used: raw.used,
+  };
+}
+
 export const mfaCodeService = {
   async getAll(): Promise<MfaCode[] | string> {
     try {
@@ -22,7 +33,8 @@ export const mfaCodeService = {
         console.error("[GET_ALL_MFA_CODES_ERROR]", response);
         return "Error al obtener los códigos MFA";
       }
-      return await response.json();
+      const rawList = await response.json();
+      return rawList.map((raw: any) => mapRawToEntity(raw));
     } catch (error: any) {
       console.error("[GET_ALL_MFA_CODES_ERROR]", error);
       return "Error al obtener los códigos MFA";
@@ -40,7 +52,8 @@ export const mfaCodeService = {
         console.error("[GET_MFA_CODE_BY_ID_ERROR]", response);
         return "Error al obtener el código MFA";
       }
-      return await response.json();
+      const raw = await response.json();
+      return mapRawToEntity(raw);
     } catch (error: any) {
       console.error("[GET_MFA_CODE_BY_ID_ERROR]", error);
       return "Error al obtener el código MFA";
@@ -65,7 +78,8 @@ export const mfaCodeService = {
         console.error("[CREATE_MFA_CODE_ERROR]", response);
         return "Error al crear el código MFA";
       }
-      return await response.json();
+      const raw = await response.json();
+      return mapRawToEntity(raw);
     } catch (error: any) {
       console.error("[CREATE_MFA_CODE_ERROR]", error);
       return "Error al crear el código MFA";
@@ -99,7 +113,8 @@ export const mfaCodeService = {
         console.error("[UPDATE_MFA_CODE_ERROR]", response);
         return "Error al actualizar el código MFA";
       }
-      return await response.json();
+      const raw = await response.json();
+      return mapRawToEntity(raw);
     } catch (error: any) {
       console.error("[UPDATE_MFA_CODE_ERROR]", error);
       return "Error al actualizar el código MFA";

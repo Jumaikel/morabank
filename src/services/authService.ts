@@ -15,7 +15,25 @@ export interface VerifyMfaRequest {
 }
 
 export interface VerifyMfaResponse {
-  token: string; // JWT u otro token de sesión
+  token: string; // JWT or session token
+}
+
+export interface SendOtpRequest {
+  identification: string;
+}
+
+export interface SendOtpResponse {
+  message: string;
+}
+
+export interface ChangePasswordRequest {
+  identification: string;
+  otp: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordResponse {
+  message: string;
 }
 
 export const authService = {
@@ -45,6 +63,31 @@ export const authService = {
     }
   },
 
+  async sendOtp(
+    payload: SendOtpRequest
+  ): Promise<SendOtpResponse | string> {
+    try {
+      const response = await fetch(`${URL}/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          identification: payload.identification,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("[SEND_OTP_ERROR]", response);
+        const errData = await response.json().catch(() => null);
+        return errData?.error || "Error al enviar OTP";
+      }
+
+      return await response.json();
+    } catch (error: any) {
+      console.error("[SEND_OTP_ERROR]", error);
+      return "Error al enviar OTP";
+    }
+  },
+
   async verifyMfa(
     payload: VerifyMfaRequest
   ): Promise<VerifyMfaResponse | string> {
@@ -68,6 +111,33 @@ export const authService = {
     } catch (error: any) {
       console.error("[VERIFY_MFA_ERROR]", error);
       return "Error al verificar MFA";
+    }
+  },
+
+  async changePassword(
+    payload: ChangePasswordRequest
+  ): Promise<ChangePasswordResponse | string> {
+    try {
+      const response = await fetch(`${URL}/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          identification: payload.identification,
+          otp: payload.otp,
+          newPassword: payload.newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("[CHANGE_PASSWORD_ERROR]", response);
+        const errData = await response.json().catch(() => null);
+        return errData?.error || "Error al cambiar la contraseña";
+      }
+
+      return await response.json();
+    } catch (error: any) {
+      console.error("[CHANGE_PASSWORD_ERROR]", error);
+      return "Error al cambiar la contraseña";
     }
   },
 };

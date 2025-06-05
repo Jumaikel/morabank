@@ -4,16 +4,18 @@ const URL = "/api/accounts";
 
 export interface NewAccount {
   iban: string;
-  bankCode: string;
+  accountNumber: string;
+  accountType: "CORRIENTE" | "AHORROS";
   accountHolder: string;
   balance?: number;
-  state?: "ACTIVE" | "BLOCKED" | "CLOSED";
+  status?: "ACTIVE" | "BLOCKED" | "CLOSED";
 }
 
 export interface UpdateAccount {
   accountHolder?: string;
   balance?: number;
-  state?: "ACTIVE" | "BLOCKED" | "CLOSED";
+  status?: "ACTIVE" | "BLOCKED" | "CLOSED";
+  accountType?: "CORRIENTE" | "AHORROS";
 }
 
 export const accountService = {
@@ -53,10 +55,11 @@ export const accountService = {
     try {
       const payload = {
         iban: data.iban,
-        bank_code: data.bankCode,
+        account_number: data.accountNumber,
+        account_type: data.accountType,
         account_holder: data.accountHolder,
         balance: data.balance,
-        state: data.state,
+        status: data.status,
       };
 
       const response = await fetch(URL, {
@@ -69,7 +72,6 @@ export const accountService = {
         console.error("[CREATE_ACCOUNT_ERROR]", response);
         return "Error al crear la cuenta";
       }
-
       return await response.json();
     } catch (error: any) {
       console.error("[CREATE_ACCOUNT_ERROR]", error);
@@ -77,7 +79,10 @@ export const accountService = {
     }
   },
 
-  async update(iban: string, updates: UpdateAccount): Promise<Account | string> {
+  async update(
+    iban: string,
+    updates: UpdateAccount
+  ): Promise<Account | string> {
     try {
       const payload: Record<string, unknown> = {};
 
@@ -87,8 +92,11 @@ export const accountService = {
       if (updates.balance !== undefined) {
         payload.balance = updates.balance;
       }
-      if (updates.state !== undefined) {
-        payload.state = updates.state;
+      if (updates.status !== undefined) {
+        payload.status = updates.status;
+      }
+      if (updates.accountType !== undefined) {
+        payload.account_type = updates.accountType;
       }
 
       const response = await fetch(`${URL}/${encodeURIComponent(iban)}`, {
@@ -101,7 +109,6 @@ export const accountService = {
         console.error("[UPDATE_ACCOUNT_ERROR]", response);
         return "Error al actualizar la cuenta";
       }
-
       return await response.json();
     } catch (error: any) {
       console.error("[UPDATE_ACCOUNT_ERROR]", error);

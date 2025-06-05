@@ -3,6 +3,8 @@ import { persist } from "zustand/middleware";
 import {
   authService,
   LoginCredentials,
+  SendOtpRequest,
+  ChangePasswordRequest,
   VerifyMfaResponse,
 } from "@/services/authService";
 
@@ -14,7 +16,9 @@ interface AuthStore {
   awaitingMfa: boolean;
 
   login: (credentials: LoginCredentials) => Promise<void>;
+  sendOtp: (identification: string) => Promise<void>;
   verifyMfa: (mfaCode: string) => Promise<void>;
+  changePassword: (payload: ChangePasswordRequest) => Promise<void>;
   logout: () => void;
 }
 
@@ -37,8 +41,26 @@ export const useAuthStore = create<AuthStore>()(
             awaitingMfa: false,
           });
         } else {
+          // On successful login request, store identification and prompt MFA
           set({
             identification: credentials.identification,
+            awaitingMfa: true,
+            loading: false,
+          });
+        }
+      },
+
+      sendOtp: async (identification) => {
+        set({ loading: true, error: null });
+        const response = await authService.sendOtp({ identification });
+        if (typeof response === "string") {
+          set({
+            error: response,
+            loading: false,
+          });
+        } else {
+          // OTP sent successfully; keep awaitingMfa true to allow verification
+          set({
             awaitingMfa: true,
             loading: false,
           });
@@ -67,6 +89,25 @@ export const useAuthStore = create<AuthStore>()(
         } else {
           set({
             token: (response as VerifyMfaResponse).token,
+            awaitingMfa: false,
+            loading: false,
+          });
+        }
+      },
+
+      changePassword: async (payload) => {
+        set({ loading: true, error: null });
+        const response = await authService.changePassword(payload);
+        if (typeof response === "string") {
+          set({
+            error: response,
+            loading: false,
+          });
+        } else {
+          // Password changed successfully, clear store (force re-login)
+          set({
+            identification: null,
+            token: null,
             awaitingMfa: false,
             loading: false,
           });

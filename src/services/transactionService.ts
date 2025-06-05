@@ -12,9 +12,25 @@ export interface NewTransaction {
 }
 
 export interface UpdateTransaction {
-  state?: "PENDING" | "COMPLETED" | "REJECTED";
+  status?: "PENDING" | "COMPLETED" | "REJECTED";
   reason?: string | null;
   currency?: string;
+}
+
+// Helper to map raw API response to Transaction entity with camelCase keys
+function mapRawToEntity(raw: any): Transaction {
+  return {
+    transactionId: raw.transaction_id,
+    createdAt: raw.created_at,
+    originIban: raw.origin_iban,
+    destinationIban: raw.destination_iban,
+    amount: Number(raw.amount),
+    currency: raw.currency,
+    status: raw.status,
+    reason: raw.reason,
+    hmacMd5: raw.hmac_md5,
+    updatedAt: raw.updated_at,
+  };
 }
 
 export const transactionService = {
@@ -25,7 +41,8 @@ export const transactionService = {
         console.error("[GET_ALL_TRANSACTIONS_ERROR]", response);
         return "Error al obtener las transacciones";
       }
-      return await response.json();
+      const rawList = await response.json();
+      return (rawList as any[]).map((raw) => mapRawToEntity(raw));
     } catch (error: any) {
       console.error("[GET_ALL_TRANSACTIONS_ERROR]", error);
       return "Error al obtener las transacciones";
@@ -39,16 +56,14 @@ export const transactionService = {
       );
       if (!response.ok) {
         if (response.status === 404) {
-          console.error(
-            "[GET_TRANSACTION_BY_ID_NOT_FOUND]",
-            transactionId
-          );
+          console.error("[GET_TRANSACTION_BY_ID_NOT_FOUND]", transactionId);
           return `Transacción ${transactionId} no encontrada`;
         }
         console.error("[GET_TRANSACTION_BY_ID_ERROR]", response);
         return "Error al obtener la transacción";
       }
-      return await response.json();
+      const raw = await response.json();
+      return mapRawToEntity(raw);
     } catch (error: any) {
       console.error("[GET_TRANSACTION_BY_ID_ERROR]", error);
       return "Error al obtener la transacción";
@@ -76,7 +91,8 @@ export const transactionService = {
         console.error("[CREATE_TRANSACTION_ERROR]", response);
         return "Error al crear la transacción";
       }
-      return await response.json();
+      const raw = await response.json();
+      return mapRawToEntity(raw);
     } catch (error: any) {
       console.error("[CREATE_TRANSACTION_ERROR]", error);
       return "Error al crear la transacción";
@@ -90,8 +106,8 @@ export const transactionService = {
     try {
       const payload: Record<string, unknown> = {};
 
-      if (updates.state !== undefined) {
-        payload.state = updates.state;
+      if (updates.status !== undefined) {
+        payload.status = updates.status;
       }
       if (updates.reason !== undefined) {
         payload.reason = updates.reason;
@@ -113,7 +129,8 @@ export const transactionService = {
         console.error("[UPDATE_TRANSACTION_ERROR]", response);
         return "Error al actualizar la transacción";
       }
-      return await response.json();
+      const raw = await response.json();
+      return mapRawToEntity(raw);
     } catch (error: any) {
       console.error("[UPDATE_TRANSACTION_ERROR]", error);
       return "Error al actualizar la transacción";

@@ -6,17 +6,37 @@ export interface NewUser {
   identification: string;
   name: string;
   lastName: string;
+  secondLastName?: string | null;
   phone: string;
   email: string;
   password: string;
+  accountType: "CORRIENTE" | "AHORROS";
 }
 
 export interface UpdateUser {
   name?: string;
   lastName?: string;
+  secondLastName?: string | null;
   phone?: string;
   email?: string;
   password?: string;
+  accountType?: "CORRIENTE" | "AHORROS";
+}
+
+// Helper to map raw API response to User entity (omitting passwordHash)
+function mapRawToEntity(raw: any): Omit<User, "passwordHash"> {
+  return {
+    identification: raw.identification,
+    name: raw.name,
+    lastName: raw.last_name,
+    secondLastName: raw.second_last_name ?? null,
+    phone: raw.phone,
+    accountIban: raw.account_iban,
+    email: raw.email,
+    userType: raw.user_type,
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+  };
 }
 
 export const userService = {
@@ -27,7 +47,8 @@ export const userService = {
         console.error("[GET_ALL_USERS_ERROR]", response);
         return "Error al obtener los usuarios";
       }
-      return await response.json();
+      const rawList = await response.json();
+      return rawList.map((raw: any) => mapRawToEntity(raw));
     } catch (error: any) {
       console.error("[GET_ALL_USERS_ERROR]", error);
       return "Error al obtener los usuarios";
@@ -49,7 +70,8 @@ export const userService = {
         console.error("[GET_USER_BY_ID_ERROR]", response);
         return "Error al obtener el usuario";
       }
-      return await response.json();
+      const raw = await response.json();
+      return mapRawToEntity(raw);
     } catch (error: any) {
       console.error("[GET_USER_BY_ID_ERROR]", error);
       return "Error al obtener el usuario";
@@ -64,9 +86,11 @@ export const userService = {
         identification: user.identification,
         name: user.name,
         last_name: user.lastName,
+        second_last_name: user.secondLastName ?? null,
         phone: user.phone,
         email: user.email,
         password: user.password,
+        account_type: user.accountType,
       };
 
       const response = await fetch(URL, {
@@ -77,9 +101,11 @@ export const userService = {
 
       if (!response.ok) {
         console.error("[CREATE_USER_ERROR]", response);
-        return "Error al crear el usuario";
+        const errData = await response.json().catch(() => null);
+        return errData?.error || "Error al crear el usuario";
       }
-      return await response.json();
+      const raw = await response.json();
+      return mapRawToEntity(raw);
     } catch (error: any) {
       console.error("[CREATE_USER_ERROR]", error);
       return "Error al crear el usuario";
@@ -99,6 +125,9 @@ export const userService = {
       if (updates.lastName !== undefined) {
         payload.last_name = updates.lastName;
       }
+      if (updates.secondLastName !== undefined) {
+        payload.second_last_name = updates.secondLastName;
+      }
       if (updates.phone !== undefined) {
         payload.phone = updates.phone;
       }
@@ -107,6 +136,9 @@ export const userService = {
       }
       if (updates.password !== undefined) {
         payload.password = updates.password;
+      }
+      if (updates.accountType !== undefined) {
+        payload.account_type = updates.accountType;
       }
 
       const response = await fetch(
@@ -120,10 +152,12 @@ export const userService = {
 
       if (!response.ok) {
         console.error("[UPDATE_USER_ERROR]", response);
-        return "Error al actualizar el usuario";
+        const errData = await response.json().catch(() => null);
+        return errData?.error || "Error al actualizar el usuario";
       }
 
-      return await response.json();
+      const raw = await response.json();
+      return mapRawToEntity(raw);
     } catch (error: any) {
       console.error("[UPDATE_USER_ERROR]", error);
       return "Error al actualizar el usuario";
