@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { OTPFormSkeleton } from "@/components/forms/OTPFormSkeleton";
@@ -13,6 +13,9 @@ export const OTPForm = () => {
   const [mfaCode, setMfaCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
+  const [secondsLeft, setSecondsLeft] = useState(300);
+
+  const intervalRef = useRef<number | null>(null);
 
   const verifyMfa = useAuthStore((state) => state.verifyMfa);
 
@@ -35,6 +38,35 @@ export const OTPForm = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (loadingPage) return;
+    if (secondsLeft <= 0) {
+      router.replace("/login");
+      return;
+    }
+    intervalRef.current = window.setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current!);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [loadingPage, secondsLeft, router]);
+
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (secs % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
   if (loadingPage) {
     return <OTPFormSkeleton />;
   }
@@ -48,6 +80,9 @@ export const OTPForm = () => {
 
         <p className="text-sm text-neutral-600 text-center">
           Ingresa el código de un solo uso enviado a tu correo electrónico.
+        </p>
+        <p className="text-center text-base font-semibold text-neutral-700 mb-2">
+          Expira en: <span className="font-mono text-lg">{formatTime(secondsLeft)}</span>
         </p>
 
         <Input

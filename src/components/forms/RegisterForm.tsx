@@ -51,7 +51,7 @@ export const RegisterForm = () => {
         accountType,
       });
 
-      router.push("/login");
+      router.push("/internet-banking/admin");
     } catch (err: any) {
       console.error("Error during registration:", err);
     } finally {

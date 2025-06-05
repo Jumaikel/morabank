@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import Cookies from "js-cookie";
 import {
   authService,
   LoginCredentials,
@@ -15,6 +16,7 @@ interface AuthStore {
   error: string | null;
   awaitingMfa: boolean;
   isAuthenticated: boolean;
+  userType?: string;
 
   login: (credentials: LoginCredentials) => Promise<void>;
   sendOtp: (identification: string) => Promise<void>;
@@ -90,12 +92,17 @@ export const useAuthStore = create<AuthStore>()(
             isAuthenticated: false,
           });
         } else {
+          const token = (response as VerifyMfaResponse).token;
+          const userType = (response as VerifyMfaResponse).userType;
           set({
-            token: (response as VerifyMfaResponse).token,
+            token,
+            userType,
             awaitingMfa: false,
             loading: false,
             isAuthenticated: true,
           });
+          // ---- GUARDA EL TOKEN EN COOKIE ----
+          Cookies.set("auth-token", token, { expires: 1 / 24 }); // 1 hora
         }
       },
 
@@ -115,6 +122,8 @@ export const useAuthStore = create<AuthStore>()(
             loading: false,
             isAuthenticated: false,
           });
+          // ---- ELIMINA LA COOKIE ----
+          Cookies.remove("auth-token");
         }
       },
 
@@ -127,6 +136,8 @@ export const useAuthStore = create<AuthStore>()(
           awaitingMfa: false,
           isAuthenticated: false,
         });
+        // ---- ELIMINA LA COOKIE ----
+        Cookies.remove("auth-token");
       },
     }),
     {
@@ -135,6 +146,7 @@ export const useAuthStore = create<AuthStore>()(
         identification: state.identification,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
+        userType: state.userType,
       }),
     }
   )

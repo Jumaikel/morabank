@@ -16,6 +16,7 @@ export interface VerifyMfaRequest {
 
 export interface VerifyMfaResponse {
   token: string; // JWT or session token
+  userType: string; // A for Admin, C for Client
 }
 
 export interface SendOtpRequest {

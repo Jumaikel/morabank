@@ -7,6 +7,7 @@ import useAuthStore from "@/stores/authStore";
 export const Navbar = () => {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
+  const userType = useAuthStore((state) => state.userType);
 
   const handleLogout = () => {
     logout();
@@ -28,6 +29,14 @@ export const Navbar = () => {
         >
           Transacciones
         </Link>
+        {userType === "A" && (
+          <Link
+            href="/internet-banking/admin"
+            className="hover:text-blue-600 focus:text-neutral-950"
+          >
+            Administración
+          </Link>
+        )}
       </div>
       <button
         onClick={handleLogout}

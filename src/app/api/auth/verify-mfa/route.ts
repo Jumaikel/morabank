@@ -26,10 +26,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1) Verificar que el usuario exista (solo por robustez)
+    // 1) Verificar que el usuario exista y obtener el tipo
     const user = await prisma.users.findUnique({
       where: { identification },
-      select: { identification: true },
+      select: { identification: true, user_type: true },
     });
     if (!user) {
       return NextResponse.json(
@@ -63,10 +63,12 @@ export async function POST(req: NextRequest) {
       data: { used: true },
     });
 
-    // 4) Generar un token JWT usando el helper
-    const token = signToken({ identification });
+    // 4) Generar un token JWT con identification y user_type
+    const token = signToken({
+      identification
+    });
 
-    return NextResponse.json({ token }, { status: 200 });
+    return NextResponse.json({ token, userType: user.user_type }, { status: 200 });
   } catch (error) {
     console.error("Error en POST /api/auth/verify-mfa:", error);
     return NextResponse.json(
