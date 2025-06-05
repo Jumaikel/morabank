@@ -10,39 +10,41 @@ export async function GET(req: NextRequest, { params }: Params) {
   const { iban } = params;
 
   try {
-    const cuenta = await prisma.accounts.findUnique({
+    const account = await prisma.accounts.findUnique({
       where: { iban },
     });
 
-    if (!cuenta) {
+    if (!account) {
       return NextResponse.json(
-        { error: 'Cuenta no encontrada' },
+        { error: 'Account not found' },
         { status: 404 }
       );
     }
 
-    let nombreTitular: string;
+    let decryptedHolder: string;
     try {
-      nombreTitular = decryptText(cuenta.account_holder);
-    } catch (e) {
-      nombreTitular = cuenta.account_holder;
+      decryptedHolder = decryptText(account.account_holder);
+    } catch {
+      decryptedHolder = account.account_holder;
     }
 
-    const respuesta = {
-      iban: cuenta.iban,
-      bank_code: cuenta.bank_code,
-      account_holder: nombreTitular,
-      balance: cuenta.balance,
-      state: cuenta.state,
-      created_at: cuenta.created_at,
-      updated_at: cuenta.updated_at,
-    };
-
-    return NextResponse.json(respuesta, { status: 200 });
-  } catch (error) {
-    console.error(`Error en GET /api/accounts/${iban}:`, error);
     return NextResponse.json(
-      { error: 'Error al buscar la cuenta' },
+      {
+        iban: account.iban,
+        account_number: account.account_number,
+        account_type: account.account_type,   // "CORRIENTE" or "AHORROS"
+        account_holder: decryptedHolder,
+        balance: account.balance,
+        status: account.status,
+        created_at: account.created_at,
+        updated_at: account.updated_at,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(`Error in GET /api/accounts/${iban}:`, error);
+    return NextResponse.json(
+      { error: 'Unable to retrieve account' },
       { status: 500 }
     );
   }
@@ -53,59 +55,100 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
   try {
     const body = await req.json();
-    const { account_holder, balance, state } = body;
+    const {
+      account_holder,
+      balance,
+      status,
+      account_type,
+    } = body as Partial<{
+      account_holder: string;
+      balance: number;
+      status: 'ACTIVE' | 'BLOCKED' | 'CLOSED';
+      account_type: 'CORRIENTE' | 'AHORROS';
+    }>;
 
-    const datosAActualizar: any = {};
+    const dataToUpdate: any = {};
+
     if (account_holder !== undefined) {
-      datosAActualizar.account_holder = encryptText(String(account_holder));
+      try {
+        dataToUpdate.account_holder = encryptText(account_holder);
+      } catch (e) {
+        console.error('Encryption error in PUT /api/accounts:', e);
+        return NextResponse.json(
+          { error: 'Failed to encrypt account_holder' },
+          { status: 500 }
+        );
+      }
     }
+
     if (balance !== undefined) {
-      datosAActualizar.balance = Number(balance);
-    }
-    if (state !== undefined) {
-      datosAActualizar.state = String(state);
+      if (typeof balance !== 'number' || balance < 0) {
+        return NextResponse.json(
+          { error: 'Invalid balance value' },
+          { status: 400 }
+        );
+      }
+      dataToUpdate.balance = balance;
     }
 
-    datosAActualizar.updated_at = new Date();
+    if (status !== undefined) {
+      const validStatuses = ['ACTIVE', 'BLOCKED', 'CLOSED'];
+      if (!validStatuses.includes(status)) {
+        return NextResponse.json(
+          { error: 'Invalid status. Must be ACTIVE, BLOCKED, or CLOSED.' },
+          { status: 400 }
+        );
+      }
+      dataToUpdate.status = status;
+    }
 
-    const cuentaActualizada = await prisma.accounts.update({
+    if (account_type !== undefined) {
+      const validTypes = ['CORRIENTE', 'AHORROS'];
+      if (!validTypes.includes(account_type)) {
+        return NextResponse.json(
+          { error: 'Invalid account_type. Must be CORRIENTE or AHORROS.' },
+          { status: 400 }
+        );
+      }
+      dataToUpdate.account_type = account_type;
+    }
+
+    // Prisma will update updated_at automatically with default NOW(6)
+    const updatedAccount = await prisma.accounts.update({
       where: { iban },
-      data: datosAActualizar,
+      data: dataToUpdate,
     });
 
-    let nombreTitular: string;
+    let decryptedHolderAfter: string;
     try {
-      nombreTitular = account_holder !== undefined
-        ? String(account_holder)
-        : decryptText(cuentaActualizada.account_holder);
+      decryptedHolderAfter = decryptText(updatedAccount.account_holder);
     } catch {
-      nombreTitular = cuentaActualizada.account_holder;
+      decryptedHolderAfter = updatedAccount.account_holder;
     }
 
-    const respuesta = {
-      iban: cuentaActualizada.iban,
-      bank_code: cuentaActualizada.bank_code,
-      account_holder: nombreTitular,
-      balance: cuentaActualizada.balance,
-      state: cuentaActualizada.state,
-      created_at: cuentaActualizada.created_at,
-      updated_at: cuentaActualizada.updated_at,
-    };
-
-    return NextResponse.json(respuesta, { status: 200 });
-  } catch (error) {
-    console.error(`Error en PUT /api/accounts/${iban}:`, error);
-    if (
-      typeof (error as any).code === 'string' &&
-      (error as any).code === 'P2025'
-    ) {
+    return NextResponse.json(
+      {
+        iban: updatedAccount.iban,
+        account_number: updatedAccount.account_number,
+        account_type: updatedAccount.account_type,
+        account_holder: decryptedHolderAfter,
+        balance: updatedAccount.balance,
+        status: updatedAccount.status,
+        created_at: updatedAccount.created_at,
+        updated_at: updatedAccount.updated_at,
+      },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error(`Error in PUT /api/accounts/${iban}:`, error);
+    if (error.code === 'P2025') {
       return NextResponse.json(
-        { error: 'Cuenta no encontrada para actualizar' },
+        { error: 'Account not found for update' },
         { status: 404 }
       );
     }
     return NextResponse.json(
-      { error: 'No se pudo actualizar la cuenta' },
+      { error: 'Unable to update account' },
       { status: 500 }
     );
   }
@@ -119,19 +162,16 @@ export async function DELETE(req: NextRequest, { params }: Params) {
       where: { iban },
     });
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error(`Error en DELETE /api/accounts/${iban}:`, error);
-    if (
-      typeof (error as any).code === 'string' &&
-      (error as any).code === 'P2025'
-    ) {
+  } catch (error: any) {
+    console.error(`Error in DELETE /api/accounts/${iban}:`, error);
+    if (error.code === 'P2025') {
       return NextResponse.json(
-        { error: 'Cuenta no encontrada para eliminar' },
+        { error: 'Account not found for deletion' },
         { status: 404 }
       );
     }
     return NextResponse.json(
-      { error: 'No se pudo eliminar la cuenta' },
+      { error: 'Unable to delete account' },
       { status: 500 }
     );
   }

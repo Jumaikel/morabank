@@ -16,37 +16,38 @@ export async function GET(req: NextRequest, { params }: Params) {
   const idNum = Number(id);
   if (isNaN(idNum)) {
     return NextResponse.json(
-      { error: "ID inválido; debe ser un número entero" },
+      { error: "Invalid ID; must be an integer." },
       { status: 400 }
     );
   }
 
   try {
-    const registro = await prisma.mfa_codes.findUnique({
+    const record = await prisma.mfa_codes.findUnique({
       where: { id: idNum },
     });
 
-    if (!registro) {
+    if (!record) {
       return NextResponse.json(
-        { error: "MFA code no encontrado" },
+        { error: "MFA code not found." },
         { status: 404 }
       );
     }
 
-    const response = {
-      id: registro.id,
-      user_id: registro.user_id,
-      mfa_code: registro.mfa_code,
-      created_at: registro.created_at.toISOString(),
-      expires_at: registro.expires_at.toISOString(),
-      used: registro.used,
-    };
-
-    return NextResponse.json(response, { status: 200 });
-  } catch (error) {
-    console.error(`Error en GET /api/mfa-codes/${id}:`, error);
     return NextResponse.json(
-      { error: "Error al buscar el MFA code" },
+      {
+        id: record.id,
+        user_id: record.user_id,
+        mfa_code: record.mfa_code,
+        created_at: record.created_at.toISOString(),
+        expires_at: record.expires_at.toISOString(),
+        used: record.used,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(`Error in GET /api/mfa-codes/${id}:`, error);
+    return NextResponse.json(
+      { error: "Unable to retrieve MFA code." },
       { status: 500 }
     );
   }
@@ -57,7 +58,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   const idNum = Number(id);
   if (isNaN(idNum)) {
     return NextResponse.json(
-      { error: "ID inválido; debe ser un número entero" },
+      { error: "Invalid ID; must be an integer." },
       { status: 400 }
     );
   }
@@ -72,41 +73,44 @@ export async function PUT(req: NextRequest, { params }: Params) {
       used === undefined
     ) {
       return NextResponse.json(
-        { error: "Debes enviar al menos mfa_code, expires_at o used" },
+        { error: "Must provide at least one of: mfa_code, expires_at, or used." },
         { status: 400 }
       );
     }
 
     const dataToUpdate: any = {};
+
     if (mfa_code !== undefined) {
       if (typeof mfa_code !== "string") {
         return NextResponse.json(
-          { error: "mfa_code debe ser un string" },
+          { error: "mfa_code must be a string." },
           { status: 400 }
         );
       }
       dataToUpdate.mfa_code = mfa_code;
     }
+
     if (expires_at !== undefined) {
       if (typeof expires_at !== "string") {
         return NextResponse.json(
-          { error: "expires_at debe ser un string ISO de fecha" },
+          { error: "expires_at must be an ISO date string." },
           { status: 400 }
         );
       }
       const dateObj = new Date(expires_at);
       if (isNaN(dateObj.getTime())) {
         return NextResponse.json(
-          { error: "expires_at debe ser una fecha ISO válida" },
+          { error: "expires_at must be a valid ISO date." },
           { status: 400 }
         );
       }
       dataToUpdate.expires_at = dateObj;
     }
+
     if (used !== undefined) {
       if (typeof used !== "boolean") {
         return NextResponse.json(
-          { error: "used debe ser booleano" },
+          { error: "used must be a boolean." },
           { status: 400 }
         );
       }
@@ -118,31 +122,29 @@ export async function PUT(req: NextRequest, { params }: Params) {
       data: dataToUpdate,
     });
 
-    const response = {
-      id: updated.id,
-      user_id: updated.user_id,
-      mfa_code: updated.mfa_code,
-      created_at: updated.created_at.toISOString(),
-      expires_at: updated.expires_at.toISOString(),
-      used: updated.used,
-    };
+    return NextResponse.json(
+      {
+        id: updated.id,
+        user_id: updated.user_id,
+        mfa_code: updated.mfa_code,
+        created_at: updated.created_at.toISOString(),
+        expires_at: updated.expires_at.toISOString(),
+        used: updated.used,
+      },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error(`Error in PUT /api/mfa-codes/${id}:`, error);
 
-    return NextResponse.json(response, { status: 200 });
-  } catch (error) {
-    console.error(`Error en PUT /api/mfa-codes/${id}:`, error);
-
-    if (
-      typeof (error as any).code === "string" &&
-      (error as any).code === "P2025"
-    ) {
+    if (error.code === "P2025") {
       return NextResponse.json(
-        { error: "MFA code no encontrado para actualizar" },
+        { error: "MFA code not found for update." },
         { status: 404 }
       );
     }
 
     return NextResponse.json(
-      { error: "No se pudo actualizar el MFA code" },
+      { error: "Unable to update MFA code." },
       { status: 500 }
     );
   }
@@ -153,7 +155,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   const idNum = Number(id);
   if (isNaN(idNum)) {
     return NextResponse.json(
-      { error: "ID inválido; debe ser un número entero" },
+      { error: "Invalid ID; must be an integer." },
       { status: 400 }
     );
   }
@@ -163,21 +165,18 @@ export async function DELETE(req: NextRequest, { params }: Params) {
       where: { id: idNum },
     });
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error(`Error en DELETE /api/mfa-codes/${id}:`, error);
+  } catch (error: any) {
+    console.error(`Error in DELETE /api/mfa-codes/${id}:`, error);
 
-    // Si no existe, Prisma arroja P2025
-    if (
-      typeof (error as any).code === "string" &&
-      (error as any).code === "P2025"
-    ) {
+    if (error.code === "P2025") {
       return NextResponse.json(
-        { error: "MFA code no encontrado para eliminar" },
+        { error: "MFA code not found for deletion." },
         { status: 404 }
       );
     }
+
     return NextResponse.json(
-      { error: "No se pudo eliminar el MFA code" },
+      { error: "Unable to delete MFA code." },
       { status: 500 }
     );
   }

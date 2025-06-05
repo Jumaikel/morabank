@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
     const body: LoginRequestBody = await req.json();
     const { identification, password } = body;
 
+    // Validate required fields
     if (
       !identification ||
       !password ||
@@ -24,11 +25,12 @@ export async function POST(req: NextRequest) {
       typeof password !== "string"
     ) {
       return NextResponse.json(
-        { error: "Faltan campos obligatorios: identification y password" },
+        { error: "Missing required fields: identification and password." },
         { status: 400 }
       );
     }
 
+    // Fetch user by identification
     const user = await prisma.users.findUnique({
       where: { identification },
       select: {
@@ -37,24 +39,28 @@ export async function POST(req: NextRequest) {
         email: true,
       },
     });
+
     if (!user) {
       return NextResponse.json(
-        { error: "Credenciales inválidas" },
+        { error: "Invalid credentials." },
         { status: 401 }
       );
     }
 
+    // Compare provided password with stored hash
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return NextResponse.json(
-        { error: "Credenciales inválidas" },
+        { error: "Invalid credentials." },
         { status: 401 }
       );
     }
 
+    // Generate a 6-digit MFA code and expiration (5 minutes from now)
     const mfaCode = generateSixDigitCode();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
+    // Save the MFA code in the database
     await prisma.mfa_codes.create({
       data: {
         user_id: identification,
@@ -63,11 +69,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-      console.warn(
-        "GMAIL_USER o GMAIL_PASS no están definidos; no se enviará correo."
-      );
-    } else {
+    // Send the MFA code via email (if environment variables are set)
+    if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
@@ -79,43 +82,48 @@ export async function POST(req: NextRequest) {
       const mailOptions = {
         from: process.env.EMAIL_FROM || process.env.GMAIL_USER,
         to: user.email,
-        subject: "Tu código de verificación MFA para MoraBank",
+        subject: "Your MoraBank MFA Verification Code",
         text: `
-Tu código de verificación para iniciar sesión es: ${mfaCode}
+Your MFA verification code is: ${mfaCode}
 
-Este código expira el ${expiresAt.toLocaleString()}. No lo compartas con nadie.
+This code expires at: ${expiresAt.toLocaleString()}. Do not share it with anyone.
 
-Si no solicitaste este código, ignora este correo.
+If you did not request this code, please ignore this message.
 
-Saludos,
-Tu equipo de soporte.
+Regards,
+Your Support Team
         `,
         html: `
-<p>Hola,</p>
-<p>Tu código de verificación para iniciar sesión es:</p>
+<p>Hello,</p>
+<p>Your MFA verification code is:</p>
 <h2 style="font-size: 24px;">${mfaCode}</h2>
-<p>Este código expira el <strong>${expiresAt.toLocaleString()}</strong>. No lo compartas con nadie.</p>
-<p>Si no solicitaste este código, ignora este correo.</p>
+<p>This code expires at <strong>${expiresAt.toLocaleString()}</strong>. Do not share it with anyone.</p>
+<p>If you did not request this code, please ignore this message.</p>
 <br/>
-<p>Saludos,<br/>Tu equipo de soporte.</p>
+<p>Regards,<br/>Your Support Team</p>
         `,
       };
 
       try {
         await transporter.sendMail(mailOptions);
-        console.log("Correo MFA enviado a:", user.email);
-      } catch (err) {
-        console.error("Error al enviar correo MFA con Nodemailer:", err);
+        console.log("MFA email sent to:", user.email);
+      } catch (emailError) {
+        console.error("Failed to send MFA email:", emailError);
       }
+    } else {
+      console.warn(
+        "GMAIL_USER or GMAIL_PASS not defined; MFA email will not be sent."
+      );
     }
+
     return NextResponse.json(
-      { message: "Código MFA generado y enviado al correo." },
+      { message: "MFA code generated and sent to email." },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error en POST /api/auth/login:", error);
+    console.error("Error in POST /api/auth/login:", error);
     return NextResponse.json(
-      { error: "No se pudo procesar la autenticación" },
+      { error: "Unable to process authentication request." },
       { status: 500 }
     );
   }

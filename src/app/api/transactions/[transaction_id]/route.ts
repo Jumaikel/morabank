@@ -1,39 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
 
 interface Params {
   params: { transaction_id: string };
 }
 
 interface UpdateTransactionBody {
-  state?: 'PENDING' | 'COMPLETED' | 'REJECTED';
-  reason?: string | null;
+  state?: "PENDING" | "COMPLETED" | "REJECTED";
+  description?: string | null;
   currency?: string;
-  // NOTA: no permitimos cambiar origin_iban, destination_iban ni amount aquí.
+  // We do NOT allow changing origin_iban, destination_iban, or amount here.
 }
 
 interface TransactionResponse {
   transaction_id: string;
-  created_at: string;       // ISO
+  created_at: string;       // ISO string
   origin_iban: string;
   destination_iban: string;
   amount: number;
   currency: string;
   state: string;
-  reason: string | null;
+  description: string | null;
   hmac_md5: string;
-  updated_at: string;       // ISO
+  updated_at: string;       // ISO string
 }
 
 export async function GET(req: NextRequest, { params }: Params) {
   const { transaction_id } = params;
+
   try {
     const tx = await prisma.transactions.findUnique({
       where: { transaction_id },
     });
+
     if (!tx) {
       return NextResponse.json(
-        { error: 'Transacción no encontrada' },
+        { error: "Transaction not found." },
         { status: 404 }
       );
     }
@@ -46,19 +48,16 @@ export async function GET(req: NextRequest, { params }: Params) {
       amount: Number(tx.amount),
       currency: tx.currency,
       state: tx.state,
-      reason: tx.reason,
+      description: tx.description,
       hmac_md5: tx.hmac_md5,
       updated_at: tx.updated_at.toISOString(),
     };
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
-    console.error(
-      `Error en GET /api/transactions/${transaction_id}:`,
-      error
-    );
+    console.error(`Error in GET /api/transactions/${transaction_id}:`, error);
     return NextResponse.json(
-      { error: 'Error al buscar la transacción' },
+      { error: "Unable to retrieve transaction." },
       { status: 500 }
     );
   }
@@ -66,51 +65,55 @@ export async function GET(req: NextRequest, { params }: Params) {
 
 export async function PUT(req: NextRequest, { params }: Params) {
   const { transaction_id } = params;
+
   try {
     const body: UpdateTransactionBody = await req.json();
-    const { state, reason, currency } = body;
+    const { state, description, currency } = body;
 
-    if (state === undefined && reason === undefined && currency === undefined) {
+    if (state === undefined && description === undefined && currency === undefined) {
       return NextResponse.json(
         {
           error:
-            'Debes enviar al menos uno de estos campos: state, reason, currency',
+            "Must provide at least one of these fields to update: state, description, or currency.",
         },
         { status: 400 }
       );
     }
 
     const dataToUpdate: any = {};
+
     if (state !== undefined) {
-      if (!['PENDING', 'COMPLETED', 'REJECTED'].includes(state)) {
+      const validStates = ["PENDING", "COMPLETED", "REJECTED"];
+      if (!validStates.includes(state)) {
         return NextResponse.json(
-          { error: 'El campo state no tiene un valor válido' },
+          { error: 'Invalid state; must be "PENDING", "COMPLETED", or "REJECTED".' },
           { status: 400 }
         );
       }
       dataToUpdate.state = state;
     }
-    if (reason !== undefined) {
-      if (reason !== null && typeof reason !== 'string') {
+
+    if (description !== undefined) {
+      if (description !== null && typeof description !== "string") {
         return NextResponse.json(
-          { error: 'El campo reason debe ser string o null' },
+          { error: '"description" must be a string or null.' },
           { status: 400 }
         );
       }
-      dataToUpdate.reason = reason;
+      dataToUpdate.description = description;
     }
+
     if (currency !== undefined) {
-      if (typeof currency !== 'string' || currency.length !== 3) {
+      if (typeof currency !== "string" || currency.length !== 3) {
         return NextResponse.json(
-          { error: 'El campo currency debe ser un string de 3 letras' },
+          { error: '"currency" must be a 3-letter string.' },
           { status: 400 }
         );
       }
-      dataToUpdate.currency = currency;
+      dataToUpdate.currency = currency.toUpperCase();
     }
 
-    dataToUpdate.updated_at = new Date();
-
+    // Prisma will update updated_at automatically via default now(6)
     const updatedTx = await prisma.transactions.update({
       where: { transaction_id },
       data: dataToUpdate,
@@ -124,28 +127,24 @@ export async function PUT(req: NextRequest, { params }: Params) {
       amount: Number(updatedTx.amount),
       currency: updatedTx.currency,
       state: updatedTx.state,
-      reason: updatedTx.reason,
+      description: updatedTx.description,
       hmac_md5: updatedTx.hmac_md5,
       updated_at: updatedTx.updated_at.toISOString(),
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
-    console.error(
-      `Error en PUT /api/transactions/${transaction_id}:`,
-      error
-    );
-    if (
-      typeof (error as any).code === 'string' &&
-      (error as any).code === 'P2025'
-    ) {
+  } catch (error: any) {
+    console.error(`Error in PUT /api/transactions/${transaction_id}:`, error);
+
+    if (error.code === "P2025") {
       return NextResponse.json(
-        { error: 'Transacción no encontrada para actualizar' },
+        { error: "Transaction not found for update." },
         { status: 404 }
       );
     }
+
     return NextResponse.json(
-      { error: 'No se pudo actualizar la transacción' },
+      { error: "Unable to update transaction." },
       { status: 500 }
     );
   }
@@ -153,28 +152,11 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
 export async function DELETE(req: NextRequest, { params }: Params) {
   const { transaction_id } = params;
+
   try {
     await prisma.transactions.delete({
       where: { transaction_id },
     });
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error(
-      `Error en DELETE /api/transactions/${transaction_id}:`,
-      error
-    );
-    if (
-      typeof (error as any).code === 'string' &&
-      (error as any).code === 'P2025'
-    ) {
-      return NextResponse.json(
-        { error: 'Transacción no encontrada para eliminar' },
-        { status: 404 }
-      );
-    }
-    return NextResponse.json(
-      { error: 'No se pudo eliminar la transacción' },
-      { status: 500 }
-    );
-  }
-}
+  } catch (error: any) {
+    console.error(`Error in DELETE /api/

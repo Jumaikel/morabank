@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
+// app/api/users/[identification]/route.ts
+
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
 interface Params {
   params: { identification: string };
@@ -9,6 +11,7 @@ interface Params {
 interface UpdateUserBody {
   name?: string;
   last_name?: string;
+  second_last_name?: string | null;
   phone?: string;
   account_iban?: string;
   email?: string;
@@ -19,9 +22,11 @@ interface UserResponse {
   identification: string;
   name: string;
   last_name: string;
+  second_last_name: string | null;
   phone: string;
   account_iban: string;
   email: string;
+  user_type: string;
   created_at: string;
   updated_at: string;
 }
@@ -36,9 +41,11 @@ export async function GET(req: NextRequest, { params }: Params) {
         identification: true,
         name: true,
         last_name: true,
+        second_last_name: true,
         phone: true,
         account_iban: true,
         email: true,
+        user_type: true,
         created_at: true,
         updated_at: true,
       },
@@ -46,7 +53,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Usuario no encontrado' },
+        { error: "User not found." },
         { status: 404 }
       );
     }
@@ -55,18 +62,20 @@ export async function GET(req: NextRequest, { params }: Params) {
       identification: user.identification,
       name: user.name,
       last_name: user.last_name,
+      second_last_name: user.second_last_name,
       phone: user.phone,
       account_iban: user.account_iban,
       email: user.email,
+      user_type: user.user_type,
       created_at: user.created_at.toISOString(),
       updated_at: user.updated_at.toISOString(),
     };
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
-    console.error(`Error en GET /api/users/${identification}:`, error);
+    console.error(`Error in GET /api/users/${identification}:`, error);
     return NextResponse.json(
-      { error: 'Error al buscar el usuario' },
+      { error: "Unable to retrieve user." },
       { status: 500 }
     );
   }
@@ -80,6 +89,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     const {
       name,
       last_name,
+      second_last_name,
       phone,
       account_iban,
       email,
@@ -89,6 +99,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     if (
       name === undefined &&
       last_name === undefined &&
+      second_last_name === undefined &&
       phone === undefined &&
       account_iban === undefined &&
       email === undefined &&
@@ -97,7 +108,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
       return NextResponse.json(
         {
           error:
-            'Debes enviar al menos uno de estos campos: name, last_name, phone, account_iban, email, password',
+            "You must provide at least one of these fields to update: name, last_name, second_last_name, phone, account_iban, email, or password.",
         },
         { status: 400 }
       );
@@ -106,27 +117,36 @@ export async function PUT(req: NextRequest, { params }: Params) {
     const dataToUpdate: any = {};
 
     if (name !== undefined) {
-      if (typeof name !== 'string') {
+      if (typeof name !== "string") {
         return NextResponse.json(
-          { error: 'name debe ser un string' },
+          { error: "name must be a string." },
           { status: 400 }
         );
       }
       dataToUpdate.name = name;
     }
     if (last_name !== undefined) {
-      if (typeof last_name !== 'string') {
+      if (typeof last_name !== "string") {
         return NextResponse.json(
-          { error: 'last_name debe ser un string' },
+          { error: "last_name must be a string." },
           { status: 400 }
         );
       }
       dataToUpdate.last_name = last_name;
     }
-    if (phone !== undefined) {
-      if (typeof phone !== 'string') {
+    if (second_last_name !== undefined) {
+      if (second_last_name !== null && typeof second_last_name !== "string") {
         return NextResponse.json(
-          { error: 'phone debe ser un string' },
+          { error: "second_last_name must be a string or null." },
+          { status: 400 }
+        );
+      }
+      dataToUpdate.second_last_name = second_last_name;
+    }
+    if (phone !== undefined) {
+      if (typeof phone !== "string") {
+        return NextResponse.json(
+          { error: "phone must be a string." },
           { status: 400 }
         );
       }
@@ -135,34 +155,34 @@ export async function PUT(req: NextRequest, { params }: Params) {
       });
       if (existingPhone && existingPhone.identification !== identification) {
         return NextResponse.json(
-          { error: 'El número de teléfono ya está en uso' },
+          { error: "This phone number is already in use." },
           { status: 409 }
         );
       }
       dataToUpdate.phone = phone;
     }
     if (account_iban !== undefined) {
-      if (typeof account_iban !== 'string') {
+      if (typeof account_iban !== "string") {
         return NextResponse.json(
-          { error: 'account_iban debe ser un string' },
+          { error: "account_iban must be a string." },
           { status: 400 }
         );
       }
-      const cuenta = await prisma.accounts.findUnique({
+      const account = await prisma.accounts.findUnique({
         where: { iban: account_iban },
       });
-      if (!cuenta) {
+      if (!account) {
         return NextResponse.json(
-          { error: `La cuenta con IBAN ${account_iban} no existe` },
+          { error: `Account with IBAN ${account_iban} does not exist.` },
           { status: 400 }
         );
       }
       dataToUpdate.account_iban = account_iban;
     }
     if (email !== undefined) {
-      if (typeof email !== 'string') {
+      if (typeof email !== "string") {
         return NextResponse.json(
-          { error: 'email debe ser un string' },
+          { error: "email must be a string." },
           { status: 400 }
         );
       }
@@ -174,26 +194,25 @@ export async function PUT(req: NextRequest, { params }: Params) {
         existingEmail.identification !== identification
       ) {
         return NextResponse.json(
-          { error: 'El correo electrónico ya está en uso' },
+          { error: "This email address is already in use." },
           { status: 409 }
         );
       }
       dataToUpdate.email = email;
     }
     if (password !== undefined) {
-      if (typeof password !== 'string') {
+      if (typeof password !== "string") {
         return NextResponse.json(
-          { error: 'password debe ser un string' },
+          { error: "password must be a string." },
           { status: 400 }
         );
       }
       const saltRounds = 10;
-      const newHash = await bcrypt.hash(password, saltRounds);
-      dataToUpdate.password_hash = newHash;
+      const hashed = await bcrypt.hash(password, saltRounds);
+      dataToUpdate.password_hash = hashed;
     }
 
-    dataToUpdate.updated_at = new Date();
-
+    // Let Prisma update updated_at automatically via default now(6)
     const updatedUser = await prisma.users.update({
       where: { identification },
       data: dataToUpdate,
@@ -201,9 +220,11 @@ export async function PUT(req: NextRequest, { params }: Params) {
         identification: true,
         name: true,
         last_name: true,
+        second_last_name: true,
         phone: true,
         account_iban: true,
         email: true,
+        user_type: true,
         created_at: true,
         updated_at: true,
       },
@@ -213,39 +234,35 @@ export async function PUT(req: NextRequest, { params }: Params) {
       identification: updatedUser.identification,
       name: updatedUser.name,
       last_name: updatedUser.last_name,
+      second_last_name: updatedUser.second_last_name,
       phone: updatedUser.phone,
       account_iban: updatedUser.account_iban,
       email: updatedUser.email,
+      user_type: updatedUser.user_type,
       created_at: updatedUser.created_at.toISOString(),
       updated_at: updatedUser.updated_at.toISOString(),
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
-    console.error(`Error en PUT /api/users/${identification}:`, error);
+  } catch (error: any) {
+    console.error(`Error in PUT /api/users/${identification}:`, error);
 
-    if (
-      typeof (error as any).code === 'string' &&
-      (error as any).code === 'P2025'
-    ) {
+    if (error.code === "P2025") {
       return NextResponse.json(
-        { error: 'Usuario no encontrado para actualizar' },
+        { error: "User not found for update." },
         { status: 404 }
       );
     }
 
-    if (
-      typeof (error as any).code === 'string' &&
-      (error as any).code === 'P2003'
-    ) {
+    if (error.code === "P2003") {
       return NextResponse.json(
-        { error: 'La cuenta asociada (account_iban) no existe' },
+        { error: "Associated account (account_iban) does not exist." },
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { error: 'No se pudo actualizar el usuario' },
+      { error: "Unable to update user." },
       { status: 500 }
     );
   }
@@ -259,19 +276,16 @@ export async function DELETE(req: NextRequest, { params }: Params) {
       where: { identification },
     });
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error(`Error en DELETE /api/users/${identification}:`, error);
-    if (
-      typeof (error as any).code === 'string' &&
-      (error as any).code === 'P2025'
-    ) {
+  } catch (error: any) {
+    console.error(`Error in DELETE /api/users/${identification}:`, error);
+    if (error.code === "P2025") {
       return NextResponse.json(
-        { error: 'Usuario no encontrado para eliminar' },
+        { error: "User not found for deletion." },
         { status: 404 }
       );
     }
     return NextResponse.json(
-      { error: 'No se pudo eliminar el usuario' },
+      { error: "Unable to delete user." },
       { status: 500 }
     );
   }

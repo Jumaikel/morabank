@@ -1,55 +1,39 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import { encryptText, decryptText } from '@/lib/crypto';
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import { encryptText, decryptText } from "@/lib/crypto";
 
 export async function GET(req: NextRequest) {
   try {
-    const cuentas = await prisma.accounts.findMany();
+    // Fetch all accounts from the database
+    const accounts = await prisma.accounts.findMany();
 
-    interface DBAccount {
-        iban: string
-        bank_code: string
-        account_holder: string
-        balance?: number | null
-        state?: string | null
-        created_at: Date
-        updated_at: Date
-    }
+    // Map and decrypt the account_holder before sending
+    const decryptedAccounts = accounts.map((acct) => {
+      let holderName: string;
+      try {
+        holderName = decryptText(acct.account_holder);
+      } catch {
+        // If decryption fails for any reason, fall back to stored value
+        holderName = acct.account_holder;
+      }
 
-    interface DecryptedAccount {
-        iban: string
-        bank_code: string
-        account_holder: string
-        balance?: number | null
-        state?: string | null
-        created_at: Date
-        updated_at: Date
-    }
+      return {
+        iban: acct.iban,
+        account_number: acct.account_number,
+        account_type: acct.account_type, // "CORRIENTE" or "AHORROS"
+        account_holder: holderName,
+        balance: acct.balance,
+        status: acct.status,
+        created_at: acct.created_at,
+        updated_at: acct.updated_at,
+      };
+    });
 
-    const cuentasDesencriptadas: DecryptedAccount[] = cuentas.map((c: DBAccount) => {
-        let nombreTitular: string
-        try {
-            nombreTitular = decryptText(c.account_holder)
-        } catch (e) {
-            nombreTitular = c.account_holder
-        }
-
-        return {
-            iban: c.iban,
-            bank_code: c.bank_code,
-            account_holder: nombreTitular,
-            balance: c.balance,
-            state: c.state,
-            created_at: c.created_at,
-            updated_at: c.updated_at,
-        }
-    })
-
-    return NextResponse.json(cuentasDesencriptadas, { status: 200 });
+    return NextResponse.json(decryptedAccounts, { status: 200 });
   } catch (error) {
-    console.error('Error en GET /api/accounts:', error);
+    console.error("Error in GET /api/accounts:", error);
     return NextResponse.json(
-      { error: 'Error al leer cuentas' },
+      { error: "Unable to fetch accounts" },
       { status: 500 }
     );
   }
@@ -59,52 +43,106 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const { iban, bank_code, account_holder, balance, state } = body;
-    if (!iban || !bank_code || !account_holder) {
+    // Destructure expected fields from request body
+    const {
+      iban,
+      account_number,
+      account_type,
+      account_holder,
+      balance,
+      status,
+    } = body;
+
+    // Validate required fields
+    if (!iban || !account_number || !account_type || !account_holder) {
       return NextResponse.json(
-        { error: 'Faltan campos obligatorios: iban, bank_code, account_holder' },
+        {
+          error:
+            "Missing required fields: iban, account_number, account_type, account_holder",
+        },
         { status: 400 }
       );
     }
 
-    const cuentaCifrada = {
-      iban: String(iban),
-      bank_code: String(bank_code),
-      account_holder: encryptText(String(account_holder)),
-      balance: 0,
-      state: "ACTIVE",
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
-
-    const nuevaCuenta = await prisma.accounts.create({
-      data: cuentaCifrada as any,
-    });
-
-    const respuestaFinal = {
-      iban: nuevaCuenta.iban,
-      bank_code: nuevaCuenta.bank_code,
-      account_holder: account_holder,
-      balance: nuevaCuenta.balance,
-      state: nuevaCuenta.state,
-      created_at: nuevaCuenta.created_at,
-      updated_at: nuevaCuenta.updated_at,
-    };
-
-    return NextResponse.json(respuestaFinal, { status: 201 });
-  } catch (error) {
-    console.error('Error en POST /api/accounts:', error);
-    if (
-      typeof (error as any).code === 'string' &&
-      (error as any).code === 'P2002'
-    ) {
+    // Validate account_type enum
+    const validTypes = ["CORRIENTE", "AHORROS"];
+    if (!validTypes.includes(account_type)) {
       return NextResponse.json(
-        { error: 'Ya existe una cuenta con ese IBAN' },
-        { status: 409 }
+        { error: 'Invalid account_type. Must be "CORRIENTE" or "AHORROS".' },
+        { status: 400 }
       );
     }
+
+    // Encrypt the account_holder before saving
+    let encryptedHolder: string;
+    try {
+      encryptedHolder = encryptText(String(account_holder));
+    } catch (e) {
+      console.error("Encryption error for account_holder:", e);
+      return NextResponse.json(
+        { error: "Failed to encrypt account_holder" },
+        { status: 500 }
+      );
+    }
+
+    // Build data object for Prisma
+    const dataToCreate = {
+      iban: String(iban),
+      account_number: String(account_number),
+      account_type: account_type as "CORRIENTE" | "AHORROS",
+      account_holder: encryptedHolder,
+      balance: typeof balance === "number" ? balance : 0.0,
+      status: typeof status === "string" ? status : "ACTIVE",
+      // created_at and updated_at will be set automatically by Prisma defaults
+    };
+
+    // Attempt to create the new account
+    const newAccount = await prisma.accounts.create({
+      data: dataToCreate,
+    });
+
+    // Prepare the response with decrypted account_holder
+    let decryptedHolder: string;
+    try {
+      decryptedHolder = decryptText(newAccount.account_holder);
+    } catch {
+      decryptedHolder = newAccount.account_holder;
+    }
+
+    const responsePayload = {
+      iban: newAccount.iban,
+      account_number: newAccount.account_number,
+      account_type: newAccount.account_type,
+      account_holder: decryptedHolder,
+      balance: newAccount.balance,
+      status: newAccount.status,
+      created_at: newAccount.created_at,
+      updated_at: newAccount.updated_at,
+    };
+
+    return NextResponse.json(responsePayload, { status: 201 });
+  } catch (error: any) {
+    console.error("Error in POST /api/accounts:", error);
+
+    // Handle unique constraint violations for iban or account_number
+    if (error.code === "P2002") {
+      const target = (error.meta as any)?.target;
+      if (Array.isArray(target) && target.includes("iban")) {
+        return NextResponse.json(
+          { error: "An account with this IBAN already exists." },
+          { status: 409 }
+        );
+      }
+      if (Array.isArray(target) && target.includes("account_number")) {
+        return NextResponse.json(
+          { error: "An account with this account_number already exists." },
+          { status: 409 }
+        );
+      }
+    }
+
     return NextResponse.json(
-      { error: 'No se pudo crear la cuenta' },
+      { error: "Unable to create account" },
       { status: 500 }
     );
   }

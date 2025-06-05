@@ -9,177 +9,181 @@ interface SinpeTransferBody {
   reason?: string;
 }
 
-// Validar teléfono Costa Rica (ej. +50671234567 o 8 dígitos)
+// Validate Costa Rica phone numbers (e.g., "+50671234567" or 8 digits)
 const PHONE_REGEX = /^(\+506)?[1-9]\d{7}$/;
+
+// Validate Costa Rica IBAN: "CR" + 2 digits + 20 digits (total length 24)
+const IBAN_REGEX = /^CR\d{2}\d{20}$/;
 
 export async function POST(req: NextRequest) {
   try {
     const body: SinpeTransferBody = await req.json();
     let { origin_iban, destination_phone, amount, currency, reason } = body;
 
-    // 1) Validaciones básicas de entrada
+    // 1) Basic input validation
     if (
       typeof origin_iban !== "string" ||
       typeof destination_phone !== "string" ||
       typeof amount !== "number"
     ) {
       return NextResponse.json(
-        { error: "origin_iban, destination_phone y amount son obligatorios" },
+        { error: "origin_iban, destination_phone, and amount are required fields." },
         { status: 400 }
       );
     }
 
-    // Normalizar IBAN y teléfono
     origin_iban = origin_iban.trim().toUpperCase();
     destination_phone = destination_phone.trim();
 
-    // Validar formato IBAN mínimo (ej. 24 chars, empieza con "CR")
-    if (!/^CR\d{2}[A-Z0-9]{4}\d{14}$/.test(origin_iban)) {
+    // 2) Validate IBAN format
+    if (!IBAN_REGEX.test(origin_iban)) {
       return NextResponse.json(
-        { error: "Formato de IBAN inválido para origin_iban" },
+        { error: "Invalid origin_iban format." },
         { status: 400 }
       );
     }
 
-    // Validar teléfono
+    // 3) Validate phone format
     if (!PHONE_REGEX.test(destination_phone)) {
       return NextResponse.json(
-        { error: "Formato de teléfono destino inválido" },
+        { error: "Invalid destination_phone format." },
         { status: 400 }
       );
     }
 
-    // Validar monto
+    // 4) Validate amount
     if (isNaN(amount) || amount <= 0) {
       return NextResponse.json(
-        { error: "El amount debe ser un número mayor que 0" },
+        { error: "amount must be a number greater than 0." },
         { status: 400 }
       );
     }
 
-    const txCurrency = currency?.trim().toUpperCase() || "CRC";
+    const txCurrency = currency?.trim().toUpperCase() ?? "CRC";
     if (!/^[A-Z]{3}$/.test(txCurrency)) {
       return NextResponse.json(
-        { error: "currency inválido (debe ser código de 3 letras)" },
+        { error: "Invalid currency; must be a 3-letter code." },
         { status: 400 }
       );
     }
 
-    // 2) Buscar cuenta origin
+    // 5) Fetch origin account
     const originAccount = await prisma.accounts.findUnique({
       where: { iban: origin_iban },
     });
     if (!originAccount) {
       return NextResponse.json(
-        { error: `Cuenta origen no existe: ${origin_iban}` },
+        { error: `Origin account not found: ${origin_iban}` },
         { status: 404 }
       );
     }
-    if (originAccount.state !== "ACTIVE") {
+    if (originAccount.status !== "ACTIVE") {
       return NextResponse.json(
-        { error: "Cuenta origen no está en estado ACTIVE" },
+        { error: "Origin account is not ACTIVE." },
         { status: 400 }
       );
     }
 
-    // 3) Buscar usuario destino por teléfono
-    const userDest = await prisma.users.findUnique({
+    // 6) Fetch destination user by phone
+    const destinationUser = await prisma.users.findUnique({
       where: { phone: destination_phone },
     });
-    if (!userDest) {
+    if (!destinationUser) {
       return NextResponse.json(
-        { error: `No se encontró usuario con teléfono: ${destination_phone}` },
+        { error: `No user found with phone: ${destination_phone}` },
         { status: 404 }
       );
     }
 
-    // 4) Obtener cuenta destino del usuario encontrado
+    // 7) Fetch destination account from that user
     const destinationAccount = await prisma.accounts.findUnique({
-      where: { iban: userDest.account_iban },
+      where: { iban: destinationUser.account_iban },
     });
     if (!destinationAccount) {
       return NextResponse.json(
-        { error: "Cuenta destino no existe para ese usuario" },
+        { error: "Destination account does not exist for that user." },
         { status: 404 }
       );
     }
-    if (destinationAccount.state !== "ACTIVE") {
+    if (destinationAccount.status !== "ACTIVE") {
       return NextResponse.json(
-        { error: "Cuenta destino no está en estado ACTIVE" },
+        { error: "Destination account is not ACTIVE." },
         { status: 400 }
       );
     }
 
-    // 5) Verificar fondos suficientes
+    // 8) Check sufficient funds
     const originBalance = Number(originAccount.balance);
     if (originBalance < amount) {
       return NextResponse.json(
-        { error: "Fondos insuficientes en cuenta origen" },
+        { error: "Insufficient funds in origin account." },
         { status: 400 }
       );
     }
 
-    // 6) Iniciar transacción atómica para actualizar saldos y crear registro
-    const nuevaTransaccion = await prisma.$transaction(
-      async (tx) => {
-        // Restar saldo a cuenta origen
-        await tx.accounts.update({
-          where: { iban: origin_iban },
-          data: { balance: { decrement: amount } },
-        });
+    // 9) Perform atomic transaction: update balances and create record
+    const createdTx = await prisma.$transaction(async (tx) => {
+      // Deduct from origin
+      await tx.accounts.update({
+        where: { iban: origin_iban },
+        data: {
+          balance: { decrement: amount },
+        },
+      });
 
-        // Sumar saldo a cuenta destino
-        await tx.accounts.update({
-          where: { iban: destinationAccount.iban },
-          data: { balance: { increment: amount } },
-        });
+      // Add to destination
+      await tx.accounts.update({
+        where: { iban: destinationAccount.iban },
+        data: {
+          balance: { increment: amount },
+        },
+      });
 
-        // Crear registro en transactions
-        const created = await tx.transactions.create({
-          data: {
-            origin_iban,
-            destination_iban: destinationAccount.iban,
-            amount,
-            currency: txCurrency,
-            reason: reason?.trim() || null,
-            hmac_md5: "", // Se puede completar si hay HMAC entre bancos
-          },
-          select: {
-            transaction_id: true,
-            created_at: true,
-            origin_iban: true,
-            destination_iban: true,
-            amount: true,
-            currency: true,
-            state: true,
-            reason: true,
-            updated_at: true,
-          },
-        });
+      // Create transaction record
+      const record = await tx.transactions.create({
+        data: {
+          origin_iban,
+          destination_iban: destinationAccount.iban,
+          amount,
+          currency: txCurrency,
+          description: reason?.trim() || null,
+          hmac_md5: "", // Empty or placeholder if not used in SINPE
+          status: "COMPLETED",
+        },
+        select: {
+          transaction_id: true,
+          created_at: true,
+          origin_iban: true,
+          destination_iban: true,
+          amount: true,
+          currency: true,
+          status: true,
+          description: true,
+          updated_at: true,
+        },
+      });
 
-        return created;
-      },
-      { isolationLevel: "Serializable" }
-    );
+      return record;
+    });
 
-    // 7) Formatear response a camelCase
+    // 10) Format response in camelCase
     const response = {
-      transactionId: nuevaTransaccion.transaction_id,
-      createdAt: nuevaTransaccion.created_at.toISOString(),
-      originIban: nuevaTransaccion.origin_iban,
-      destinationIban: nuevaTransaccion.destination_iban,
-      amount: Number(nuevaTransaccion.amount),
-      currency: nuevaTransaccion.currency,
-      state: nuevaTransaccion.state,
-      reason: nuevaTransaccion.reason,
-      updatedAt: nuevaTransaccion.updated_at.toISOString(),
+      transactionId: createdTx.transaction_id,
+      createdAt: createdTx.created_at.toISOString(),
+      originIban: createdTx.origin_iban,
+      destinationIban: createdTx.destination_iban,
+      amount: Number(createdTx.amount),
+      currency: createdTx.currency,
+      status: createdTx.status,
+      reason: createdTx.description,
+      updatedAt: createdTx.updated_at.toISOString(),
     };
 
     return NextResponse.json(response, { status: 201 });
-  } catch (error: any) {
-    console.error("Error en POST /api/transactions/sinpe:", error);
+  } catch (error) {
+    console.error("Error in POST /api/transactions/sinpe:", error);
     return NextResponse.json(
-      { error: "Error interno al procesar transferencia SINPE" },
+      { error: "Internal error processing SINPE transfer." },
       { status: 500 }
     );
   }
