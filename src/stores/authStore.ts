@@ -14,6 +14,7 @@ interface AuthStore {
   loading: boolean;
   error: string | null;
   awaitingMfa: boolean;
+  isAuthenticated: boolean;
 
   login: (credentials: LoginCredentials) => Promise<void>;
   sendOtp: (identification: string) => Promise<void>;
@@ -30,22 +31,24 @@ export const useAuthStore = create<AuthStore>()(
       loading: false,
       error: null,
       awaitingMfa: false,
+      isAuthenticated: false,
 
       login: async (credentials) => {
-        set({ loading: true, error: null });
+        set({ loading: true, error: null, awaitingMfa: false });
         const response = await authService.login(credentials);
         if (typeof response === "string") {
           set({
             error: response,
             loading: false,
             awaitingMfa: false,
+            isAuthenticated: false,
           });
         } else {
-          // On successful login request, store identification and prompt MFA
           set({
             identification: credentials.identification,
             awaitingMfa: true,
             loading: false,
+            isAuthenticated: false,
           });
         }
       },
@@ -59,7 +62,6 @@ export const useAuthStore = create<AuthStore>()(
             loading: false,
           });
         } else {
-          // OTP sent successfully; keep awaitingMfa true to allow verification
           set({
             awaitingMfa: true,
             loading: false,
@@ -85,12 +87,14 @@ export const useAuthStore = create<AuthStore>()(
           set({
             error: response,
             loading: false,
+            isAuthenticated: false,
           });
         } else {
           set({
             token: (response as VerifyMfaResponse).token,
             awaitingMfa: false,
             loading: false,
+            isAuthenticated: true,
           });
         }
       },
@@ -104,12 +108,12 @@ export const useAuthStore = create<AuthStore>()(
             loading: false,
           });
         } else {
-          // Password changed successfully, clear store (force re-login)
           set({
             identification: null,
             token: null,
             awaitingMfa: false,
             loading: false,
+            isAuthenticated: false,
           });
         }
       },
@@ -121,6 +125,7 @@ export const useAuthStore = create<AuthStore>()(
           loading: false,
           error: null,
           awaitingMfa: false,
+          isAuthenticated: false,
         });
       },
     }),
@@ -129,6 +134,7 @@ export const useAuthStore = create<AuthStore>()(
       partialize: (state) => ({
         identification: state.identification,
         token: state.token,
+        isAuthenticated: state.isAuthenticated,
       }),
     }
   )

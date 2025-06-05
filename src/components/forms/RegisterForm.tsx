@@ -14,6 +14,7 @@ export const RegisterForm = () => {
   const [identification, setIdentification] = useState("");
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [secondLastName, setSecondLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,6 +44,7 @@ export const RegisterForm = () => {
         identification,
         name,
         lastName,
+        secondLastName,
         phone,
         email,
         password,
@@ -85,7 +87,7 @@ export const RegisterForm = () => {
           <Input
             required
             label="Identificación"
-            placeholder="ejemplo: 1234567890"
+            placeholder="p.ej. 1234567890"
             value={identification}
             onChange={(e) => setIdentification(e.target.value)}
           />
@@ -93,23 +95,30 @@ export const RegisterForm = () => {
           <Input
             required
             label="Nombre"
-            placeholder="ejemplo: Juan"
+            placeholder="p.ej. Juan"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
 
           <Input
             required
-            label="Apellido"
-            placeholder="ejemplo: Doe"
+            label="Primer Apellido"
+            placeholder="p.ej. Mora"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
           />
 
           <Input
+            label="Segundo Apellido"
+            placeholder="p.ej. Mora"
+            value={secondLastName}
+            onChange={(e) => setSecondLastName(e.target.value)}
+          />
+
+          <Input
             required
             label="Teléfono"
-            placeholder="ejemplo: 71234567"
+            placeholder="p.ej. 71234567"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
@@ -118,20 +127,19 @@ export const RegisterForm = () => {
             required
             label="Email"
             type="email"
-            placeholder="ejemplo: john.doe@example.com"
+            placeholder="p.ej. john.doe@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          
-          <div className="flex flex-col">
-            <label className="mb-1 font-medium">Tipo de Cuenta</label>
+          <div className="flex flex-col space-y-1 text-neutral-700">
+            <label className="text-sm font-medium text-neutral-950">Tipo de Cuenta</label>
             <select
               required
               value={accountType}
               onChange={(e) =>
                 setAccountType(e.target.value as "CORRIENTE" | "AHORROS")
               }
-              className="border border-neutral-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-transparent border border-neutral-950 rounded-md transition-colors focus:ring-neutral-950 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-200"
             >
               <option value="CORRIENTE">Corriente</option>
               <option value="AHORROS">Ahorros</option>

@@ -5,6 +5,8 @@ import useAuthStore from "@/stores/authStore";
 import useUserStore from "@/stores/userStore";
 import useAccountStore from "@/stores/accountStore";
 import { NewTransaction, transactionService } from "@/services/transactionService";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 export const InternalTransactionForm = () => {
   const identification = useAuthStore((state) => state.identification);
@@ -98,7 +100,7 @@ export const InternalTransactionForm = () => {
       onSubmit={handleSubmit}
       className="max-w-md mx-auto bg-white p-6 rounded-lg shadow"
     >
-      <h2 className="text-xl font-semibold mb-4 text-center">
+      <h2 className="text-xl font-semibold mb-4 text-center text-neutral-950">
         Transferencia Interna
       </h2>
 
@@ -106,66 +108,52 @@ export const InternalTransactionForm = () => {
       {success && <p className="text-green-600 text-sm mb-2">{success}</p>}
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">
-          Cuenta Origen (IBAN)
-        </label>
-        <input
-          type="text"
+        <Input
+          label="Cuenta Origen (IBAN)"
           value={selectedAccount.iban}
           disabled
-          className="mt-1 block w-full bg-gray-100 border border-gray-300 rounded-md p-2 text-gray-700"
+          className="bg-gray-100"
         />
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">
-          Cuenta Destino (IBAN)
-        </label>
-        <input
-          type="text"
+        <Input
+          required
+          label="Cuenta Destino (IBAN)"
           value={destinationIban}
           onChange={(e) => setDestinationIban(e.target.value)}
           placeholder="p.ej. CR00XXXX00000000000001"
-          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
         />
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">
-          Monto (CRC)
-        </label>
-        <input
+        <Input
+          required
+          label="Monto (CRC)"
           type="number"
           step="0.01"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="p.ej. 100.00"
-          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
         />
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">
-          Razón (opcional)
-        </label>
-        <input
-          type="text"
+        <Input
+          label="Razón (opcional)"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder="p.ej. Pago de servicios"
-          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
-      <button
+      <Button
         type="submit"
-        disabled={submitting}
-        className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+        isLoading={submitting}
+        className="w-full"
       >
         {submitting ? "Enviando..." : "Enviar Transferencia"}
-      </button>
+      </Button>
     </form>
   );
 };

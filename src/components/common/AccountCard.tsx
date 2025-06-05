@@ -8,68 +8,108 @@ interface AccountCardProps {
   accountType: "CORRIENTE" | "AHORROS";
   accountHolder: string;
   balance: number;
-  status: "ACTIVE" | "BLOCKED" | "CLOSED";
+  status: "ACTIVO" | "BLOQUEADO" | "CERRADO";
   onClick?: () => void;
 }
 
+function formatCardNumber(num: string) {
+  return num.replace(/\s+/g, "").replace(/(.{4})/g, "$1 ").trim();
+}
+
+function formatIban(iban: string) {
+  return iban.replace(/\s+/g, "").replace(/(.{4})/g, "$1 ").trim();
+}
+
 export const AccountCard: React.FC<AccountCardProps> = ({
-  iban,
-  accountNumber,
-  accountType,
-  accountHolder,
-  balance,
-  status,
+  iban = "",
+  accountNumber = "",
+  accountType = "CORRIENTE",
+  accountHolder = "Cuenta Cliente",
+  balance = 0,
+  status = "ACTIVO",
   onClick,
 }) => {
-  // Mask all but the last 4 characters of the IBAN
-  const maskedIban = iban.slice(-4).padStart(iban.length, "•");
-  // Mask all but the last 4 digits of the local account number
-  const maskedAccountNumber = accountNumber.slice(-4).padStart(accountNumber.length, "•");
+  const formattedCardNumber = formatCardNumber(accountNumber);
+  const formattedIban = formatIban(iban);
 
   const statusColor =
-    status === "ACTIVE"
+    status === "ACTIVO"
       ? "bg-green-500"
-      : status === "BLOCKED"
+      : status === "BLOQUEADO"
       ? "bg-red-500"
       : "bg-gray-500";
 
   return (
     <button
       onClick={onClick}
-      className="group relative w-full max-w-sm p-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg hover:shadow-2xl transition-shadow focus:outline-none"
+      className={`
+        group relative w-full max-w-2xl min-w-[400px] min-h-[250px]
+        p-8 rounded-3xl
+        bg-white border-2 border-neutral-950 shadow-2xl
+        flex flex-col justify-between
+        overflow-hidden
+        mx-auto
+        transition-transform
+        hover:scale-105
+        cursor-pointer
+      `}
+      style={{
+        background:
+          "linear-gradient(135deg,rgba(255,255,255,0.97) 60%,rgba(220,240,255,0.98) 100%)",
+      }}
     >
-      <div className="flex flex-col space-y-4 text-white">
-        <div className="flex justify-between items-center">
-          <span className="text-sm uppercase tracking-widest">{accountType}</span>
-          <span
-            className={`px-2 py-0.5 text-xs rounded-full ${statusColor} bg-opacity-90`}
-          >
+      {/* Row superior: chip y logo */}
+      <div className="flex justify-between items-center w-full mb-4">
+        {/* Chip */}
+        <div className="w-14 h-9 bg-gradient-to-br from-neutral-300 to-neutral-100 rounded-md shadow-inner border border-neutral-400"></div>
+        {/* Account Type */}
+        <span className={`px-3 py-1 text-xs rounded-full ${statusColor} text-white font-bold uppercase tracking-wider`}>
+          {accountType}
+        </span>
+      </div>
+
+      {/* Número de tarjeta (cuenta) */}
+      <div className="flex justify-center items-center my-3">
+        <span className="text-2xl md:text-3xl font-mono font-bold tracking-widest text-neutral-900 drop-shadow-sm">
+          {formattedCardNumber}
+        </span>
+      </div>
+
+      {/* Línea info secundaria (balance + status) */}
+      <div className="flex justify-between items-center mt-2 mb-4">
+        <div className="flex flex-col">
+          <span className="text-xs text-neutral-600">Balance</span>
+          <span className="text-lg font-bold text-neutral-950">
+            ₡{Number(balance).toFixed(2)}
+          </span>
+        </div>
+        <div className="flex flex-col items-end">
+          <span className="text-xs text-neutral-600">Estado</span>
+          <span className={`font-bold ${statusColor} text-white rounded px-2`}>
             {status}
           </span>
         </div>
-
-        <div>
-          <p className="text-xs opacity-80">Account Holder</p>
-          <p className="text-lg font-semibold">{accountHolder}</p>
-        </div>
-
-        <div>
-          <p className="text-xs opacity-80">Local Account #</p>
-          <p className="text-sm tracking-wider">{maskedAccountNumber}</p>
-        </div>
-
-        <div>
-          <p className="text-xs opacity-80">IBAN</p>
-          <p className="text-sm tracking-wider">{maskedIban}</p>
-        </div>
-
-        <div>
-          <p className="text-xs opacity-80">Balance</p>
-          <p className="text-xl font-semibold">${balance.toFixed(2)}</p>
-        </div>
       </div>
 
-      <div className="absolute inset-0 rounded-2xl bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-colors"></div>
+      {/* Línea inferior: IBAN, titular y logo */}
+      <div className="flex justify-between items-end mt-2 w-full">
+        <div className="flex flex-col">
+          <span className="text-xs text-neutral-700 opacity-80">Titular</span>
+          <span className="text-base font-semibold tracking-wide text-neutral-900 uppercase">
+            {accountHolder}
+          </span>
+          <span className="text-xs text-neutral-700 opacity-80 mt-2">IBAN</span>
+          <span className="text-sm font-mono tracking-wider text-neutral-800">
+            {formattedIban}
+          </span>
+        </div>
+        {/* Logo VISA */}
+        <div className="flex flex-col items-end">
+          <svg height={46} viewBox="0 0 90 28" fill="none">
+            <text x="0" y="26" fontSize="32" fontWeight="bold" fill="#2346E8" fontFamily="Arial">VISA</text>
+          </svg>
+        </div>
+      </div>
     </button>
   );
 };

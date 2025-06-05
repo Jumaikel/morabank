@@ -10,7 +10,7 @@ async function generateIbanNumber(): Promise<string> {
   const countryCode = "CR";
   const checkDigits = "21"; // Could be calculated, but using fixed "21"
   const fixedZero = "0";
-  const bankCode = "152";    // Change to your bank’s code if needed
+  const bankCode = "152"; // Change to your bank’s code if needed
   const branchCode = "0001"; // Fixed branch code
 
   do {
@@ -37,13 +37,13 @@ function generateLocalAccountNumber(): string {
 }
 
 interface CreateUserBody {
-  identification: string;     // VARCHAR(20)
-  name: string;               // VARCHAR(100)
-  last_name: string;          // VARCHAR(100)
+  identification: string; // VARCHAR(20)
+  name: string; // VARCHAR(100)
+  last_name: string; // VARCHAR(100)
   second_last_name?: string | null; // VARCHAR(100), optional
-  phone: string;              // VARCHAR(15)
-  email: string;              // VARCHAR(100)
-  password: string;           // plaintext to be hashed
+  phone: string; // VARCHAR(15)
+  email: string; // VARCHAR(100)
+  password: string; // plaintext to be hashed
   account_type: "CORRIENTE" | "AHORROS"; // type of account at registration
 }
 
@@ -57,8 +57,8 @@ interface UserResponse {
   account_number: string;
   account_type: string;
   email: string;
-  created_at: string;         // ISO string
-  updated_at: string;         // ISO string
+  created_at: string; // ISO string
+  updated_at: string; // ISO string
 }
 
 export async function GET(req: NextRequest) {
@@ -85,8 +85,8 @@ export async function GET(req: NextRequest) {
       second_last_name: u.second_last_name,
       phone: u.phone,
       account_iban: u.account_iban,
-      account_number: "",       // Not returned here; can fetch separately if needed
-      account_type: "",         // Not returned here; can fetch separately if needed
+      account_number: "", // Not returned here; can fetch separately if needed
+      account_type: "", // Not returned here; can fetch separately if needed
       email: u.email,
       created_at: u.created_at.toISOString(),
       updated_at: u.updated_at.toISOString(),
@@ -189,7 +189,7 @@ export async function POST(req: NextRequest) {
     const password_hash = await bcrypt.hash(password, saltRounds);
 
     // 4) Create the account record
-    const accountHolderName = `${name} ${last_name}`; // Combine for account holder
+    const accountHolderName = `${name} ${last_name} ${second_last_name ?? ""}`; // Combine for account holder
     const newAccount = await prisma.accounts.create({
       data: {
         iban: newIban,

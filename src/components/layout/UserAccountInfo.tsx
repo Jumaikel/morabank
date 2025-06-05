@@ -30,7 +30,11 @@ export const UserAccountInfo = () => {
   }, [identification, token, fetchUser, selectedUser]);
 
   useEffect(() => {
-    if (selectedUser && selectedUser.accountIban && !selectedAccount) {
+    if (
+      selectedUser &&
+      selectedUser.accountIban &&
+      !selectedAccount
+    ) {
       fetchAccount(selectedUser.accountIban);
     }
   }, [selectedUser, fetchAccount, selectedAccount]);
@@ -58,21 +62,43 @@ export const UserAccountInfo = () => {
   }
 
   if (selectedAccount) {
+    // Convertir balance (string) a número
+    const balanceNumber = Number((selectedAccount as any).balance);
+
+    // Obtener resto de campos (campos en camelCase o snake_case)
+    const iban = selectedAccount.iban;
+    const accountNumber =
+      (selectedAccount as any).accountNumber ??
+      (selectedAccount as any).account_number ??
+      "";
+    const accountType =
+      (selectedAccount as any).accountType ??
+      (selectedAccount as any).account_type ??
+      "";
+    const accountHolder =
+      (selectedAccount as any).accountHolder ??
+      (selectedAccount as any).account_holder ??
+      "";
+    const status =
+      (selectedAccount as any).status ??
+      (selectedAccount as any).state ??
+      "";
+
     return (
       <>
-        <div className="flex justify-center p-4">
+        <div className="flex justify-center">
           <AccountCard
-            iban={selectedAccount.iban}
-            accountNumber={selectedAccount.accountNumber}
-            accountType={selectedAccount.accountType}
-            accountHolder={selectedAccount.accountHolder}
-            balance={selectedAccount.balance}
-            status={selectedAccount.status}
+            iban={iban}
+            accountNumber={accountNumber}
+            accountType={accountType as "CORRIENTE" | "AHORROS"}
+            accountHolder={accountHolder}
+            balance={balanceNumber}
+            status={status as "ACTIVO" | "BLOQUEADO" | "CERRADO"}
             onClick={() => setIsModalOpen(true)}
           />
         </div>
         <AccountHistoryModal
-          iban={selectedAccount.iban}
+          iban={iban}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
         />

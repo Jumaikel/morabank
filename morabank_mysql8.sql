@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   account_type ENUM('CORRIENTE','AHORROS') NOT NULL COMMENT 'Tipo de cuenta: CORRIENTE o AHORROS',
   account_holder VARCHAR(100) NOT NULL COMMENT 'Titular de la cuenta (nombre completo)',
   balance DECIMAL(15,2) NOT NULL DEFAULT 0.00 COMMENT 'Saldo actual (>= 0)',
-  status ENUM('ACTIVE','BLOCKED','CLOSED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'Estado de la cuenta',
+  status ENUM('ACTIVO','BLOQUEADO','CERRADO') NOT NULL DEFAULT 'ACTIVO' COMMENT 'Estado de la cuenta',
   created_at DATETIME(6) NOT NULL DEFAULT (CURRENT_TIMESTAMP(6)) COMMENT 'Fecha de creación',
   updated_at DATETIME(6) NOT NULL DEFAULT (CURRENT_TIMESTAMP(6)) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'Última actualización',
   

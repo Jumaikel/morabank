@@ -43,23 +43,23 @@ export const OTPForm = () => {
     <div className="flex flex-col w-full max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden p-8">
       <form onSubmit={handleSubmit} className="space-y-6">
         <h2 className="text-3xl font-bold text-center text-neutral-950">
-          Verify MFA Code
+          Verificar OTP
         </h2>
 
         <p className="text-sm text-neutral-600 text-center">
-          Enter the one-time code sent to your email.
+          Ingresa el código de un solo uso enviado a tu correo electrónico.
         </p>
 
         <Input
           required
-          label="MFA Code"
+          label="Código OTP"
           placeholder="123456"
           value={mfaCode}
           onChange={(e) => setMfaCode(e.target.value)}
         />
 
         <Button type="submit" isLoading={loading} className="w-full">
-          Verify
+          Verificar
         </Button>
       </form>
     </div>
