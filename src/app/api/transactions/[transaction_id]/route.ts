@@ -19,14 +19,14 @@ interface TransactionResponse {
   destination_iban: string;
   amount: number;
   currency: string;
-  state: string;
+  status: string;
   description: string | null;
   hmac_md5: string;
   updated_at: string;       // ISO string
 }
 
 export async function GET(req: NextRequest, { params }: Params) {
-  const { transaction_id } = params;
+  const { transaction_id } = await params;
 
   try {
     const tx = await prisma.transactions.findUnique({
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       destination_iban: tx.destination_iban,
       amount: Number(tx.amount),
       currency: tx.currency,
-      state: tx.state,
+      status: tx.status,
       description: tx.description,
       hmac_md5: tx.hmac_md5,
       updated_at: tx.updated_at.toISOString(),
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 }
 
 export async function PUT(req: NextRequest, { params }: Params) {
-  const { transaction_id } = params;
+  const { transaction_id } = await params;
 
   try {
     const body: UpdateTransactionBody = await req.json();
@@ -126,7 +126,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
       destination_iban: updatedTx.destination_iban,
       amount: Number(updatedTx.amount),
       currency: updatedTx.currency,
-      state: updatedTx.state,
+      status: updatedTx.status,
       description: updatedTx.description,
       hmac_md5: updatedTx.hmac_md5,
       updated_at: updatedTx.updated_at.toISOString(),
@@ -151,7 +151,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
-  const { transaction_id } = params;
+  const { transaction_id } = await params;
 
   try {
     await prisma.transactions.delete({
@@ -159,4 +159,16 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     });
     return new NextResponse(null, { status: 204 });
   } catch (error: any) {
-    console.error(`Error in DELETE /api/
+    console.error(`Error in DELETE /api/transactions/${transaction_id}:`, error);
+    if (error.code === "P2025") {
+      return NextResponse.json(
+        { error: "Transaction not found for deletion." },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Unable to delete transaction." },
+      { status: 500 }
+    );
+  }
+}

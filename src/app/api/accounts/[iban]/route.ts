@@ -7,7 +7,7 @@ interface Params {
 }
 
 export async function GET(req: NextRequest, { params }: Params) {
-  const { iban } = params;
+  const { iban } = await params;
 
   try {
     const account = await prisma.accounts.findUnique({
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 }
 
 export async function PUT(req: NextRequest, { params }: Params) {
-  const { iban } = params;
+  const { iban } = await params;
 
   try {
     const body = await req.json();
@@ -155,7 +155,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
-  const { iban } = params;
+  const { iban } = await params;
 
   try {
     await prisma.accounts.delete({

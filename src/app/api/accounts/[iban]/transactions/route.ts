@@ -22,7 +22,7 @@ export async function GET(
   req: NextRequest,
   { params }: Params
 ) {
-  const { iban } = params;
+  const { iban } = await params;
 
   if (!iban) {
     return NextResponse.json(

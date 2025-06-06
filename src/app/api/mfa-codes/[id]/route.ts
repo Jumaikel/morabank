@@ -12,7 +12,7 @@ interface MfaCodeUpdateRequest {
 }
 
 export async function GET(req: NextRequest, { params }: Params) {
-  const { id } = params;
+  const { id } = await params;
   const idNum = Number(id);
   if (isNaN(idNum)) {
     return NextResponse.json(
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 }
 
 export async function PUT(req: NextRequest, { params }: Params) {
-  const { id } = params;
+  const { id } = await params;
   const idNum = Number(id);
   if (isNaN(idNum)) {
     return NextResponse.json(
@@ -151,7 +151,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
-  const { id } = params;
+  const { id } = await params;
   const idNum = Number(id);
   if (isNaN(idNum)) {
     return NextResponse.json(

@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function GET(req: NextRequest, context: { params: { identification: string } }) {
-  const { identification } = context.params;
+interface Params {
+  params: { identification: string };
+}
+
+export async function GET(req: NextRequest, { params }: Params) {
+  const { identification } = await params;
   if (!identification) {
     return NextResponse.json(
       { error: "User identification is required" },
@@ -19,10 +23,7 @@ export async function GET(req: NextRequest, context: { params: { identification:
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     if (!user.accounts) {
@@ -34,7 +35,10 @@ export async function GET(req: NextRequest, context: { params: { identification:
 
     return NextResponse.json(user.accounts, { status: 200 });
   } catch (error) {
-    console.error("Error in GET /api/accounts/by-user/[identification]:", error);
+    console.error(
+      "Error in GET /api/accounts/by-user/[identification]:",
+      error
+    );
     return NextResponse.json(
       { error: "Error retrieving account by user" },
       { status: 500 }

@@ -32,7 +32,7 @@ interface UserResponse {
 }
 
 export async function GET(req: NextRequest, { params }: Params) {
-  const { identification } = params;
+  const { identification } = await params;
 
   try {
     const user = await prisma.users.findUnique({
@@ -82,7 +82,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 }
 
 export async function PUT(req: NextRequest, { params }: Params) {
-  const { identification } = params;
+  const { identification } = await params;
 
   try {
     const body: UpdateUserBody = await req.json();
@@ -269,7 +269,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
-  const { identification } = params;
+  const { identification } = await params;
 
   try {
     await prisma.users.delete({

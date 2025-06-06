@@ -10,7 +10,7 @@ export const TransactionsMenu = () => {
         asLink
         href="/internet-banking/transactions/internal"
         variant={"secondary"}
-        className="px-5 py-2 transition w-2xl h-11"
+        className="px-5 py-2 transition w-80 md:w-2xl h-11"
       >
         Interna
       </Button>
@@ -19,7 +19,7 @@ export const TransactionsMenu = () => {
         asLink
         href="/internet-banking/transactions/external"
         variant={"secondary"}
-        className="px-5 py-2 transition w-2xl h-11"
+        className="px-5 py-2 transition w-80 md:w-2xl h-11"
       >
         Externa
       </Button>
@@ -27,7 +27,7 @@ export const TransactionsMenu = () => {
       <Button
         asLink
         href="/internet-banking/transactions/sinpe"
-        className="px-5 py-2 transition w-2xl h-11"
+        className="px-5 py-2 transition w-80 md:w-2xl h-11"
         variant={"secondary"}
       >
         SINPE Móvil
