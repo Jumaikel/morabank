@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function ChangePasswordPage() {
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center h-screen">
       <ChangePasswordForm />
     </div>
   );

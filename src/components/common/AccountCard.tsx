@@ -57,6 +57,13 @@ export const AccountCard: React.FC<AccountCardProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
+  const formattedBalance = Number(balance)
+    .toLocaleString("es-CR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+    .replace(/,/g, ",");
+
   const statusColor =
     status === "ACTIVO"
       ? "bg-green-500"
@@ -108,7 +115,12 @@ export const AccountCard: React.FC<AccountCardProps> = ({
         <div className="flex flex-col">
           <span className="text-xs text-neutral-600">Balance</span>
           <span className={`font-bold ${statusColor} text-white rounded px-2`}>
-            ₡{Number(balance).toFixed(2)}
+            <span className="text-white text-xs">₡</span>
+            {formattedBalance.split("").map((d, i) => (
+              <span key={i} className={d === " " ? "w-2" : ""}>
+                {d}
+              </span>
+            ))}
           </span>
         </div>
         <div className="flex flex-col">
