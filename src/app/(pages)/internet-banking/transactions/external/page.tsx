@@ -1,3 +1,4 @@
+import { ExternalTransactionForm } from "@/components/forms/ExternalTransactionForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
 export default function ExternalTransactionsPage() {
   return (
     <main>
-      
+      <ExternalTransactionForm />
     </main>
   );
 }

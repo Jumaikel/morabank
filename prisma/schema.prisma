@@ -10,17 +10,15 @@ datasource db {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model accounts {
-  iban                                                 String                @id @db.VarChar(24)
-  account_number                                       String                @unique(map: "uq_accounts_number") @db.VarChar(20)
-  account_type                                         accounts_account_type
-  account_holder                                       String                @db.VarChar(100)
-  balance                                              Decimal               @default(0.00) @db.Decimal(15, 2)
-  status                                               accounts_status       @default(ACTIVO)
-  created_at                                           DateTime              @default(dbgenerated("(now(6))")) @db.DateTime(6)
-  updated_at                                           DateTime              @default(dbgenerated("'now(6)'")) @db.DateTime(6)
-  transactions_transactions_destination_ibanToaccounts transactions[]        @relation("transactions_destination_ibanToaccounts")
-  transactions_transactions_origin_ibanToaccounts      transactions[]        @relation("transactions_origin_ibanToaccounts")
-  users                                                users[]
+  iban           String                @id @db.VarChar(24)
+  account_number String                @unique(map: "uq_accounts_number") @db.VarChar(20)
+  account_type   accounts_account_type
+  account_holder String                @db.VarChar(100)
+  balance        Decimal               @default(0.00) @db.Decimal(15, 2)
+  status         accounts_status       @default(ACTIVO)
+  created_at     DateTime              @default(dbgenerated("(now(6))")) @db.DateTime(6)
+  updated_at     DateTime              @default(dbgenerated("'now(6)'")) @db.DateTime(6)
+  users          users[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -40,18 +38,16 @@ model mfa_codes {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model transactions {
-  transaction_id                                   String              @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  created_at                                       DateTime            @default(dbgenerated("(now(6))")) @db.DateTime(6)
-  origin_iban                                      String              @db.VarChar(24)
-  destination_iban                                 String              @db.VarChar(24)
-  amount                                           Decimal             @db.Decimal(15, 2)
-  currency                                         String              @default("CRC") @db.VarChar(3)
-  status                                           transactions_status @default(PENDING)
-  description                                      String?             @db.VarChar(255)
-  hmac_md5                                         String              @db.VarChar(32)
-  updated_at                                       DateTime            @default(dbgenerated("'now(6)'")) @db.DateTime(6)
-  accounts_transactions_destination_ibanToaccounts accounts            @relation("transactions_destination_ibanToaccounts", fields: [destination_iban], references: [iban], map: "fk_trans_destination")
-  accounts_transactions_origin_ibanToaccounts      accounts            @relation("transactions_origin_ibanToaccounts", fields: [origin_iban], references: [iban], map: "fk_trans_origin")
+  transaction_id   String              @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  created_at       DateTime            @default(dbgenerated("(now(6))")) @db.DateTime(6)
+  origin_iban      String              @db.VarChar(24)
+  destination_iban String              @db.VarChar(24)
+  amount           Decimal             @db.Decimal(15, 2)
+  currency         String              @default("CRC") @db.VarChar(3)
+  status           transactions_status @default(PENDING)
+  description      String?             @db.VarChar(255)
+  hmac_md5         String              @db.VarChar(32)
+  updated_at       DateTime            @default(dbgenerated("'now(6)'")) @db.DateTime(6)
 
   @@index([destination_iban], map: "idx_trans_destination")
   @@index([origin_iban], map: "idx_trans_origin")

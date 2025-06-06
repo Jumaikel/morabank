@@ -105,7 +105,7 @@ export const InternalTransactionForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-96 mx-auto bg-white p-6 rounded-lg shadow"
+      className="w-screen max-w-3xl mx-auto bg-white p-6 rounded-lg shadow"
     >
       <h2 className="text-xl font-semibold mb-4 text-center text-neutral-950">
         Transferencia Interna
