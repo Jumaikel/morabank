@@ -73,6 +73,13 @@ model users {
   @@index([account_iban], map: "idx_user_account")
 }
 
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model sinpe_subscriptions {
+  sinpe_number      String @id @db.VarChar(30)
+  sinpe_client_name String @db.VarChar(100)
+  sinpe_bank_code   String @db.VarChar(3)
+}
+
 enum accounts_account_type {
   CORRIENTE
   AHORROS

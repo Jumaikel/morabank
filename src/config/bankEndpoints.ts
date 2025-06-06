@@ -10,4 +10,6 @@ export const BANK_ENDPOINTS: Record<string, string> = {
   "876": "http://192.168.3.10:5000",
 
   "223": "http://192.168.5.10:3001",
+
+  "111": "http://localhost:4000",
 };

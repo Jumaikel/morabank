@@ -1,6 +1,9 @@
 import prisma from "@/lib/prisma";
 import { Decimal } from "@prisma/client/runtime/library";
-import { generateHmacForAccountTransfer } from "@/lib/hmac";
+import {
+  generateHmacForAccountTransfer,
+  generateHmacForPhoneTransfer,
+} from "@/lib/hmac";
 
 const OUR_BANK_CODE = process.env.BANK_CODE || "0111";
 
@@ -17,8 +20,9 @@ export async function logTransaction(payload: unknown) {
 
 /**
  * 2) verifyHmac:
- *    - Reconstruye el HMAC con generateHmacForAccountTransfer(...) y lo compara.
- *    - En este caso, usamos la cuenta de origen (account_number / origin_iban) para generar el HMAC.
+ *    - Reconstruye el HMAC con la función adecuada (cuenta vs. teléfono) y lo compara.
+ *    - Si viene sender.account_number (IBAN), usa generateHmacForAccountTransfer.
+ *    - Si viene sender.phone_number, usa generateHmacForPhoneTransfer.
  */
 export function verifyHmac(
   payload: {
@@ -29,15 +33,31 @@ export function verifyHmac(
   },
   hmac_md5: string
 ): boolean {
-  if (!payload.sender.account_number) {
+  const { sender, timestamp, transaction_id, amount } = payload;
+  let generated: string;
+
+  // Caso: transferencia por IBAN
+  if (sender.account_number) {
+    generated = generateHmacForAccountTransfer(
+      sender.account_number,
+      timestamp,
+      transaction_id,
+      amount.value
+    );
+  }
+  // Caso: SINPE Móvil (por teléfono)
+  else if (sender.phone_number) {
+    generated = generateHmacForPhoneTransfer(
+      sender.phone_number,
+      timestamp,
+      transaction_id,
+      amount.value
+    );
+  } else {
+    // No se proporcionó ni account_number ni phone_number
     return false;
   }
-  const accountNum = payload.sender.account_number;
-  const ts = payload.timestamp;
-  const txId = payload.transaction_id;
-  const amt = payload.amount.value;
 
-  const generated = generateHmacForAccountTransfer(accountNum, ts, txId, amt);
   return generated === hmac_md5;
 }
 

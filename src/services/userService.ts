@@ -1,6 +1,7 @@
 import { User } from "@/models/entities";
 
 const URL = "/api/users";
+const SINPE_URL = process.env.NEXT_PUBLIC_SINPE_SUBSCRIPTIONS_API || "/api/sinpe-subscriptions";
 
 export interface NewUser {
   identification: string;
@@ -23,7 +24,6 @@ export interface UpdateUser {
   accountType?: "CORRIENTE" | "AHORROS";
 }
 
-// Helper to map raw API response to User entity (omitting passwordHash)
 function mapRawToEntity(raw: any): Omit<User, "passwordHash"> {
   return {
     identification: raw.identification,
@@ -104,8 +104,25 @@ export const userService = {
         const errData = await response.json().catch(() => null);
         return errData?.error || "Error al crear el usuario";
       }
+
       const raw = await response.json();
-      return mapRawToEntity(raw);
+      const newUser = mapRawToEntity(raw);
+
+      try {
+        await fetch(SINPE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sinpe_number: user.phone,
+            sinpe_client_name: `${user.name} ${user.lastName} ${user.secondLastName}`,
+            sinpe_bank_code: "111",
+          }),
+        });
+      } catch (sinpeErr) {
+        console.error("[CREATE_SINPE_SUBSCRIPTION_ERROR]", sinpeErr);
+      }
+
+      return newUser;
     } catch (error: any) {
       console.error("[CREATE_USER_ERROR]", error);
       return "Error al crear el usuario";
