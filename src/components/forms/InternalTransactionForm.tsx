@@ -70,7 +70,6 @@ export const InternalTransactionForm = () => {
         amount: montoNum,
         currency: "CRC",
         reason: reason.trim() || undefined,
-        hmacMd5: "",
       };
 
       const response = await transactionService.create(payload);
@@ -106,7 +105,7 @@ export const InternalTransactionForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-md mx-auto bg-white p-6 rounded-lg shadow"
+      className="w-96 mx-auto bg-white p-6 rounded-lg shadow"
     >
       <h2 className="text-xl font-semibold mb-4 text-center text-neutral-950">
         Transferencia Interna

@@ -1,4 +1,5 @@
 import { Account } from "@/models/entities";
+import { Transaction } from "@/models/entities"; // <-- Importa el tipo Transaction
 
 const URL = "/api/accounts";
 
@@ -48,6 +49,39 @@ export const accountService = {
     } catch (error: any) {
       console.error("[GET_ACCOUNT_BY_IBAN_ERROR]", error);
       return "Error al obtener la cuenta";
+    }
+  },
+
+  async getByUser(identification: string): Promise<Account[] | string> {
+    try {
+      const response = await fetch(
+        `/api/accounts/by-user/${encodeURIComponent(identification)}`
+      );
+      if (!response.ok) {
+        console.error("[GET_ACCOUNT_BY_USER_ERROR]", response);
+        return "Error al obtener las cuentas del usuario";
+      }
+      return await response.json();
+    } catch (error: any) {
+      console.error("[GET_ACCOUNT_BY_USER_ERROR]", error);
+      return "Error al obtener las cuentas del usuario";
+    }
+  },
+
+  /** NUEVO: Obtener transacciones de la cuenta */
+  async getTransactions(iban: string): Promise<Transaction[] | string> {
+    try {
+      const response = await fetch(
+        `${URL}/${encodeURIComponent(iban)}/transactions`
+      );
+      if (!response.ok) {
+        console.error("[GET_ACCOUNT_TRANSACTIONS_ERROR]", response);
+        return "Error al obtener las transacciones de la cuenta";
+      }
+      return await response.json();
+    } catch (error: any) {
+      console.error("[GET_ACCOUNT_TRANSACTIONS_ERROR]", error);
+      return "Error al obtener las transacciones de la cuenta";
     }
   },
 

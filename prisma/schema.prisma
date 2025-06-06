@@ -15,7 +15,7 @@ model accounts {
   account_type                                         accounts_account_type
   account_holder                                       String                @db.VarChar(100)
   balance                                              Decimal               @default(0.00) @db.Decimal(15, 2)
-  status                                               accounts_status       @default(ACTIVE)
+  status                                               accounts_status       @default(ACTIVO)
   created_at                                           DateTime              @default(dbgenerated("(now(6))")) @db.DateTime(6)
   updated_at                                           DateTime              @default(dbgenerated("'now(6)'")) @db.DateTime(6)
   transactions_transactions_destination_ibanToaccounts transactions[]        @relation("transactions_destination_ibanToaccounts")
@@ -82,14 +82,14 @@ enum accounts_account_type {
   AHORROS
 }
 
-enum accounts_status {
-  ACTIVE
-  BLOCKED
-  CLOSED
-}
-
 enum transactions_status {
   PENDING
   COMPLETED
   REJECTED
+}
+
+enum accounts_status {
+  ACTIVO
+  BLOQUEADO
+  CERRADO
 }

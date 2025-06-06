@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Account } from "@/models/entities";
+import { Transaction } from "@/models/entities";
 import {
   accountService,
   NewAccount,
@@ -9,11 +10,14 @@ import {
 interface AccountStore {
   accounts: Account[];
   selectedAccount: Account | null;
+  accountTransactions: Transaction[];
   loading: boolean;
   error: string | null;
 
   fetchAccounts: () => Promise<boolean>;
   fetchAccount: (iban: string) => Promise<boolean>;
+  fetchAccountByUser: (identification: string) => Promise<boolean>;
+  fetchAccountTransactions: (iban: string) => Promise<boolean>;
   addAccount: (newAccount: NewAccount) => Promise<boolean>;
   editAccount: (iban: string, updates: UpdateAccount) => Promise<boolean>;
   removeAccount: (iban: string) => Promise<boolean>;
@@ -22,6 +26,7 @@ interface AccountStore {
 export const useAccountStore = create<AccountStore>((set, get) => ({
   accounts: [],
   selectedAccount: null,
+  accountTransactions: [],
   loading: false,
   error: null,
 
@@ -45,6 +50,30 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
       return false;
     } else {
       set({ selectedAccount: response, loading: false });
+      return true;
+    }
+  },
+
+  fetchAccountByUser: async (identification: string) => {
+    set({ loading: true, error: null });
+    const response = await accountService.getByUser(identification);
+    if (typeof response === "string") {
+      set({ error: response, loading: false });
+      return false;
+    } else {
+      set({ accounts: response, loading: false });
+      return true;
+    }
+  },
+
+  fetchAccountTransactions: async (iban: string) => {
+    set({ loading: true, error: null });
+    const response = await accountService.getTransactions(iban);
+    if (typeof response === "string") {
+      set({ error: response, accountTransactions: [], loading: false });
+      return false;
+    } else {
+      set({ accountTransactions: response, loading: false });
       return true;
     }
   },

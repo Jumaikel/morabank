@@ -21,23 +21,36 @@ export const UserAccountInfo = () => {
   const accountLoading = useAccountStore((state) => state.loading);
   const accountError = useAccountStore((state) => state.error);
 
+  // Para transacciones
+  const fetchAccountTransactions = useAccountStore((s) => s.fetchAccountTransactions);
+  const accountTransactions = useAccountStore((s) => s.accountTransactions);
+  const txLoading = useAccountStore((s) => s.loading);
+  const txError = useAccountStore((s) => s.error);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Siempre que cambia la identificación o token, cargamos el usuario
   useEffect(() => {
-    if (identification && token && !selectedUser) {
+    if (identification && token) {
       fetchUser(identification);
     }
-  }, [identification, token, fetchUser, selectedUser]);
+    // eslint-disable-next-line
+  }, [identification, token]);
 
+  // Siempre que cambia el usuario, carga la cuenta
   useEffect(() => {
-    if (
-      selectedUser &&
-      selectedUser.accountIban &&
-      !selectedAccount
-    ) {
+    if (selectedUser && selectedUser.accountIban) {
       fetchAccount(selectedUser.accountIban);
     }
-  }, [selectedUser, fetchAccount, selectedAccount]);
+    // eslint-disable-next-line
+  }, [selectedUser]);
+
+  // Solo carga las transacciones cuando el modal se abre
+  useEffect(() => {
+    if (isModalOpen && selectedAccount) {
+      fetchAccountTransactions(selectedAccount.iban);
+    }
+  }, [isModalOpen, selectedAccount, fetchAccountTransactions]);
 
   if (!identification || !token) {
     return <p className="text-center text-red-500">No estás logueado.</p>;
@@ -65,7 +78,7 @@ export const UserAccountInfo = () => {
     // Convertir balance (string) a número
     const balanceNumber = Number((selectedAccount as any).balance);
 
-    // Obtener resto de campos (campos en camelCase o snake_case)
+    // Obtener resto de campos
     const iban = selectedAccount.iban;
     const accountNumber =
       (selectedAccount as any).accountNumber ??
@@ -101,6 +114,9 @@ export const UserAccountInfo = () => {
           iban={iban}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
+          accountTransactions={accountTransactions}
+          loading={txLoading}
+          error={txError}
         />
       </>
     );

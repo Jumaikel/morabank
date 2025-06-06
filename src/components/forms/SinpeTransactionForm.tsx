@@ -8,15 +8,16 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 import { SinpeTransactionFormSkeleton } from "./SinpeTransactionFormSkeleton";
+import useUserStore from "@/stores/userStore";
 
 export const SinpeTransactionForm = () => {
   const identification = useAuthStore((state) => state.identification);
   const token = useAuthStore((state) => state.token);
+  const fetchUser = useUserStore((state) => state.fetchUser);
+  const selectedUser = useUserStore((state) => state.selectedUser);
 
   const fetchAccount = useAccountStore((state) => state.fetchAccount);
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
-  const accountLoading = useAccountStore((state) => state.loading);
-  const accountError = useAccountStore((state) => state.error);
 
   const [destPhone, setDestPhone] = useState("");
   const [amount, setAmount] = useState("");
@@ -30,10 +31,16 @@ export const SinpeTransactionForm = () => {
   }, []);
 
   useEffect(() => {
-    if (identification) {
-      fetchAccount(identification);
+    if (identification && token && !selectedUser) {
+      fetchUser(identification);
     }
-  }, [identification, token, fetchAccount, selectedAccount]);
+  }, [identification, token, fetchUser, selectedUser]);
+
+  useEffect(() => {
+    if (selectedUser && selectedUser.accountIban && !selectedAccount) {
+      fetchAccount(selectedUser.accountIban);
+    }
+  }, [selectedUser, fetchAccount, selectedAccount]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,21 +80,13 @@ export const SinpeTransactionForm = () => {
       setReason("");
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || "Error inesperado al realizar la transferencia SINPE.");
+      toast.error(
+        err.message || "Error inesperado al realizar la transferencia SINPE."
+      );
     } finally {
       setSubmitting(false);
     }
   };
-
-  if (accountLoading) {
-    return <p className="text-center">Cargando datos de la cuenta...</p>;
-  }
-  if (accountError) {
-    return <p className="text-center text-red-500">Error: {accountError}</p>;
-  }
-  if (!selectedAccount) {
-    return <p className="text-center text-gray-500">No se encontró tu cuenta.</p>;
-  }
 
   if (loadingPage) {
     return <SinpeTransactionFormSkeleton />;
@@ -96,7 +95,7 @@ export const SinpeTransactionForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-md mx-auto bg-white p-6 rounded-lg shadow"
+      className="w-96 mx-auto bg-white p-6 rounded-lg shadow"
     >
       <h2 className="text-xl font-semibold mb-4 text-center text-neutral-950">
         Transferencia SINPE Móvil
@@ -105,7 +104,7 @@ export const SinpeTransactionForm = () => {
       <div className="mb-4">
         <Input
           label="Cuenta Origen (IBAN)"
-          value={selectedAccount.iban}
+          value={selectedAccount?.iban ?? ""}
           disabled
           className="bg-gray-100"
         />
@@ -142,11 +141,7 @@ export const SinpeTransactionForm = () => {
         />
       </div>
 
-      <Button
-        type="submit"
-        isLoading={submitting}
-        className="w-full"
-      >
+      <Button type="submit" isLoading={submitting} className="w-full">
         {submitting ? "Enviando..." : "Enviar SINPE Móvil"}
       </Button>
     </form>

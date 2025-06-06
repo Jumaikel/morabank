@@ -4,7 +4,7 @@ import React from "react";
 
 export const RegisterFormSkeleton = () => {
   return (
-    <div className="flex flex-col w-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden p-8 animate-pulse">
+    <div className="flex flex-col w-screen max-w-5xl bg-white rounded-xl overflow-hidden p-8 animate-pulse ">
       <div className="h-8 bg-gray-200 rounded mb-6 w-3/5 mx-auto" />
 
       <div className="h-4 bg-gray-200 rounded mb-8 w-4/5 mx-auto" />

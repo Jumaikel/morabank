@@ -8,7 +8,6 @@ export interface NewTransaction {
   amount: number;
   currency?: string;
   reason?: string;
-  hmacMd5: string;
 }
 
 export interface UpdateTransaction {
@@ -78,7 +77,6 @@ export const transactionService = {
         amount: tx.amount,
         currency: tx.currency,
         reason: tx.reason,
-        hmac_md5: tx.hmacMd5,
       };
 
       const response = await fetch(URL, {

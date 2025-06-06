@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { encryptText, decryptText } from "@/lib/crypto";
+import type { accounts_status } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   try {
@@ -43,7 +44,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Destructure expected fields from request body
     const {
       iban,
       account_number,
@@ -53,8 +53,8 @@ export async function POST(req: NextRequest) {
       status,
     } = body;
 
-    // Validate required fields
     if (!iban || !account_number || !account_type || !account_holder) {
+      console.error("Missing required fields in request body:", body);
       return NextResponse.json(
         {
           error:
@@ -64,16 +64,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate account_type enum
     const validTypes = ["CORRIENTE", "AHORROS"];
     if (!validTypes.includes(account_type)) {
+      console.error(
+        `Invalid account_type: ${account_type}. Must be one of ${validTypes.join(
+          ", "
+        )}`
+      );
       return NextResponse.json(
         { error: 'Invalid account_type. Must be "CORRIENTE" or "AHORROS".' },
         { status: 400 }
       );
     }
 
-    // Encrypt the account_holder before saving
     let encryptedHolder: string;
     try {
       encryptedHolder = encryptText(String(account_holder));
@@ -85,23 +88,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Build data object for Prisma
     const dataToCreate = {
       iban: String(iban),
       account_number: String(account_number),
       account_type: account_type as "CORRIENTE" | "AHORROS",
       account_holder: encryptedHolder,
       balance: typeof balance === "number" ? balance : 0.0,
-      status: typeof status === "string" ? status : "ACTIVE",
-      // created_at and updated_at will be set automatically by Prisma defaults
+      status: (typeof status === "string" ? status : "ACTIVO") as accounts_status,
     };
 
-    // Attempt to create the new account
     const newAccount = await prisma.accounts.create({
       data: dataToCreate,
     });
 
-    // Prepare the response with decrypted account_holder
     let decryptedHolder: string;
     try {
       decryptedHolder = decryptText(newAccount.account_holder);
@@ -124,7 +123,6 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Error in POST /api/accounts:", error);
 
-    // Handle unique constraint violations for iban or account_number
     if (error.code === "P2002") {
       const target = (error.meta as any)?.target;
       if (Array.isArray(target) && target.includes("iban")) {

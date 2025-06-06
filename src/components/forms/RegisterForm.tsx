@@ -73,7 +73,7 @@ export const RegisterForm = () => {
   }
 
   return (
-    <div className="relative flex flex-col md:flex-row w-full max-w-4xl rounded-xl shadow-lg overflow-hidden bg-white">
+    <div className="relative flex flex-col md:flex-row w-screen max-w-5xl rounded-xl shadow-lg overflow-hidden bg-white">
       <div className="hidden my-12 md:block absolute top-0 bottom-0 left-1/2 w-px bg-neutral-400 z-10" />
 
       <div className="w-full md:w-1/2 flex items-center justify-center order-1 md:order-2 px-6 py-12">

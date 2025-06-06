@@ -197,7 +197,7 @@ export async function POST(req: NextRequest) {
         account_type,
         account_holder: accountHolderName,
         balance: 0.0,
-        status: "ACTIVE",
+        status: "ACTIVO",
       },
     });
 
