@@ -1,28 +1,29 @@
+// app/api/transfers/sinpe/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { v4 as uuidv4 } from "uuid";
 import prisma from "@/lib/prisma";
-import crypto from "crypto";
+import { Decimal } from "@prisma/client/runtime/library";
+import {
+  generateHmacForPhoneTransfer,
+} from "@/lib/hmac";
 
-// Validate Costa Rica phone numbers (e.g., "+50671234567" or 8 digits)
+// Validar números de teléfono de Costa Rica (p. ej. "+50671234567" o 8 dígitos)
 const PHONE_REGEX = /^(\+506)?[1-9]\d{7}$/;
 
-// Validate Costa Rica IBAN: "CR" + 2 digits + 20 digits (total length 24)
+// Validar IBAN de Costa Rica: "CR" + 2 dígitos + 20 dígitos (longitud total 24)
 const IBAN_REGEX = /^CR\d{2}\d{20}$/;
 
-// Helper para generar el HMAC MD5
-const HMAC_SECRET = process.env.HMAC_SECRET || "default_hmac_secret";
-function generateHmacMd5(data: {
+interface CreateSinpeBody {
   origin_iban: string;
-  destination_iban: string;
+  destination_phone: string;
   amount: number;
-  currency: string;
-}) {
-  const payload = `${data.origin_iban}|${data.destination_iban}|${data.amount}|${data.currency}`;
-  return crypto.createHmac("md5", HMAC_SECRET).update(payload).digest("hex");
+  currency?: string;
+  reason?: string;
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body = (await req.json()) as CreateSinpeBody;
     let { origin_iban, destination_phone, amount, currency, reason } = body;
 
     // 1) Validación básica de entrada
@@ -31,13 +32,13 @@ export async function POST(req: NextRequest) {
       typeof destination_phone !== "string" ||
       typeof amount !== "number"
     ) {
-      console.error("Invalid origin_iban format:", origin_iban);
-      console.error("Invalid destination_phone format:", destination_phone);
-      console.error("Invalid amount format:", amount);
+      console.error("Formato inválido en origin_iban:", origin_iban);
+      console.error("Formato inválido en destination_phone:", destination_phone);
+      console.error("Formato inválido en amount:", amount);
       return NextResponse.json(
         {
           error:
-            "origin_iban, destination_phone, and amount are required fields.",
+            "Los campos origin_iban, destination_phone y amount son obligatorios.",
         },
         { status: 400 }
       );
@@ -48,114 +49,125 @@ export async function POST(req: NextRequest) {
 
     // 2) Validar formato IBAN
     if (!IBAN_REGEX.test(origin_iban)) {
-      console.error("Invalid origin_iban format:", origin_iban);
+      console.error("Formato IBAN inválido:", origin_iban);
       return NextResponse.json(
-        { error: "Invalid origin_iban format." },
+        { error: "Formato inválido para origin_iban." },
         { status: 400 }
       );
     }
 
-    // 3) Validar formato teléfono
+    // 3) Validar formato de teléfono
     if (!PHONE_REGEX.test(destination_phone)) {
-      console.error("Invalid destination_phone format:", destination_phone);
+      console.error("Formato teléfono inválido:", destination_phone);
       return NextResponse.json(
-        { error: "Invalid destination_phone format." },
+        { error: "Formato inválido para destination_phone." },
         { status: 400 }
       );
     }
 
     // 4) Validar monto
     if (isNaN(amount) || amount <= 0) {
-      console.error("Invalid amount format:", amount);
+      console.error("Monto inválido:", amount);
       return NextResponse.json(
-        { error: "amount must be a number greater than 0." },
+        { error: "El campo amount debe ser un número mayor que 0." },
         { status: 400 }
       );
     }
 
+    // 5) Validar código de moneda (opcional, por defecto "CRC")
     const txCurrency = currency?.trim().toUpperCase() ?? "CRC";
     if (!/^[A-Z]{3}$/.test(txCurrency)) {
-      console.error("Invalid currency format:", txCurrency);
+      console.error("Formato moneda inválido:", txCurrency);
       return NextResponse.json(
-        { error: "Invalid currency; must be a 3-letter code." },
+        { error: "Moneda inválida; debe ser un código de 3 letras." },
         { status: 400 }
       );
     }
 
-    // 5) Buscar cuenta origen
+    // 6) Verificar existencia de cuenta de origen
     const originAccount = await prisma.accounts.findUnique({
       where: { iban: origin_iban },
     });
     if (!originAccount) {
       return NextResponse.json(
-        { error: `Origin account not found: ${origin_iban}` },
+        { error: `No se encontró la cuenta de origen: ${origin_iban}` },
         { status: 404 }
       );
     }
     if (originAccount.status !== "ACTIVO") {
-      console.error("Origin account is not ACTIVO:", originAccount.status);
+      console.error("La cuenta de origen no está ACTIVO:", originAccount.status);
       return NextResponse.json(
-        { error: "Origin account is not ACTIVO." },
+        { error: "La cuenta de origen no está ACTIVO." },
         { status: 400 }
       );
     }
 
-    // 6) Buscar usuario destino por teléfono
+    // 7) Buscar usuario destino por teléfono
     const destinationUser = await prisma.users.findUnique({
       where: { phone: destination_phone },
     });
     if (!destinationUser) {
       return NextResponse.json(
-        { error: `No user found with phone: ${destination_phone}` },
+        { error: `No existe usuario con teléfono: ${destination_phone}` },
         { status: 404 }
       );
     }
 
-    // 7) Buscar cuenta destino
+    // 8) Buscar cuenta destino asociada a ese usuario
     const destinationAccount = await prisma.accounts.findUnique({
       where: { iban: destinationUser.account_iban },
     });
     if (!destinationAccount) {
-      console.error("Destination account not found for user:", destinationUser.identification);
+      console.error(
+        "Cuenta destino no encontrada para el usuario:",
+        destinationUser.identification
+      );
       return NextResponse.json(
-        { error: "Destination account does not exist for that user." },
+        { error: "La cuenta destino no existe para ese usuario." },
         { status: 404 }
       );
     }
     if (destinationAccount.status !== "ACTIVO") {
-      console.error("Destination account is not ACTIVO:", destinationAccount.status);
+      console.error(
+        "La cuenta destino no está ACTIVO:",
+        destinationAccount.status
+      );
       return NextResponse.json(
-        { error: "Destination account is not ACTIVO." },
+        { error: "La cuenta destino no está ACTIVO." },
         { status: 400 }
       );
     }
 
-    // 8) Revisar fondos suficientes
+    // 9) Verificar fondos suficientes
     const originBalance = Number(originAccount.balance);
     if (originBalance < amount) {
       console.error(
-        "Insufficient funds in origin account:",
+        "Fondos insuficientes en la cuenta de origen:",
         originBalance,
-        "requested:",
+        "solicitado:",
         amount
       );
       return NextResponse.json(
-        { error: "Insufficient funds in origin account." },
+        { error: "Fondos insuficientes en la cuenta de origen." },
         { status: 400 }
       );
     }
 
-    // 9) Generar el HMAC para la transacción
-    const hmac_md5 = generateHmacMd5({
-      origin_iban,
-      destination_iban: destinationAccount.iban,
-      amount,
-      currency: txCurrency,
-    });
+    // 10) Generar transactionId y timestamp para el HMAC
+    const transactionId = uuidv4();
+    const timestamp = new Date().toISOString();
 
-    // 10) Ejecutar transacción atómica
+    // 11) Generar HMAC usando la función de hmac.ts
+    const hmac_md5 = generateHmacForPhoneTransfer(
+      destination_phone,
+      timestamp,
+      transactionId,
+      amount
+    );
+
+    // 12) Ejecutar transacción atómica
     const createdTx = await prisma.$transaction(async (tx) => {
-      // Restar saldo a origen
+      // Restar saldo en la cuenta de origen
       await tx.accounts.update({
         where: { iban: origin_iban },
         data: {
@@ -163,7 +175,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Sumar saldo a destino
+      // Sumar saldo en la cuenta de destino
       await tx.accounts.update({
         where: { iban: destinationAccount.iban },
         data: {
@@ -171,9 +183,11 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Crear el registro de transacción con HMAC
+      // Crear el registro de transacción con HMAC y timestamp explícito
       const record = await tx.transactions.create({
         data: {
+          transaction_id: transactionId,
+          created_at: new Date(timestamp),
           origin_iban,
           destination_iban: destinationAccount.iban,
           amount,
@@ -181,6 +195,7 @@ export async function POST(req: NextRequest) {
           description: reason?.trim() || null,
           hmac_md5,
           status: "COMPLETED",
+          updated_at: new Date(timestamp),
         },
         select: {
           transaction_id: true,
@@ -199,7 +214,7 @@ export async function POST(req: NextRequest) {
       return record;
     });
 
-    // 11) Formatear respuesta
+    // 13) Formatear la respuesta al cliente
     const response = {
       transactionId: createdTx.transaction_id,
       createdAt: createdTx.created_at.toISOString(),
@@ -215,9 +230,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
-    console.error("Error in POST /api/transactions/sinpe:", error);
+    console.error("Error en POST /api/transfers/sinpe:", error);
     return NextResponse.json(
-      { error: "Internal error processing SINPE transfer." },
+      { error: "Error interno al procesar la transferencia SINPE." },
       { status: 500 }
     );
   }
