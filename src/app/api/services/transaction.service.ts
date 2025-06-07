@@ -5,7 +5,7 @@ import {
   generateHmacForPhoneTransfer,
 } from "@/lib/hmac";
 
-const OUR_BANK_CODE = process.env.BANK_CODE || "0111";
+const OUR_BANK_CODE = process.env.BANK_CODE || "111";
 
 /**
  * 1) logTransaction:
@@ -71,6 +71,7 @@ export function verifyHmac(
  *         b) Sumar saldo a receiver.
  *         c) Crear registro en tabla `transactions` con status = "COMPLETED".
  */
+/*
 export async function processTransfer(payload: {
   version: string;
   timestamp: string;
@@ -160,6 +161,7 @@ export async function processTransfer(payload: {
     });
   });
 }
+  */
 
 /**
  * 4) createExternalCredit:

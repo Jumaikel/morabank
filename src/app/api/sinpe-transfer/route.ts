@@ -1,25 +1,25 @@
 // src/app/api/sinpe-transfer/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import {
   logTransaction,
   verifyHmac,
-  processTransfer,
   createExternalCredit,
 } from "@/app/api/services/transaction.service";
 
-interface SinpePayload {
+const OUR_BANK_CODE = process.env.BANK_CODE!;
+
+interface ExternalSinpeIbanPayload {
   version: string;
   timestamp: string;
   transaction_id: string;
   sender: {
     account_number?: string;
-    phone?: string;
     bank_code: string;
     name: string;
   };
   receiver: {
-    account_number?: string;
-    phone?: string;
+    account_number: string;
     bank_code: string;
     name: string;
   };
@@ -32,17 +32,13 @@ interface SinpePayload {
 }
 
 export async function POST(req: NextRequest) {
-  let payload: SinpePayload;
-
+  let payload: ExternalSinpeIbanPayload;
   try {
-    payload = (await req.json()) as SinpePayload;
-    console.log("✅ [SINPE] Payload recibido:", JSON.stringify(payload));
+    payload = (await req.json()) as ExternalSinpeIbanPayload;
+    console.log("✅ [SINPE-EXTERNAL] Payload recibido:", payload);
   } catch (err) {
-    console.error("❌ [SINPE] No se pudo parsear JSON de la petición:", err);
-    return NextResponse.json(
-      { error: "JSON inválido en el body." },
-      { status: 400 }
-    );
+    console.error("❌ [SINPE-EXTERNAL] JSON inválido:", err);
+    return NextResponse.json({ error: "JSON inválido en body." }, { status: 400 });
   }
 
   const {
@@ -56,97 +52,87 @@ export async function POST(req: NextRequest) {
     hmac_md5,
   } = payload;
 
-  // 1) Validación de campos mínimos
-  const missing =
+  // 1) Campos mínimo
+  if (
     !version ||
     !timestamp ||
     !transaction_id ||
-    !sender ||
-    !receiver ||
-    !amount ||
-    !hmac_md5 ||
-    !(sender.account_number || sender.phone);
-
-  if (missing) {
-    console.warn(
-      "⚠️ [SINPE] Validación fallida, faltan campos:",
-      {
-        version,
-        timestamp,
-        transaction_id,
-        hasSender: !!sender,
-        hasReceiver: !!receiver,
-        hasAmount: !!amount,
-        hasHmac: !!hmac_md5,
-        ident: sender?.account_number ?? sender?.phone,
-      }
-    );
+    !receiver.account_number ||
+    !receiver.bank_code ||
+    !amount?.value ||
+    !hmac_md5
+  ) {
+    console.warn("⚠️ [SINPE-EXTERNAL] Faltan campos obligatorios:", {
+      version,
+      timestamp,
+      tx: transaction_id,
+      receiver: receiver.account_number,
+      receiverCode: receiver.bank_code,
+      amount: amount?.value,
+      hasHmac: !!hmac_md5,
+    });
     return NextResponse.json(
-      { error: "Faltan campos requeridos o identificador de remitente." },
+      { error: "Faltan campos requeridos." },
       { status: 400 }
     );
   }
-  console.log("✅ [SINPE] Validación de campos exitosa");
 
-  // 2) Loguear la transacción entrante (raw)
-  await logTransaction(payload);
-  console.log("ℹ️ [SINPE] Payload registrado en logTransaction");
-
-  // 3) Verificar validez del HMAC
-  const isValidHmac = verifyHmac(payload, hmac_md5);
-  console.log(`🔐 [SINPE] HMAC verificado: ${isValidHmac ? "válido" : "inválido"}`);
-  if (!isValidHmac) {
+  // 2) Solo permitimos crédito hacia cuentas de este banco
+  if (receiver.bank_code !== OUR_BANK_CODE) {
+    console.warn(
+      "⚠️ [SINPE-EXTERNAL] Bank code receptor inválido:",
+      receiver.bank_code
+    );
     return NextResponse.json(
-      { error: "HMAC inválido. Transacción rechazada." },
-      { status: 401 }
+      { error: "Solo se aceptan créditos hacia este banco." },
+      { status: 403 }
     );
   }
 
+  // 3) Log raw
+  await logTransaction(payload);
+  console.log("ℹ️ [SINPE-EXTERNAL] Payload registrado.");
+
+  // 4) Verificar HMAC (solo por account_number, pues es IBAN)
+  if (!verifyHmac(payload, hmac_md5)) {
+    console.warn("🔐 [SINPE-EXTERNAL] HMAC inválido.", { expected: payload, got: hmac_md5 });
+    return NextResponse.json({ error: "HMAC inválido." }, { status: 401 });
+  }
+  console.log("🔐 [SINPE-EXTERNAL] HMAC válido.");
+
+  // 5) Ejecutar crédito externo
   try {
-    // 4) Flujo interno vs externo
-    if (sender.account_number && receiver.account_number) {
-      console.log(
-        "➡️ [SINPE] Procesando transferencia interna:",
-        sender.account_number,
-        "→",
-        receiver.account_number
-      );
-
-      await processTransfer({
-        version,
-        timestamp,
-        transaction_id,
-        sender: {
-          account_number: sender.account_number,
-          bank_code: sender.bank_code,
-          name: sender.name,
-        },
-        receiver: {
-          account_number: receiver.account_number,
-          bank_code: receiver.bank_code,
-          name: receiver.name,
-        },
-        amount,
-        description,
-        hmac_md5,
-      });
-      console.log("✅ [SINPE] Transferencia interna completada");
-    } else {
-      console.log(
-        "➡️ [SINPE] Procesando crédito externo a:",
-        receiver.phone || receiver.account_number
-      );
-
-      await createExternalCredit(payload);
-      console.log("✅ [SINPE] Crédito externo completado");
-    }
-
+    await createExternalCredit({
+      version,
+      timestamp,
+      transaction_id,
+      sender: {
+        account_number: sender.account_number,
+        bank_code: sender.bank_code,
+        name: sender.name,
+      },
+      receiver: {
+        account_number: receiver.account_number,
+        bank_code: receiver.bank_code,
+        name: receiver.name,
+      },
+      amount,
+      description,
+      hmac_md5,
+    });
+    console.log("✅ [SINPE-EXTERNAL] Crédito externo completado.");
     return NextResponse.json({ success: true }, { status: 200 });
+
   } catch (err: any) {
-    console.error("❌ [SINPE] Error procesando transacción:", err);
+    console.error("❌ [SINPE-EXTERNAL] Error al acreditar:", err);
     return NextResponse.json(
-      { error: err.message || "Error interno procesando SINPE." },
+      { error: err.message || "Error interno procesando crédito externo." },
       { status: 500 }
     );
   }
+}
+
+export async function OPTIONS() {
+  // Para preflight si fuese necesario
+  return NextResponse.next();
 }
