@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  allowedDevOrigins: [
+    'http://192.168.4.10:4000',
+    'http://localhost:4000',
+    '192.168.4.10'
+  ],
 };
 
 export default nextConfig;

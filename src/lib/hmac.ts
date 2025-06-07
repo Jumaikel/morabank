@@ -15,7 +15,7 @@ export function generateHmacForAccountTransfer(
   amount: number
 ): string {
   const secret = "supersecreta123";
-  const message = `${accountNumber}${timestamp}${transactionId}${amount}`;
+  const message = `${accountNumber}${timestamp}${transactionId}${amount.toFixed(2)}`;
   return crypto
     .createHmac("md5", secret)
     .update(message)
@@ -37,7 +37,7 @@ export function generateHmacForPhoneTransfer(
   amount: number
 ): string {
   const secret = "supersecreta123";
-  const message = `${phoneNumber}${timestamp}${transactionId}${amount}`;
+  const message = `${phoneNumber}${timestamp}${transactionId}${amount.toFixed(2)}`;
   return crypto
     .createHmac("md5", secret)
     .update(message)

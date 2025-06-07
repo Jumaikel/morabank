@@ -105,7 +105,7 @@ Your Support Team
       };
 
       try {
-        await transporter.sendMail(mailOptions);
+        //await transporter.sendMail(mailOptions);
         console.log("MFA email sent to:", user.email);
       } catch (emailError) {
         console.error("Failed to send MFA email:", emailError);

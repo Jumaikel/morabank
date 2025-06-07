@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/mysqlClient"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model accounts {
+  iban           String                @id @db.VarChar(24)
+  account_number String                @unique(map: "uq_accounts_number") @db.VarChar(20)
+  account_type   accounts_account_type
+  account_holder String                @db.VarChar(100)
+  balance        Decimal               @default(0.00) @db.Decimal(15, 2)
+  status         accounts_status       @default(ACTIVO)
+  created_at     DateTime              @default(dbgenerated("(now(6))")) @db.DateTime(6)
+  updated_at     DateTime              @default(dbgenerated("'now(6)'")) @db.DateTime(6)
+  users          users[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model mfa_codes {
+  id         Int      @id @default(autoincrement())
+  user_id    String   @db.VarChar(20)
+  mfa_code   String   @db.VarChar(6)
+  created_at DateTime @default(dbgenerated("(now(6))")) @db.DateTime(6)
+  expires_at DateTime @db.DateTime(6)
+  used       Boolean  @default(false)
+  users      users    @relation(fields: [user_id], references: [identification], onDelete: Cascade, map: "fk_mfa_user")
+
+  @@index([mfa_code], map: "idx_mfa_code")
+  @@index([user_id], map: "idx_mfa_user")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model transactions {
+  transaction_id   String              @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  created_at       DateTime            @default(dbgenerated("(now(6))")) @db.DateTime(6)
+  origin_iban      String              @db.VarChar(24)
+  destination_iban String              @db.VarChar(24)
+  amount           Decimal             @db.Decimal(15, 2)
+  currency         String              @default("CRC") @db.VarChar(3)
+  status           transactions_status @default(PENDING)
+  description      String?             @db.VarChar(255)
+  hmac_md5         String              @db.VarChar(32)
+  updated_at       DateTime            @default(dbgenerated("'now(6)'")) @db.DateTime(6)
+
+  @@index([destination_iban], map: "idx_trans_destination")
+  @@index([origin_iban], map: "idx_trans_origin")
+  @@index([created_at], map: "idx_trans_timestamp")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model users {
+  identification   String      @id @db.VarChar(20)
+  name             String      @db.VarChar(100)
+  last_name        String      @db.VarChar(100)
+  second_last_name String?     @db.VarChar(100)
+  phone            String      @unique(map: "uq_user_phone") @db.VarChar(15)
+  email            String      @unique(map: "uq_user_email") @db.VarChar(100)
+  password_hash    String      @db.VarChar(255)
+  user_type        String      @default("C") @db.Char(1)
+  account_iban     String      @db.VarChar(24)
+  created_at       DateTime    @default(dbgenerated("(now(6))")) @db.DateTime(6)
+  updated_at       DateTime    @default(dbgenerated("'now(6)'")) @db.DateTime(6)
+  mfa_codes        mfa_codes[]
+  accounts         accounts    @relation(fields: [account_iban], references: [iban], map: "fk_user_account")
+
+  @@index([account_iban], map: "idx_user_account")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model sinpe_subscriptions {
+  sinpe_number      String @id @db.VarChar(30)
+  sinpe_client_name String @unique(map: "uq_sinpe_client_name") @db.VarChar(100)
+  sinpe_bank_code   String @db.VarChar(3)
+}
+
+enum accounts_account_type {
+  CORRIENTE
+  AHORROS
+}
+
+enum transactions_status {
+  PENDING
+  COMPLETED
+  REJECTED
+}
+
+enum accounts_status {
+  ACTIVO
+  BLOQUEADO
+  CERRADO
+}

@@ -91,18 +91,6 @@ export async function processTransfer(payload: {
     hmac_md5,
   } = payload;
 
-  // 3.1) Validar que ambos pertenecen a nuestro banco
-  if (sender.bank_code !== OUR_BANK_CODE) {
-    throw new Error(
-      `Código de bank_code de remitente inválido para transferencia interna: ${sender.bank_code}`
-    );
-  }
-  if (receiver.bank_code !== OUR_BANK_CODE) {
-    throw new Error(
-      `Código de bank_code de destinatario inválido para transferencia interna: ${receiver.bank_code}`
-    );
-  }
-
   // 3.2) Buscar cuenta remitente por IBAN
   const fromAccount = await prisma.accounts.findUnique({
     where: { iban: sender.account_number },

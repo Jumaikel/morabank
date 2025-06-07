@@ -70,7 +70,7 @@ export const SinpeTransactionForm = () => {
     }
 
     // Validación básica de 8 dígitos costarricense
-    if (!/^[1-9]\d{7}$/.test(phone)) {
+    if (!/^[0-9]\d{7}$/.test(phone)) {
       setDestSubscription(null);
       setPhoneError("Formato de teléfono inválido.");
       return;

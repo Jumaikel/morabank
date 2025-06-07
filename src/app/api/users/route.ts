@@ -10,7 +10,7 @@ async function generateIbanNumber(): Promise<string> {
   const countryCode = "CR";
   const checkDigits = "21"; // Could be calculated, but using fixed "21"
   const fixedZero = "0";
-  const bankCode = "152"; // Change to your bank’s code if needed
+  const bankCode = "111"; // Change to your bank’s code if needed
   const branchCode = "0001"; // Fixed branch code
 
   do {

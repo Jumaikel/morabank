@@ -5,8 +5,9 @@ const TOKEN_COOKIE = "auth-token";
 
 const PUBLIC_PATHS = [
   "/login",
-  "/api/auth",       // Solo este endpoint API es público
-  "/api/auth/",      // Soporta /api/auth/
+  "/api/auth", 
+  "/api/sinpe-movil-transfer",
+  "/api/sinpe-transfer",
   "/favicon.ico",
   "/_next",
   "/static",
@@ -14,44 +15,73 @@ const PUBLIC_PATHS = [
 
 // Helper para saber si la ruta es pública
 function isPublic(path: string) {
-  // Permite todas las subrutas de /api/auth, por ejemplo: /api/auth/login, /api/auth/verify-mfa
   if (path.startsWith("/api/auth")) return true;
-  return PUBLIC_PATHS.some((pub) => path === pub);
+  if (path.startsWith("/api/sinpe-movil-transfer")) return true;
+  if (path.startsWith("/api/sinpe-transfer")) return true;
+  return PUBLIC_PATHS.some((pub) => path === pub || path.startsWith(pub + "/"));
 }
 
-// Middleware principal
+// Usaremos "*" para permitir cualquier origen
+const ALLOWED_ORIGIN = "*";
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const method = req.method;
 
-  // Permitir acceso libre a rutas públicas
-  if (isPublic(pathname)) {
-    return NextResponse.next();
+  // —— 1) Manejo de CORS para /api/* —— 
+  if (pathname.startsWith("/api/")) {
+    // Preflight CORS (OPTIONS)
+    if (method === "OPTIONS") {
+      return new NextResponse(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+          "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        },
+      });
+    }
+    // En peticiones normales, dejaremos que el flujo continúe y añadiremos el header más abajo.
   }
 
-  // Protege todas las rutas de /internet-banking y /api (menos /api/auth)
-  if (
-    pathname.startsWith("/internet-banking") ||
-    (pathname.startsWith("/api") && !pathname.startsWith("/api/auth"))
-  ) {
-    const token = req.cookies.get(TOKEN_COOKIE)?.value || null;
+  // —— 2) Rutas públicas —— 
+  if (isPublic(pathname)) {
+    const res = NextResponse.next();
+    if (pathname.startsWith("/api/")) {
+      res.headers.set("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
+    }
+    return res;
+  }
 
+  // —— 3) Rutas protegidas: /internet-banking y /api (menos /api/auth) —— 
+  const mustProtect =
+    pathname.startsWith("/internet-banking") ||
+    (pathname.startsWith("/api") && !pathname.startsWith("/api/auth"));
+
+  if (mustProtect) {
+    const token = req.cookies.get(TOKEN_COOKIE)?.value || null;
     if (!token) {
       const url = req.nextUrl.clone();
       url.pathname = "/login";
       return NextResponse.redirect(url);
     }
-
     try {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
       await jwtVerify(token, secret);
-      return NextResponse.next();
-    } catch (err) {
+      const res = NextResponse.next();
+      // Si es llamada a /api/* protegida, también agregamos CORS
+      if (pathname.startsWith("/api/")) {
+        res.headers.set("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
+      }
+      return res;
+    } catch {
       const url = req.nextUrl.clone();
       url.pathname = "/login";
       return NextResponse.redirect(url);
     }
   }
 
+  // —— 4) Resto de rutas no dentro de /internet-banking ni /api —— 
   return NextResponse.next();
 }
 
@@ -59,6 +89,6 @@ export const config = {
   matcher: [
     "/internet-banking/:path*",
     "/internet-banking",
-    "/api/:path*", // Protege /api, pero permite /api/auth
+    "/api/:path*", // Aplica middleware a todo /api/*
   ],
 };
