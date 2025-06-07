@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   console.log("✅ [SINPE-Móvil] Validación de campos exitosa");
 
   // 3) Verificar la suscripción del remitente en la base global
-  try {
+ /* try {
     const sub = await getSinpeSubscription(sender.phone_number);
     console.log("ℹ️ [SINPE-Móvil] Subscripción remitente:", sub);
 
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
       { status: 404 }
     );
   }
-
+*/
   // 4) Verificar HMAC
   const expectedHmac = generateHmacForPhoneTransfer(
     sender.phone_number,

@@ -1,5 +1,5 @@
 export const BANK_ENDPOINTS: Record<string, string> = {
-  "152": "http://192.168.1.10:3001",
+  "152": "https://192.168.1.10:3443",
 
   "119": "http://192.168.2.10:3001",
 

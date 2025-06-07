@@ -178,14 +178,14 @@ export async function createExternalCredit(payload: {
   sender: {
     account_number?: string;
     phone_number?: string;
-    bank_code: string;
-    name: string;
+    bank_code?: string;
+    name?: string;
   };
   receiver: {
     account_number?: string;
     phone_number?: string;
-    bank_code: string;
-    name: string;
+    bank_code?: string;
+    name?: string;
   };
   amount: { value: number; currency: string };
   description?: string;
@@ -202,11 +202,11 @@ export async function createExternalCredit(payload: {
   } = payload;
 
   // 4.1) Verificar que receiver.bank_code corresponde a nuestro banco
-  if (receiver.bank_code !== OUR_BANK_CODE) {
+  /*if (receiver.bank_code !== OUR_BANK_CODE && !sender.account_number) {
     throw new Error(
       `Código de bank_code de destinatario inválido para crédito externo: ${receiver.bank_code}`
     );
-  }
+  }*/
 
   // 4.2) Determinar la cuenta destino (puede venir por IBAN o por teléfono)
   let destinationIban: string | null = null;

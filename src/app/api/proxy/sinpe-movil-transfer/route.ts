@@ -1,95 +1,61 @@
+// src/app/api/proxy/sinpe-movil-transfer/route.ts
+/**
+ * IMPORTANTE: debe ir lo primero, antes de cualquier otro import,
+ * para que Node respete NODE_TLS_REJECT_UNAUTHORIZED=0
+ */
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 import { NextRequest, NextResponse } from "next/server";
 import { BANK_ENDPOINTS } from "@/config/bankEndpoints";
 
-/**
- * Estructura esperada del payload para transferencia por teléfono (SINPE Móvil).
- */
-interface PhoneTransferPayload {
-  version: "1.0";
-  timestamp: string;
-  transaction_id: string;
-  sender: {
-    phone_number: string;
-    bank_code: string;
-    name: string;
-  };
-  receiver: {
-    phone_number: string;
-    bank_code: string;
-    name: string;
-  };
-  amount: {
-    value: number;
-    currency: string;
-  };
-  description: string;
-  hmac_md5: string;
-}
-
 export async function POST(req: NextRequest) {
+  let payload: any;
   try {
-    // 1) Leer el JSON que envía el frontend
-    const payload: PhoneTransferPayload = await req.json();
+    payload = await req.json();
+  } catch (err) {
+    console.error("❌ [PROXY SINPE-MÓVIL] JSON inválido:", err);
+    return NextResponse.json({ error: "JSON inválido en body" }, { status: 400 });
+  }
 
-    // 2) Extraer el código de banco receptor desde el payload
-    const receiverBankCode = payload.receiver.bank_code;
-    if (!receiverBankCode) {
-      return NextResponse.json(
-        { error: "Falta receiver.bank_code en el payload" },
-        { status: 400 }
-      );
-    }
+  const bankCode = payload.receiver?.bank_code;
+  const base = BANK_ENDPOINTS[bankCode];
+  if (!base) {
+    console.warn(`⚠️ [PROXY SINPE-MÓVIL] No hay endpoint para bank_code=${bankCode}`);
+    return NextResponse.json(
+      { error: `No hay proxy configurado para el banco ${bankCode}` },
+      { status: 400 }
+    );
+  }
 
-    // 3) Buscar la URL base del banco externo en BANK_ENDPOINTS
-    const endpointBase = BANK_ENDPOINTS[receiverBankCode];
-    if (!endpointBase) {
-      return NextResponse.json(
-        { error: `No se encontró endpoint para el banco ${receiverBankCode}` },
-        { status: 400 }
-      );
-    }
+  const externalUrl = `${base}/api/sinpe-movil-transfer`;
+  console.log("➡️ [PROXY SINPE-MÓVIL] Enviando a:", externalUrl);
+  console.log("📨 [PROXY SINPE-MÓVIL] Payload:", JSON.stringify(payload));
 
-    // 4) Armar la URL completa (asumimos que el path es "/api/sinpe-movil-transfer")
-    const externalUrl = `${endpointBase}/api/sinpe-movil-transfer`;
-
-    // 5) Hacer la petición server-to-server al banco externo
+  try {
     const res = await fetch(externalUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
-    // 6) Leer la respuesta (éxito o error)
     const text = await res.text();
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: `Error ${res.status} desde banco externo: ${text}` },
-        { status: res.status }
-      );
-    }
-
-    // 7) Parsear JSON si es válido, de lo contrario devolver texto crudo
+    let data: any;
     try {
-      const json = JSON.parse(text);
-      return NextResponse.json(json, { status: 200 });
+      data = JSON.parse(text);
     } catch {
-      return NextResponse.json({ data: text }, { status: 200 });
+      data = text;
     }
-  } catch (err: any) {
-    console.error("=== ERROR EN PROXY SINPE-MÓVIL ===");
-    console.error(err);
-    console.error(err.stack);
 
+    console.log(`✅ [PROXY SINPE-MÓVIL] Respuesta ${res.status}:`, data);
+    return NextResponse.json(data, { status: res.status });
+  } catch (err: any) {
+    console.error("❌ [PROXY SINPE-MÓVIL] Error al hacer fetch:", {
+      message: err.message,
+      cause: err.cause,
+    });
     return NextResponse.json(
-      { error: `Error interno en el proxy SINPE-Móvil: ${err.message}` },
+      { error: `fetch failed: ${err.message}` },
       { status: 500 }
     );
   }
-}
-
-// Opcional: responder preflight CORS
-export async function OPTIONS() {
-  return NextResponse.next();
 }

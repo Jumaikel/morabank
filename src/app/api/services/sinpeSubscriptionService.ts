@@ -13,11 +13,12 @@ export interface SinpeSubscription {
 export async function getSinpeSubscription(
   phone: string
 ): Promise<SinpeSubscription> {
-  const base = process.env.SINPE_SUBSCRIPTIONS_API_URL || ""; 
+  const base = process.env.NEXT_PUBLIC_SINPE_SUBSCRIPTIONS_API || "/api/sinpe-subscriptions-v2"; 
   // Si está corriendo en serverless Next.js, una URL vacía hará la petición relativa
-  const url = `${base}/api/sinpe-subscriptions-v2/${encodeURIComponent(
+  const url = `${base}/${encodeURIComponent(
     phone
   )}`;
+  console.log("URL:"+url)
 
   console.log(`🌐 [SINPE_SUB] Fetching subscription for ${phone} from ${url}`);
   const res = await fetch(url, { cache: "no-store" });
