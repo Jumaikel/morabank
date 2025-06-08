@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
 import useAuthStore from "@/stores/authStore";
 import useUserStore from "@/stores/userStore";
 import useAccountStore from "@/stores/accountStore";
@@ -12,7 +11,6 @@ import { toast } from "sonner";
 import { ExternalTransactionFormSkeleton } from "./ExternalTransactionFormSkeleton";
 
 export const ExternalTransactionForm = () => {
-  // Selectores individuales para evitar objeto literal
   const identification = useAuthStore((state) => state.identification);
   const token = useAuthStore((state) => state.token);
 
@@ -29,16 +27,7 @@ export const ExternalTransactionForm = () => {
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState("CRC");
   const [description, setDescription] = useState("");
-
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [loadingPage, setLoadingPage] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLoadingPage(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (identification && token && !selectedUser) {
@@ -59,28 +48,26 @@ export const ExternalTransactionForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
 
     if (!selectedAccount || !selectedUser) {
-      setError("Tu cuenta no está cargada aún.");
+      toast.error("Tu cuenta no está cargada aún.");
       return;
     }
     if (!destIban) {
-      setError("IBAN destino es obligatorio.");
+      toast.error("IBAN destino es obligatorio.");
       return;
     }
     if (!/^[A-Z]{2}\d{2}0\d{3}\d{4}\d{12}$/.test(destIban.trim())) {
-      setError("El IBAN destino no tiene formato válido.");
+      toast.error("El IBAN destino no tiene formato válido.");
       return;
     }
     const montoNum = parseFloat(amount);
     if (isNaN(montoNum) || montoNum <= 0) {
-      setError("El monto debe ser un número válido mayor que 0.");
+      toast.error("El monto debe ser un número válido mayor que 0.");
       return;
     }
     if (!/^[A-Z]{3}$/.test(currency)) {
-      setError("El currency debe ser un código de 3 letras.");
+      toast.error("El currency debe ser un código de 3 letras.");
       return;
     }
 
@@ -103,7 +90,7 @@ export const ExternalTransactionForm = () => {
         description.trim() || ""
       );
 
-      setSuccess("Transferencia externa enviada con éxito.");
+      toast.success("Transferencia externa enviada con éxito.");
       setDestIban("");
       setDestName("");
       setAmount("");
@@ -111,22 +98,20 @@ export const ExternalTransactionForm = () => {
       setDescription("");
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Error al realizar la transferencia externa.");
+      console.error("Error al realizar la transferencia externa:", err.message);
+      toast.error("Error al realizar la transferencia externa.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (userLoading || accountLoading) {
-    return <p className="text-center">Cargando datos de usuario/cuenta...</p>;
-  }
   if (!selectedAccount || !selectedUser) {
     return (
       <p className="text-center text-red-500">No se encontró tu cuenta.</p>
     );
   }
 
-  if (loadingPage) {
+  if (userLoading || accountLoading) {
     return <ExternalTransactionFormSkeleton />;
   }
 
@@ -138,10 +123,9 @@ export const ExternalTransactionForm = () => {
       <h2 className="text-xl text-neutral-950 font-semibold mb-4 text-center">
         Transferencia Externa (IBAN)
       </h2>
-
-      {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-      {success && <p className="text-green-600 text-sm mb-2">{success}</p>}
-
+      <p className="text-sm text-neutral-600 mb-4 text-center">
+        Realiza transferencias a cuentas bancarias de otros bancos
+      </p>
       <div className="mb-4">
         <Input
           label="Cuenta Origen (IBAN)"

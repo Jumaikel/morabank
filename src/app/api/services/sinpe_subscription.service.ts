@@ -13,24 +13,23 @@ export interface SinpeSubscription {
 export async function getSinpeSubscription(
   phone: string
 ): Promise<SinpeSubscription> {
-  const base = process.env.NEXT_PUBLIC_SINPE_SUBSCRIPTIONS_API || "/api/sinpe-subscriptions-v2"; 
+  const base = process.env.NEXT_PUBLIC_SINPE_SUBSCRIPTIONS_API || "/api/sinpe-subscriptions";
   // Si está corriendo en serverless Next.js, una URL vacía hará la petición relativa
   const url = `${base}/${encodeURIComponent(
     phone
   )}`;
-  console.log("URL:"+url)
 
-  console.log(`🌐 [SINPE_SUB] Fetching subscription for ${phone} from ${url}`);
+  console.log(`[SINPE_SUB] Fetching subscription for ${phone} from ${url}`);
   const res = await fetch(url, { cache: "no-store" });
 
   if (res.status === 404) {
-    console.warn(`⚠️ [SINPE_SUB] No subscription found for ${phone}`);
+    console.warn(`[SINPE_SUB] No subscription found for ${phone}`);
     throw new Error(`No existe suscripción SINPE para el número: ${phone}`);
   }
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     console.error(
-      `❌ [SINPE_SUB] Error ${res.status} fetching subscription: ${text}`
+      `[SINPE_SUB] Error ${res.status} fetching subscription: ${text}`
     );
     throw new Error(
       `Error ${res.status} al consultar suscripción SINPE: ${text}`
@@ -38,6 +37,6 @@ export async function getSinpeSubscription(
   }
 
   const data = (await res.json()) as SinpeSubscription;
-  console.log(`✅ [SINPE_SUB] Subscription data:`, data);
+  console.log(`[SINPE_SUB] Subscription data:`, data);
   return data;
 }

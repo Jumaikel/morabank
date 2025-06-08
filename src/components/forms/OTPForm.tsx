@@ -40,7 +40,7 @@ export const OTPForm = () => {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoadingPage(false), 800);
+    const timer = setTimeout(() => setLoadingPage(false), 500);
     return () => clearTimeout(timer);
   }, []);
 

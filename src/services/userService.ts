@@ -2,7 +2,7 @@ import { User } from "@/models/entities";
 
 const URL = "/api/users";
 const SINPE_URL = process.env.NEXT_PUBLIC_SINPE_SUBSCRIPTIONS_API || "/api/sinpe-subscriptions";
-
+const OUR_BANK_CODE = process.env.BANK_CODE || "111";
 export interface NewUser {
   identification: string;
   name: string;
@@ -115,7 +115,7 @@ export const userService = {
           body: JSON.stringify({
             sinpe_number: user.phone,
             sinpe_client_name: `${user.name} ${user.lastName} ${user.secondLastName}`,
-            sinpe_bank_code: "111",
+            sinpe_bank_code: OUR_BANK_CODE,
           }),
         });
       } catch (sinpeErr) {

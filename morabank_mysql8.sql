@@ -115,7 +115,7 @@ VALUES
     '9152203447634362',
     'CORRIENTE',
     'Jumaikel Chinchilla',
-    300000.00,
+    1000000.00,
     'ACTIVO',
     '2025-06-05 21:34:53.679481',
     '2025-06-05 21:34:53.679481'
@@ -152,21 +152,3 @@ VALUES
     '2025-06-05 21:34:53.693865',
     '2025-06-05 22:40:12.415350'
   );
-
--- ------------------------------------------------------------
--- Tabla: sinpe_subscriptions
---   - Guarda la relación teléfono ↔ nombre de cliente ↔ código de banco
--- ------------------------------------------------------------
-CREATE TABLE
-  IF NOT EXISTS sinpe_subscriptions (
-    sinpe_number VARCHAR(30) NOT NULL COMMENT 'Número SINPE (p. ej. "71234567")',
-    sinpe_client_name VARCHAR(100) NOT NULL COMMENT 'Nombre del cliente registrado en SINPE',
-    sinpe_bank_code VARCHAR(3) NOT NULL COMMENT 'Código de banco de 3 dígitos',
-    PRIMARY KEY (sinpe_number),
-    UNIQUE KEY uq_sinpe_client_name (sinpe_client_name)
-  ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Suscripciones SINPE: teléfono, nombre y código de banco';
-
-INSERT INTO
-  sinpe_subscriptions (sinpe_number, sinpe_client_name, sinpe_bank_code)
-VALUES
-  ('84966263', 'Jumaikel Chinchilla Mora', '111');

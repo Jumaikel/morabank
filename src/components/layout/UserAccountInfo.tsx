@@ -6,6 +6,7 @@ import { AccountHistoryModal } from "@/components/layout/AccountHistoryModal";
 import useAuthStore from "@/stores/authStore";
 import useUserStore from "@/stores/userStore";
 import useAccountStore from "@/stores/accountStore";
+import { AccountCardSkeleton } from "../common/AccountCardSkeleton";
 
 export const UserAccountInfo = () => {
   const identification = useAuthStore((state) => state.identification);
@@ -22,7 +23,9 @@ export const UserAccountInfo = () => {
   const accountError = useAccountStore((state) => state.error);
 
   // Para transacciones
-  const fetchAccountTransactions = useAccountStore((s) => s.fetchAccountTransactions);
+  const fetchAccountTransactions = useAccountStore(
+    (s) => s.fetchAccountTransactions
+  );
   const accountTransactions = useAccountStore((s) => s.accountTransactions);
   const txLoading = useAccountStore((s) => s.loading);
   const txError = useAccountStore((s) => s.error);
@@ -52,12 +55,13 @@ export const UserAccountInfo = () => {
     }
   }, [isModalOpen, selectedAccount, fetchAccountTransactions]);
 
-  if (!identification || !token) {
-    return <p className="text-center text-red-500">No estás logueado.</p>;
-  }
+
 
   if (userLoading || accountLoading) {
-    return <p className="text-center">Cargando información...</p>;
+    return <AccountCardSkeleton />;
+  }
+    if (!identification || !token) {
+    return <p className="text-center text-red-500">No estás logueado redirigiendo al login...</p>
   }
   if (userError) {
     return (
@@ -93,9 +97,7 @@ export const UserAccountInfo = () => {
       (selectedAccount as any).account_holder ??
       "";
     const status =
-      (selectedAccount as any).status ??
-      (selectedAccount as any).state ??
-      "";
+      (selectedAccount as any).status ?? (selectedAccount as any).state ?? "";
 
     return (
       <>

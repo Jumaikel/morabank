@@ -63,7 +63,7 @@ export const AccountHistoryModal: React.FC<AccountHistoryModalProps> = ({
 
           {!loading && !error && accountTransactions.length === 0 && (
             <p className="text-center text-neutral-500">
-              No hay transacciones para esta cuenta.
+              No hay transacciones para esta cuenta
             </p>
           )}
 

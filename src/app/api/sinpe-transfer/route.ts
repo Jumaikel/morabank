@@ -1,5 +1,3 @@
-// src/app/api/sinpe-transfer/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import {
   logTransaction,

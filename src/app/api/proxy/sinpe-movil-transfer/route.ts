@@ -1,8 +1,4 @@
-// src/app/api/proxy/sinpe-movil-transfer/route.ts
-/**
- * IMPORTANTE: debe ir lo primero, antes de cualquier otro import,
- * para que Node respete NODE_TLS_REJECT_UNAUTHORIZED=0
- */
+// Deshabilita la verificación de certificado autofirmado (solo para desarrollo)
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 import { NextRequest, NextResponse } from "next/server";

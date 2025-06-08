@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSinpeSubscription } from "@/app/api/services/sinpeSubscriptionService";
+import { getSinpeSubscription } from "@/app/api/services/sinpe_subscription.service";
 import { createExternalCredit } from "@/app/api/services/transaction.service";
 import { generateHmacForPhoneTransfer } from "@/lib/hmac";
 

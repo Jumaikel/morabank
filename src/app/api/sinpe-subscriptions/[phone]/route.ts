@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import prisma from "@/lib/prisma";
+import pgsqlPrisma from "@/lib/pgsqlClient";
 
 export async function GET(
   req: NextRequest,
@@ -16,7 +16,7 @@ export async function GET(
   }
 
   try {
-    const subscription = await prisma.sinpe_subscriptions.findUnique({
+    const subscription = await pgsqlPrisma.sinpe_subscriptions.findUnique({
       where: { sinpe_number: phone },
     });
 

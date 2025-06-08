@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import useAuthStore from "@/stores/authStore";
 import useUserStore from "@/stores/userStore";
 import useAccountStore from "@/stores/accountStore";
-import { NewTransaction, transactionService } from "@/services/transactionService";
+import {
+  NewTransaction,
+  transactionService,
+} from "@/services/transactionService";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
@@ -26,12 +29,6 @@ export const InternalTransactionForm = () => {
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [loadingPage, setLoadingPage] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLoadingPage(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (identification && token && !selectedUser) {
@@ -83,23 +80,22 @@ export const InternalTransactionForm = () => {
       setReason("");
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || "Error inesperado al realizar la transacción.");
+      toast.error(
+        err.message || "Error inesperado al realizar la transacción."
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
   if (userLoading || accountLoading) {
-    return <p className="text-center">Cargando datos de la cuenta...</p>;
+    return <InternalTransactionFormSkeleton />;
   }
+
   if (!selectedAccount) {
     return (
       <p className="text-center text-gray-500">No se encontró tu cuenta.</p>
     );
-  }
-
-  if (loadingPage) {
-    return <InternalTransactionFormSkeleton />;
   }
 
   return (
@@ -110,6 +106,10 @@ export const InternalTransactionForm = () => {
       <h2 className="text-xl font-semibold mb-4 text-center text-neutral-950">
         Transferencia Interna
       </h2>
+
+      <p className="text-sm text-neutral-600 mb-4 text-center">
+        Realiza transferencias a cuentas bancarias de este banco
+      </p>
 
       <div className="mb-4">
         <Input
@@ -151,11 +151,7 @@ export const InternalTransactionForm = () => {
         />
       </div>
 
-      <Button
-        type="submit"
-        isLoading={submitting}
-        className="w-full"
-      >
+      <Button type="submit" isLoading={submitting} className="w-full">
         {submitting ? "Enviando..." : "Enviar Transferencia"}
       </Button>
     </form>

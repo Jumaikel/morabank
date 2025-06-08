@@ -28,7 +28,7 @@ export const RegisterForm = () => {
   const [loadingPage, setLoadingPage] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoadingPage(false), 1000);
+    const timer = setTimeout(() => setLoadingPage(false), 500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -59,7 +59,7 @@ export const RegisterForm = () => {
       }
 
       toast.success("Usuario registrado correctamente.");
-      setTimeout(() => router.push("/internet-banking/admin"), 1200);
+      setTimeout(() => router.push("/internet-banking/admin"), 1000);
     } catch (err: any) {
       console.error("Error during registration:", err);
       toast.error("Error inesperado al registrar usuario.");

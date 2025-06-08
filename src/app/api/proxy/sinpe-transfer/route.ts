@@ -1,9 +1,8 @@
-// src/app/api/proxy/sinpe-transfer/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { BANK_ENDPOINTS } from "@/config/bankEndpoints";
-
 // Deshabilita la verificación de certificado autofirmado (solo para desarrollo)
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+import { NextRequest, NextResponse } from "next/server";
+import { BANK_ENDPOINTS } from "@/config/bankEndpoints";
 
 export async function POST(req: NextRequest) {
   try {

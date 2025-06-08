@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { AccountCardSkeleton } from "./AccountCardSkeleton";
 
 interface AccountCardProps {
   iban: string;
@@ -38,7 +37,6 @@ export const AccountCard: React.FC<AccountCardProps> = ({
 }) => {
   const formattedCardNumber = formatCardNumber(accountNumber);
   const formattedIban = formatIban(iban);
-  const [loadingPage, setLoadingPage] = React.useState(true);
   const backgroundStyle =
     accountType === "CORRIENTE"
       ? {
@@ -51,11 +49,6 @@ export const AccountCard: React.FC<AccountCardProps> = ({
             "radial-gradient(ellipse 100% 70% at 80% 10%, rgba(255,220,120,0.18) 20%, rgba(255,170,60,0.12) 60%, transparent 100%)," +
             "linear-gradient(135deg, #fffbe8 45%, #ffe0a3 80%, #ffb647 120%)",
         };
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => setLoadingPage(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
 
   const formattedBalance = Number(balance)
     .toLocaleString("es-CR", {
@@ -70,10 +63,6 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       : status === "BLOQUEADO"
       ? "bg-red-500"
       : "bg-gray-500";
-
-  if (loadingPage) {
-    return <AccountCardSkeleton />;
-  }
 
   return (
     <button

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import prisma from "@/lib/prisma";
+import pgsqlPrisma from "@/lib/pgsqlClient";
 
 interface SubscriptionBody {
   sinpe_number: string;
@@ -28,8 +28,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Insertar en la tabla
-    const created = await prisma.sinpe_subscriptions.create({
+    // Intentar crear registro
+    const created = await pgsqlPrisma.sinpe_subscriptions.create({
       data: {
         sinpe_number,
         sinpe_client_name,
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error("Error al registrar suscripción SINPE:", err);
 
-    // Detectar violación de unicidad
+    // P2002 = Violación de unicidad
     if (err.code === "P2002" && err.meta?.target) {
       const target = (err.meta.target as string[]).join(", ");
       return NextResponse.json(

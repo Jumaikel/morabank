@@ -28,7 +28,6 @@ export const SinpeTransactionForm = () => {
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [loadingPage, setLoadingPage] = useState(true);
 
   const [destSubscription, setDestSubscription] = useState<{
     sinpe_number: string;
@@ -37,11 +36,6 @@ export const SinpeTransactionForm = () => {
   } | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [validatingPhone, setValidatingPhone] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLoadingPage(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (identification && token && !selectedUser) {
@@ -142,15 +136,13 @@ export const SinpeTransactionForm = () => {
       setDestSubscription(null);
     } catch (err: any) {
       console.error(err);
-      toast.error(
-        err.message || "Error inesperado al realizar la transferencia SINPE."
-      );
+      toast.error("Error inesperado al realizar la transferencia SINPE.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loadingPage || userLoading || accountLoading) {
+  if (userLoading || accountLoading) {
     return <SinpeTransactionFormSkeleton />;
   }
   if (!selectedUser || !selectedAccount) {
@@ -167,6 +159,11 @@ export const SinpeTransactionForm = () => {
       <h2 className="text-xl font-semibold mb-4 text-center text-neutral-950">
         Transferencia SINPE Móvil
       </h2>
+
+      <p className="text-sm text-neutral-600 mb-4 text-center">
+        Realiza transferencias a otras cuentas bancarias por medio del número de
+        celular
+      </p>
 
       <div className="mb-4">
         <Input
@@ -202,7 +199,8 @@ export const SinpeTransactionForm = () => {
         )}
         {destSubscription && (
           <p className="text-sm text-green-600 mt-1">
-            Suscrito: {destSubscription.sinpe_client_name} (Banco {destSubscription.sinpe_bank_code})
+            Suscrito: {destSubscription.sinpe_client_name} (Banco{" "}
+            {destSubscription.sinpe_bank_code})
           </p>
         )}
       </div>
