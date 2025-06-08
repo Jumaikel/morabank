@@ -57,7 +57,7 @@ export const UserAccountInfo = () => {
 
 
 
-  if (userLoading || accountLoading) {
+  if ((userLoading || accountLoading) && !isModalOpen) {
     return <AccountCardSkeleton />;
   }
     if (!identification || !token) {
@@ -101,7 +101,7 @@ export const UserAccountInfo = () => {
 
     return (
       <>
-        <div className="flex justify-center">
+        <div className="flex justify-center px-2">
           <AccountCard
             iban={iban}
             accountNumber={accountNumber}

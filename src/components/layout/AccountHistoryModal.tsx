@@ -42,8 +42,8 @@ export const AccountHistoryModal: React.FC<AccountHistoryModalProps> = ({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 w-screen flex items-center justify-center bg-black bg-opacity-40">
-      <div className="relative w-11/12 max-w-4xl bg-white border border-neutral-950 rounded-xl shadow-xl overflow-hidden">
+    <div className="fixed inset-0 z-50 w-screen flex items-center px-2 md:px-0 justify-center bg-black bg-opacity-40">
+      <div className="relative w-11/12 max-w-5xl bg-white border border-neutral-950 rounded-xl shadow-xl overflow-hidden">
         <div className="flex justify-between items-center p-4 border-b border-neutral-950 bg-neutral-100">
           <h2 className="text-xl font-semibold text-neutral-950">
             Historial de Transacciones
