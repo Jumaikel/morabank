@@ -17,6 +17,6 @@ app.prepare().then(() => {
     const parsedUrl = parse(req.url!, true);
     handle(req, res, parsedUrl);
   }).listen(3443, () => {
-    console.log("> Servidor HTTPS listo en https://localhost");
+    console.log("> Servidor HTTPS listo en https://localhost:3443");
   });
 });
