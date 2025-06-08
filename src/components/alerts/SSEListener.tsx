@@ -3,13 +3,14 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import useAuthStore from "@/stores/authStore";
 import useUserStore from "@/stores/userStore";
+import { useNotificationStore } from "@/stores/notificationStore";
 
 export default function SSEListener() {
   const identification = useAuthStore((state) => state.identification);
   const token = useAuthStore((state) => state.token);
   const fetchUser = useUserStore((state) => state.fetchUser);
   const selectedUser = useUserStore((state) => state.selectedUser);
-
+  const add = useNotificationStore((s) => s.add);
   useEffect(() => {
     if (!identification || !token) return;
 
@@ -32,7 +33,9 @@ export default function SSEListener() {
         console.log("[SSE] Comparando contra:", selectedUser.accountIban);
 
         if (data.to === selectedUser.accountIban) {
-          toast.success(`💸 Has recibido ${data.amount.value} ${data.amount.currency}`);
+          const msg = `💸 Has recibido ${data.amount.value} ${data.amount.currency}`;
+          toast.success(msg);
+          add(msg);
         }
       } catch (err) {
         console.warn("[SSE] Evento ignorado, no es JSON:", event.data);

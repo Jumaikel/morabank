@@ -3,22 +3,24 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import useAuthStore from "@/stores/authStore";
+import { useNotificationStore } from "@/stores/notificationStore";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Bell } from "lucide-react";
 
 export const Navbar = () => {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
   const userType = useAuthStore((state) => state.userType);
+  const { notifications, unread, clear } = useNotificationStore();
 
   const [open, setOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     router.push("/login");
   };
 
-  // Opciones de menú reutilizables (solo para móvil/sidebar)
   const menuLinks = (
     <>
       <Link
@@ -81,12 +83,51 @@ export const Navbar = () => {
             </Link>
           )}
         </div>
-        <button
-          onClick={handleLogout}
-          className="hover:text-red-500 focus:outline-none ml-4"
-        >
-          Cerrar Sesión
-        </button>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <button
+              onClick={() => {
+                setNotifOpen(!notifOpen);
+                clear();
+              }}
+              className="relative cursor-pointer"
+            >
+              <Bell className="w-5 h-5" />
+              {unread > 0 && (
+                <span className="absolute -top-1 -right-1 text-[10px] px-1 bg-red-600 text-white rounded-full">
+                  {unread}
+                </span>
+              )}
+            </button>
+            {notifOpen && (
+              <div className="absolute right-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white text-black shadow-lg rounded-lg z-50">
+                {notifications.length === 0 ? (
+                  <div className="p-4 text-sm text-gray-500">Sin notificaciones</div>
+                ) : (
+                  <ul>
+                    {notifications
+                      .slice()
+                      .reverse()
+                      .map((n) => (
+                        <li key={n.id} className="p-3 border-b border-gray-200 text-sm">
+                          {n.message}
+                          <div className="text-[10px] text-gray-500">
+                            {new Date(n.timestamp).toLocaleTimeString()}
+                          </div>
+                        </li>
+                      ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={handleLogout}
+            className="hover:text-red-500 focus:outline-none ml-4"
+          >
+            Cerrar Sesión
+          </button>
+        </div>
       </div>
       <button
         className="md:hidden flex items-center"
