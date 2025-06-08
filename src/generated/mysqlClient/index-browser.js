@@ -145,6 +145,9 @@ exports.Prisma.TransactionsScalarFieldEnum = {
   created_at: 'created_at',
   origin_iban: 'origin_iban',
   destination_iban: 'destination_iban',
+  origin_phone: 'origin_phone',
+  destination_phone: 'destination_phone',
+  transaction_type: 'transaction_type',
   amount: 'amount',
   currency: 'currency',
   status: 'status',
@@ -167,10 +170,13 @@ exports.Prisma.UsersScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
-exports.Prisma.Sinpe_subscriptionsScalarFieldEnum = {
-  sinpe_number: 'sinpe_number',
-  sinpe_client_name: 'sinpe_client_name',
-  sinpe_bank_code: 'sinpe_bank_code'
+exports.Prisma.Audit_logsScalarFieldEnum = {
+  id: 'id',
+  transaction_id: 'transaction_id',
+  previous_status: 'previous_status',
+  new_status: 'new_status',
+  changed_at: 'changed_at',
+  changed_by: 'changed_by'
 };
 
 exports.Prisma.SortOrder = {
@@ -198,6 +204,8 @@ exports.Prisma.transactionsOrderByRelevanceFieldEnum = {
   transaction_id: 'transaction_id',
   origin_iban: 'origin_iban',
   destination_iban: 'destination_iban',
+  origin_phone: 'origin_phone',
+  destination_phone: 'destination_phone',
   currency: 'currency',
   description: 'description',
   hmac_md5: 'hmac_md5'
@@ -215,10 +223,9 @@ exports.Prisma.usersOrderByRelevanceFieldEnum = {
   account_iban: 'account_iban'
 };
 
-exports.Prisma.sinpe_subscriptionsOrderByRelevanceFieldEnum = {
-  sinpe_number: 'sinpe_number',
-  sinpe_client_name: 'sinpe_client_name',
-  sinpe_bank_code: 'sinpe_bank_code'
+exports.Prisma.audit_logsOrderByRelevanceFieldEnum = {
+  transaction_id: 'transaction_id',
+  changed_by: 'changed_by'
 };
 exports.accounts_account_type = exports.$Enums.accounts_account_type = {
   CORRIENTE: 'CORRIENTE',
@@ -231,7 +238,25 @@ exports.accounts_status = exports.$Enums.accounts_status = {
   CERRADO: 'CERRADO'
 };
 
+exports.transactions_transaction_type = exports.$Enums.transactions_transaction_type = {
+  INTERNA: 'INTERNA',
+  EXTERNA: 'EXTERNA',
+  SINPEMOVIL: 'SINPEMOVIL'
+};
+
 exports.transactions_status = exports.$Enums.transactions_status = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  REJECTED: 'REJECTED'
+};
+
+exports.audit_logs_previous_status = exports.$Enums.audit_logs_previous_status = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  REJECTED: 'REJECTED'
+};
+
+exports.audit_logs_new_status = exports.$Enums.audit_logs_new_status = {
   PENDING: 'PENDING',
   COMPLETED: 'COMPLETED',
   REJECTED: 'REJECTED'
@@ -242,7 +267,7 @@ exports.Prisma.ModelName = {
   mfa_codes: 'mfa_codes',
   transactions: 'transactions',
   users: 'users',
-  sinpe_subscriptions: 'sinpe_subscriptions'
+  audit_logs: 'audit_logs'
 };
 
 /**

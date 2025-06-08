@@ -5,24 +5,15 @@ import {
   generateHmacForPhoneTransfer,
 } from "@/lib/hmac";
 
-//const OUR_BANK_CODE = process.env.BANK_CODE || "111";
-
 /**
- * 1) logTransaction:
- *    - Registra (en consola o en alguna tabla “logs”) el JSON completo que llega.
- *    - Para fines de este ejemplo, simplemente usaremos console.log.
+ * 1) logTransaction: registra el payload entrante.
  */
 export async function logTransaction(payload: unknown) {
-  console.log("Transacción entrante SINPE:", JSON.stringify(payload));
-  // Si quisieras guardarlo en BD (por ejemplo, en una tabla `logs`):
-  // await prisma.logs.create({ data: { event: "SINPE_RECEIVED", details: JSON.stringify(payload), created_at: new Date() } });
+  console.log(`ℹ️ [TRANSACTION-SERVICE] Transacción entrante: ${new Date().toISOString()}`, payload);
 }
 
 /**
- * 2) verifyHmac:
- *    - Reconstruye el HMAC con la función adecuada (cuenta vs. teléfono) y lo compara.
- *    - Si viene sender.account_number (IBAN), usa generateHmacForAccountTransfer.
- *    - Si viene sender.phone_number, usa generateHmacForPhoneTransfer.
+ * 2) verifyHmac: reconstruye y compara el HMAC.
  */
 export function verifyHmac(
   payload: {
@@ -33,10 +24,10 @@ export function verifyHmac(
   },
   hmac_md5: string
 ): boolean {
+  console.log(`🔐 [TRANSACTION-SERVICE] Verificando HMAC para tx=${payload.transaction_id}`);
   const { sender, timestamp, transaction_id, amount } = payload;
   let generated: string;
 
-  // Caso: transferencia por IBAN
   if (sender.account_number) {
     generated = generateHmacForAccountTransfer(
       sender.account_number,
@@ -44,9 +35,7 @@ export function verifyHmac(
       transaction_id,
       amount.value
     );
-  }
-  // Caso: SINPE Móvil (por teléfono)
-  else if (sender.phone_number) {
+  } else if (sender.phone_number) {
     generated = generateHmacForPhoneTransfer(
       sender.phone_number,
       timestamp,
@@ -54,19 +43,18 @@ export function verifyHmac(
       amount.value
     );
   } else {
-    // No se proporcionó ni account_number ni phone_number
+    console.warn(`⚠️ [TRANSACTION-SERVICE] No sender identifier for HMAC: tx=${transaction_id}`);
     return false;
   }
 
-  return generated === hmac_md5;
+  const valid = generated === hmac_md5;
+  console.log(`🔐 [TRANSACTION-SERVICE] HMAC generado=${generated}, recibido=${hmac_md5}, válido=${valid}`);
+  return valid;
 }
+
 /**
  * 4) createExternalCredit:
- *    - Flujo para crédito externo (p.ej. SINPE-Móvil entrante):
- *      1) Verificar que receiver.account_number (en caso que venga) o receiver.phone
- *         pertenezca a usuario local.
- *      2) Acreditar la cuenta destinataria (solo sumar saldo).
- *      3) Crear registro en tabla `transactions` con status = "COMPLETED".
+ *    - Acredita al receptor (IBAN o teléfono) y registra transaction y audit_log.
  */
 export async function createExternalCredit(payload: {
   version: string;
@@ -88,6 +76,15 @@ export async function createExternalCredit(payload: {
   description?: string;
   hmac_md5: string;
 }) {
+  console.log(`▶️ [TRANSACTION-SERVICE] Iniciando createExternalCredit: tx=${payload.transaction_id} at ${new Date().toISOString()}`);
+
+  // 1) log y verificación de HMAC
+  await logTransaction(payload);
+  if (!verifyHmac(payload, payload.hmac_md5)) {
+    console.error(`❌ [TRANSACTION-SERVICE] HMAC inválido: tx=${payload.transaction_id}`);
+    throw new Error("HMAC inválido");
+  }
+
   const {
     transaction_id,
     timestamp,
@@ -98,70 +95,92 @@ export async function createExternalCredit(payload: {
     hmac_md5,
   } = payload;
 
-  // 4.1) Verificar que receiver.bank_code corresponde a nuestro banco
-  /*if (receiver.bank_code !== OUR_BANK_CODE && !sender.account_number) {
-    throw new Error(
-      `Código de bank_code de destinatario inválido para crédito externo: ${receiver.bank_code}`
-    );
-  }*/
+  // 2) Determinar tipo de transacción y origen
+  console.log(`ℹ️ [TRANSACTION-SERVICE] Determinando tipo/origen: tx=${transaction_id}`);
+  let originIban: string | null = null;
+  let originPhone: string | null = null;
+  let transactionType: "EXTERNA" | "SINPEMOVIL";
 
-  // 4.2) Determinar la cuenta destino (puede venir por IBAN o por teléfono)
-  let destinationIban: string | null = null;
+  if (sender.account_number) {
+    originIban = sender.account_number;
+    transactionType = "EXTERNA";
+    console.log(`ℹ️ [TRANSACTION-SERVICE] Tipo=EXTERNA, originIban=${originIban}`);
+  } else {
+    originPhone = sender.phone_number!;
+    transactionType = "SINPEMOVIL";
+    console.log(`ℹ️ [TRANSACTION-SERVICE] Tipo=SINPEMOVIL, originPhone=${originPhone}`);
+  }
+
+  // 3) Determinar destino (IBAN o teléfono → IBAN)
+  console.log(`ℹ️ [TRANSACTION-SERVICE] Determinando destino: tx=${transaction_id}`);
+  let destinationIban: string;
+  let destinationPhone: string | null = null;
 
   if (receiver.account_number) {
     destinationIban = receiver.account_number;
-  } else if (receiver.phone_number) {
+    console.log(`ℹ️ [TRANSACTION-SERVICE] Destino IBAN=${destinationIban}`);
+  } else {
+    console.log(`ℹ️ [TRANSACTION-SERVICE] Buscando destino por teléfono=${receiver.phone_number}`);
     const userDest = await prisma.users.findUnique({
-      where: { phone: receiver.phone_number },
+      where: { phone: receiver.phone_number! },
     });
     if (!userDest) {
-      throw new Error(
-        `No existe usuario local con teléfono: ${receiver.phone_number}`
-      );
+      console.error(`❌ [TRANSACTION-SERVICE] No existe usuario con teléfono=${receiver.phone_number}`);
+      throw new Error(`No existe usuario con teléfono: ${receiver.phone_number}`);
     }
     destinationIban = userDest.account_iban;
+    destinationPhone = receiver.phone_number!;
+    console.log(`ℹ️ [TRANSACTION-SERVICE] Destino encontrado IBAN=${destinationIban}`);
   }
 
-  if (!destinationIban) {
-    throw new Error(
-      "No se proporcionó account_number ni phone válido en receiver."
-    );
+  // 4) Validar cuenta destino
+  console.log(`🔍 [TRANSACTION-SERVICE] Validando cuenta destino=${destinationIban}`);
+  const toAccount = await prisma.accounts.findUnique({ where: { iban: destinationIban } });
+  if (!toAccount || toAccount.status !== "ACTIVO") {
+    console.error(`❌ [TRANSACTION-SERVICE] Cuenta destino inválida: ${destinationIban}`);
+    throw new Error(`Cuenta destino inválida o cerrada: ${destinationIban}`);
   }
+  console.log(`✅ [TRANSACTION-SERVICE] Cuenta destino válida`);
 
-  // 4.3) Buscar cuenta destino en BD
-  const toAccount = await prisma.accounts.findUnique({
-    where: { iban: destinationIban },
-  });
-  if (!toAccount) {
-    throw new Error(`Cuenta destino no existe: ${destinationIban}`);
-  }
-  if (toAccount.status !== "ACTIVO") {
-    throw new Error(
-      `Cuenta destino no está ACTIVO. status: ${toAccount.status}`
-    );
-  }
-
-  // 4.4) Acreditar saldo
+  // 5) Acreditar saldo
+  console.log(`💰 [TRANSACTION-SERVICE] Acreditando monto=${amount.value} ${amount.currency} a=${destinationIban}`);
   await prisma.accounts.update({
     where: { iban: destinationIban },
     data: { balance: { increment: amount.value } },
   });
+  console.log(`✅ [TRANSACTION-SERVICE] Saldo actualizado`);
 
-  // 4.5) Guardar registro en tabla transactions
-  const originIbanRecord = sender.account_number ?? "";
-
-  await prisma.transactions.create({
+  // 6) Crear transacción y audit_log
+  console.log(`💾 [TRANSACTION-SERVICE] Creando registro transaction y audit_log`);
+  const tx = await prisma.transactions.create({
     data: {
-      transaction_id: transaction_id,
+      transaction_id,
       created_at: new Date(timestamp),
-      origin_iban: originIbanRecord,
+      updated_at: new Date(timestamp),
+      origin_iban: originIban,
+      origin_phone: originPhone,
       destination_iban: destinationIban,
+      destination_phone: destinationPhone,
+      transaction_type: transactionType,
       amount: new Decimal(amount.value),
       currency: amount.currency,
       description: description?.trim() || null,
-      hmac_md5: hmac_md5,
+      hmac_md5,
       status: "COMPLETED",
-      updated_at: new Date(timestamp),
     },
   });
+  console.log(`✅ [TRANSACTION-SERVICE] Transaction creada txID=${tx.transaction_id}`);
+
+  await prisma.audit_logs.create({
+    data: {
+      transaction_id: tx.transaction_id,
+      previous_status: null,
+      new_status: "COMPLETED",
+      changed_by: originIban ?? originPhone!,
+    },
+  });
+  console.log(`✅ [TRANSACTION-SERVICE] Audit log creado`);
+
+  console.log(`✔️ [TRANSACTION-SERVICE] Finalizado createExternalCredit: tx=${transaction_id}`);
+  return tx;
 }

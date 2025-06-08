@@ -66,7 +66,7 @@ export const InternalTransactionForm = () => {
         destinationIban: destinationIban.trim(),
         amount: montoNum,
         currency: "CRC",
-        reason: reason.trim() || undefined,
+        description: reason.trim() || undefined,
       };
 
       const response = await transactionService.create(payload);

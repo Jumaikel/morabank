@@ -36,10 +36,10 @@ export type transactions = $Result.DefaultSelection<Prisma.$transactionsPayload>
  */
 export type users = $Result.DefaultSelection<Prisma.$usersPayload>
 /**
- * Model sinpe_subscriptions
+ * Model audit_logs
  * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
  */
-export type sinpe_subscriptions = $Result.DefaultSelection<Prisma.$sinpe_subscriptionsPayload>
+export type audit_logs = $Result.DefaultSelection<Prisma.$audit_logsPayload>
 
 /**
  * Enums
@@ -70,6 +70,33 @@ export const accounts_status: {
 
 export type accounts_status = (typeof accounts_status)[keyof typeof accounts_status]
 
+
+export const audit_logs_previous_status: {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  REJECTED: 'REJECTED'
+};
+
+export type audit_logs_previous_status = (typeof audit_logs_previous_status)[keyof typeof audit_logs_previous_status]
+
+
+export const audit_logs_new_status: {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  REJECTED: 'REJECTED'
+};
+
+export type audit_logs_new_status = (typeof audit_logs_new_status)[keyof typeof audit_logs_new_status]
+
+
+export const transactions_transaction_type: {
+  INTERNA: 'INTERNA',
+  EXTERNA: 'EXTERNA',
+  SINPEMOVIL: 'SINPEMOVIL'
+};
+
+export type transactions_transaction_type = (typeof transactions_transaction_type)[keyof typeof transactions_transaction_type]
+
 }
 
 export type accounts_account_type = $Enums.accounts_account_type
@@ -83,6 +110,18 @@ export const transactions_status: typeof $Enums.transactions_status
 export type accounts_status = $Enums.accounts_status
 
 export const accounts_status: typeof $Enums.accounts_status
+
+export type audit_logs_previous_status = $Enums.audit_logs_previous_status
+
+export const audit_logs_previous_status: typeof $Enums.audit_logs_previous_status
+
+export type audit_logs_new_status = $Enums.audit_logs_new_status
+
+export const audit_logs_new_status: typeof $Enums.audit_logs_new_status
+
+export type transactions_transaction_type = $Enums.transactions_transaction_type
+
+export const transactions_transaction_type: typeof $Enums.transactions_transaction_type
 
 /**
  * ##  Prisma Client ʲˢ
@@ -250,14 +289,14 @@ export class PrismaClient<
   get users(): Prisma.usersDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.sinpe_subscriptions`: Exposes CRUD operations for the **sinpe_subscriptions** model.
+   * `prisma.audit_logs`: Exposes CRUD operations for the **audit_logs** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more Sinpe_subscriptions
-    * const sinpe_subscriptions = await prisma.sinpe_subscriptions.findMany()
+    * // Fetch zero or more Audit_logs
+    * const audit_logs = await prisma.audit_logs.findMany()
     * ```
     */
-  get sinpe_subscriptions(): Prisma.sinpe_subscriptionsDelegate<ExtArgs, ClientOptions>;
+  get audit_logs(): Prisma.audit_logsDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -702,7 +741,7 @@ export namespace Prisma {
     mfa_codes: 'mfa_codes',
     transactions: 'transactions',
     users: 'users',
-    sinpe_subscriptions: 'sinpe_subscriptions'
+    audit_logs: 'audit_logs'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -721,7 +760,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "accounts" | "mfa_codes" | "transactions" | "users" | "sinpe_subscriptions"
+      modelProps: "accounts" | "mfa_codes" | "transactions" | "users" | "audit_logs"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -989,69 +1028,69 @@ export namespace Prisma {
           }
         }
       }
-      sinpe_subscriptions: {
-        payload: Prisma.$sinpe_subscriptionsPayload<ExtArgs>
-        fields: Prisma.sinpe_subscriptionsFieldRefs
+      audit_logs: {
+        payload: Prisma.$audit_logsPayload<ExtArgs>
+        fields: Prisma.audit_logsFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.sinpe_subscriptionsFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$sinpe_subscriptionsPayload> | null
+            args: Prisma.audit_logsFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$audit_logsPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.sinpe_subscriptionsFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$sinpe_subscriptionsPayload>
+            args: Prisma.audit_logsFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$audit_logsPayload>
           }
           findFirst: {
-            args: Prisma.sinpe_subscriptionsFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$sinpe_subscriptionsPayload> | null
+            args: Prisma.audit_logsFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$audit_logsPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.sinpe_subscriptionsFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$sinpe_subscriptionsPayload>
+            args: Prisma.audit_logsFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$audit_logsPayload>
           }
           findMany: {
-            args: Prisma.sinpe_subscriptionsFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$sinpe_subscriptionsPayload>[]
+            args: Prisma.audit_logsFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$audit_logsPayload>[]
           }
           create: {
-            args: Prisma.sinpe_subscriptionsCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$sinpe_subscriptionsPayload>
+            args: Prisma.audit_logsCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$audit_logsPayload>
           }
           createMany: {
-            args: Prisma.sinpe_subscriptionsCreateManyArgs<ExtArgs>
+            args: Prisma.audit_logsCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           delete: {
-            args: Prisma.sinpe_subscriptionsDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$sinpe_subscriptionsPayload>
+            args: Prisma.audit_logsDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$audit_logsPayload>
           }
           update: {
-            args: Prisma.sinpe_subscriptionsUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$sinpe_subscriptionsPayload>
+            args: Prisma.audit_logsUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$audit_logsPayload>
           }
           deleteMany: {
-            args: Prisma.sinpe_subscriptionsDeleteManyArgs<ExtArgs>
+            args: Prisma.audit_logsDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.sinpe_subscriptionsUpdateManyArgs<ExtArgs>
+            args: Prisma.audit_logsUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           upsert: {
-            args: Prisma.sinpe_subscriptionsUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$sinpe_subscriptionsPayload>
+            args: Prisma.audit_logsUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$audit_logsPayload>
           }
           aggregate: {
-            args: Prisma.Sinpe_subscriptionsAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateSinpe_subscriptions>
+            args: Prisma.Audit_logsAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAudit_logs>
           }
           groupBy: {
-            args: Prisma.sinpe_subscriptionsGroupByArgs<ExtArgs>
-            result: $Utils.Optional<Sinpe_subscriptionsGroupByOutputType>[]
+            args: Prisma.audit_logsGroupByArgs<ExtArgs>
+            result: $Utils.Optional<Audit_logsGroupByOutputType>[]
           }
           count: {
-            args: Prisma.sinpe_subscriptionsCountArgs<ExtArgs>
-            result: $Utils.Optional<Sinpe_subscriptionsCountAggregateOutputType> | number
+            args: Prisma.audit_logsCountArgs<ExtArgs>
+            result: $Utils.Optional<Audit_logsCountAggregateOutputType> | number
           }
         }
       }
@@ -1143,7 +1182,7 @@ export namespace Prisma {
     mfa_codes?: mfa_codesOmit
     transactions?: transactionsOmit
     users?: usersOmit
-    sinpe_subscriptions?: sinpe_subscriptionsOmit
+    audit_logs?: audit_logsOmit
   }
 
   /* Types for Logging */
@@ -3320,6 +3359,9 @@ export namespace Prisma {
     created_at: Date | null
     origin_iban: string | null
     destination_iban: string | null
+    origin_phone: string | null
+    destination_phone: string | null
+    transaction_type: $Enums.transactions_transaction_type | null
     amount: Decimal | null
     currency: string | null
     status: $Enums.transactions_status | null
@@ -3333,6 +3375,9 @@ export namespace Prisma {
     created_at: Date | null
     origin_iban: string | null
     destination_iban: string | null
+    origin_phone: string | null
+    destination_phone: string | null
+    transaction_type: $Enums.transactions_transaction_type | null
     amount: Decimal | null
     currency: string | null
     status: $Enums.transactions_status | null
@@ -3346,6 +3391,9 @@ export namespace Prisma {
     created_at: number
     origin_iban: number
     destination_iban: number
+    origin_phone: number
+    destination_phone: number
+    transaction_type: number
     amount: number
     currency: number
     status: number
@@ -3369,6 +3417,9 @@ export namespace Prisma {
     created_at?: true
     origin_iban?: true
     destination_iban?: true
+    origin_phone?: true
+    destination_phone?: true
+    transaction_type?: true
     amount?: true
     currency?: true
     status?: true
@@ -3382,6 +3433,9 @@ export namespace Prisma {
     created_at?: true
     origin_iban?: true
     destination_iban?: true
+    origin_phone?: true
+    destination_phone?: true
+    transaction_type?: true
     amount?: true
     currency?: true
     status?: true
@@ -3395,6 +3449,9 @@ export namespace Prisma {
     created_at?: true
     origin_iban?: true
     destination_iban?: true
+    origin_phone?: true
+    destination_phone?: true
+    transaction_type?: true
     amount?: true
     currency?: true
     status?: true
@@ -3493,8 +3550,11 @@ export namespace Prisma {
   export type TransactionsGroupByOutputType = {
     transaction_id: string
     created_at: Date
-    origin_iban: string
-    destination_iban: string
+    origin_iban: string | null
+    destination_iban: string | null
+    origin_phone: string | null
+    destination_phone: string | null
+    transaction_type: $Enums.transactions_transaction_type
     amount: Decimal
     currency: string
     status: $Enums.transactions_status
@@ -3527,6 +3587,9 @@ export namespace Prisma {
     created_at?: boolean
     origin_iban?: boolean
     destination_iban?: boolean
+    origin_phone?: boolean
+    destination_phone?: boolean
+    transaction_type?: boolean
     amount?: boolean
     currency?: boolean
     status?: boolean
@@ -3542,6 +3605,9 @@ export namespace Prisma {
     created_at?: boolean
     origin_iban?: boolean
     destination_iban?: boolean
+    origin_phone?: boolean
+    destination_phone?: boolean
+    transaction_type?: boolean
     amount?: boolean
     currency?: boolean
     status?: boolean
@@ -3550,7 +3616,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type transactionsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"transaction_id" | "created_at" | "origin_iban" | "destination_iban" | "amount" | "currency" | "status" | "description" | "hmac_md5" | "updated_at", ExtArgs["result"]["transactions"]>
+  export type transactionsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"transaction_id" | "created_at" | "origin_iban" | "destination_iban" | "origin_phone" | "destination_phone" | "transaction_type" | "amount" | "currency" | "status" | "description" | "hmac_md5" | "updated_at", ExtArgs["result"]["transactions"]>
 
   export type $transactionsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "transactions"
@@ -3558,8 +3624,11 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       transaction_id: string
       created_at: Date
-      origin_iban: string
-      destination_iban: string
+      origin_iban: string | null
+      destination_iban: string | null
+      origin_phone: string | null
+      destination_phone: string | null
+      transaction_type: $Enums.transactions_transaction_type
       amount: Prisma.Decimal
       currency: string
       status: $Enums.transactions_status
@@ -3939,6 +4008,9 @@ export namespace Prisma {
     readonly created_at: FieldRef<"transactions", 'DateTime'>
     readonly origin_iban: FieldRef<"transactions", 'String'>
     readonly destination_iban: FieldRef<"transactions", 'String'>
+    readonly origin_phone: FieldRef<"transactions", 'String'>
+    readonly destination_phone: FieldRef<"transactions", 'String'>
+    readonly transaction_type: FieldRef<"transactions", 'transactions_transaction_type'>
     readonly amount: FieldRef<"transactions", 'Decimal'>
     readonly currency: FieldRef<"transactions", 'String'>
     readonly status: FieldRef<"transactions", 'transactions_status'>
@@ -5292,309 +5364,373 @@ export namespace Prisma {
 
 
   /**
-   * Model sinpe_subscriptions
+   * Model audit_logs
    */
 
-  export type AggregateSinpe_subscriptions = {
-    _count: Sinpe_subscriptionsCountAggregateOutputType | null
-    _min: Sinpe_subscriptionsMinAggregateOutputType | null
-    _max: Sinpe_subscriptionsMaxAggregateOutputType | null
+  export type AggregateAudit_logs = {
+    _count: Audit_logsCountAggregateOutputType | null
+    _avg: Audit_logsAvgAggregateOutputType | null
+    _sum: Audit_logsSumAggregateOutputType | null
+    _min: Audit_logsMinAggregateOutputType | null
+    _max: Audit_logsMaxAggregateOutputType | null
   }
 
-  export type Sinpe_subscriptionsMinAggregateOutputType = {
-    sinpe_number: string | null
-    sinpe_client_name: string | null
-    sinpe_bank_code: string | null
+  export type Audit_logsAvgAggregateOutputType = {
+    id: number | null
   }
 
-  export type Sinpe_subscriptionsMaxAggregateOutputType = {
-    sinpe_number: string | null
-    sinpe_client_name: string | null
-    sinpe_bank_code: string | null
+  export type Audit_logsSumAggregateOutputType = {
+    id: number | null
   }
 
-  export type Sinpe_subscriptionsCountAggregateOutputType = {
-    sinpe_number: number
-    sinpe_client_name: number
-    sinpe_bank_code: number
+  export type Audit_logsMinAggregateOutputType = {
+    id: number | null
+    transaction_id: string | null
+    previous_status: $Enums.audit_logs_previous_status | null
+    new_status: $Enums.audit_logs_new_status | null
+    changed_at: Date | null
+    changed_by: string | null
+  }
+
+  export type Audit_logsMaxAggregateOutputType = {
+    id: number | null
+    transaction_id: string | null
+    previous_status: $Enums.audit_logs_previous_status | null
+    new_status: $Enums.audit_logs_new_status | null
+    changed_at: Date | null
+    changed_by: string | null
+  }
+
+  export type Audit_logsCountAggregateOutputType = {
+    id: number
+    transaction_id: number
+    previous_status: number
+    new_status: number
+    changed_at: number
+    changed_by: number
     _all: number
   }
 
 
-  export type Sinpe_subscriptionsMinAggregateInputType = {
-    sinpe_number?: true
-    sinpe_client_name?: true
-    sinpe_bank_code?: true
+  export type Audit_logsAvgAggregateInputType = {
+    id?: true
   }
 
-  export type Sinpe_subscriptionsMaxAggregateInputType = {
-    sinpe_number?: true
-    sinpe_client_name?: true
-    sinpe_bank_code?: true
+  export type Audit_logsSumAggregateInputType = {
+    id?: true
   }
 
-  export type Sinpe_subscriptionsCountAggregateInputType = {
-    sinpe_number?: true
-    sinpe_client_name?: true
-    sinpe_bank_code?: true
+  export type Audit_logsMinAggregateInputType = {
+    id?: true
+    transaction_id?: true
+    previous_status?: true
+    new_status?: true
+    changed_at?: true
+    changed_by?: true
+  }
+
+  export type Audit_logsMaxAggregateInputType = {
+    id?: true
+    transaction_id?: true
+    previous_status?: true
+    new_status?: true
+    changed_at?: true
+    changed_by?: true
+  }
+
+  export type Audit_logsCountAggregateInputType = {
+    id?: true
+    transaction_id?: true
+    previous_status?: true
+    new_status?: true
+    changed_at?: true
+    changed_by?: true
     _all?: true
   }
 
-  export type Sinpe_subscriptionsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Audit_logsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which sinpe_subscriptions to aggregate.
+     * Filter which audit_logs to aggregate.
      */
-    where?: sinpe_subscriptionsWhereInput
+    where?: audit_logsWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of sinpe_subscriptions to fetch.
+     * Determine the order of audit_logs to fetch.
      */
-    orderBy?: sinpe_subscriptionsOrderByWithRelationInput | sinpe_subscriptionsOrderByWithRelationInput[]
+    orderBy?: audit_logsOrderByWithRelationInput | audit_logsOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: sinpe_subscriptionsWhereUniqueInput
+    cursor?: audit_logsWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` sinpe_subscriptions from the position of the cursor.
+     * Take `±n` audit_logs from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` sinpe_subscriptions.
+     * Skip the first `n` audit_logs.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned sinpe_subscriptions
+     * Count returned audit_logs
     **/
-    _count?: true | Sinpe_subscriptionsCountAggregateInputType
+    _count?: true | Audit_logsCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: Audit_logsAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: Audit_logsSumAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: Sinpe_subscriptionsMinAggregateInputType
+    _min?: Audit_logsMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: Sinpe_subscriptionsMaxAggregateInputType
+    _max?: Audit_logsMaxAggregateInputType
   }
 
-  export type GetSinpe_subscriptionsAggregateType<T extends Sinpe_subscriptionsAggregateArgs> = {
-        [P in keyof T & keyof AggregateSinpe_subscriptions]: P extends '_count' | 'count'
+  export type GetAudit_logsAggregateType<T extends Audit_logsAggregateArgs> = {
+        [P in keyof T & keyof AggregateAudit_logs]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateSinpe_subscriptions[P]>
-      : GetScalarType<T[P], AggregateSinpe_subscriptions[P]>
+        : GetScalarType<T[P], AggregateAudit_logs[P]>
+      : GetScalarType<T[P], AggregateAudit_logs[P]>
   }
 
 
 
 
-  export type sinpe_subscriptionsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: sinpe_subscriptionsWhereInput
-    orderBy?: sinpe_subscriptionsOrderByWithAggregationInput | sinpe_subscriptionsOrderByWithAggregationInput[]
-    by: Sinpe_subscriptionsScalarFieldEnum[] | Sinpe_subscriptionsScalarFieldEnum
-    having?: sinpe_subscriptionsScalarWhereWithAggregatesInput
+  export type audit_logsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: audit_logsWhereInput
+    orderBy?: audit_logsOrderByWithAggregationInput | audit_logsOrderByWithAggregationInput[]
+    by: Audit_logsScalarFieldEnum[] | Audit_logsScalarFieldEnum
+    having?: audit_logsScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: Sinpe_subscriptionsCountAggregateInputType | true
-    _min?: Sinpe_subscriptionsMinAggregateInputType
-    _max?: Sinpe_subscriptionsMaxAggregateInputType
+    _count?: Audit_logsCountAggregateInputType | true
+    _avg?: Audit_logsAvgAggregateInputType
+    _sum?: Audit_logsSumAggregateInputType
+    _min?: Audit_logsMinAggregateInputType
+    _max?: Audit_logsMaxAggregateInputType
   }
 
-  export type Sinpe_subscriptionsGroupByOutputType = {
-    sinpe_number: string
-    sinpe_client_name: string
-    sinpe_bank_code: string
-    _count: Sinpe_subscriptionsCountAggregateOutputType | null
-    _min: Sinpe_subscriptionsMinAggregateOutputType | null
-    _max: Sinpe_subscriptionsMaxAggregateOutputType | null
+  export type Audit_logsGroupByOutputType = {
+    id: number
+    transaction_id: string
+    previous_status: $Enums.audit_logs_previous_status | null
+    new_status: $Enums.audit_logs_new_status
+    changed_at: Date
+    changed_by: string | null
+    _count: Audit_logsCountAggregateOutputType | null
+    _avg: Audit_logsAvgAggregateOutputType | null
+    _sum: Audit_logsSumAggregateOutputType | null
+    _min: Audit_logsMinAggregateOutputType | null
+    _max: Audit_logsMaxAggregateOutputType | null
   }
 
-  type GetSinpe_subscriptionsGroupByPayload<T extends sinpe_subscriptionsGroupByArgs> = Prisma.PrismaPromise<
+  type GetAudit_logsGroupByPayload<T extends audit_logsGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<Sinpe_subscriptionsGroupByOutputType, T['by']> &
+      PickEnumerable<Audit_logsGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof Sinpe_subscriptionsGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof Audit_logsGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], Sinpe_subscriptionsGroupByOutputType[P]>
-            : GetScalarType<T[P], Sinpe_subscriptionsGroupByOutputType[P]>
+              : GetScalarType<T[P], Audit_logsGroupByOutputType[P]>
+            : GetScalarType<T[P], Audit_logsGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type sinpe_subscriptionsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    sinpe_number?: boolean
-    sinpe_client_name?: boolean
-    sinpe_bank_code?: boolean
-  }, ExtArgs["result"]["sinpe_subscriptions"]>
+  export type audit_logsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    transaction_id?: boolean
+    previous_status?: boolean
+    new_status?: boolean
+    changed_at?: boolean
+    changed_by?: boolean
+  }, ExtArgs["result"]["audit_logs"]>
 
 
 
-  export type sinpe_subscriptionsSelectScalar = {
-    sinpe_number?: boolean
-    sinpe_client_name?: boolean
-    sinpe_bank_code?: boolean
+  export type audit_logsSelectScalar = {
+    id?: boolean
+    transaction_id?: boolean
+    previous_status?: boolean
+    new_status?: boolean
+    changed_at?: boolean
+    changed_by?: boolean
   }
 
-  export type sinpe_subscriptionsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"sinpe_number" | "sinpe_client_name" | "sinpe_bank_code", ExtArgs["result"]["sinpe_subscriptions"]>
+  export type audit_logsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "transaction_id" | "previous_status" | "new_status" | "changed_at" | "changed_by", ExtArgs["result"]["audit_logs"]>
 
-  export type $sinpe_subscriptionsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "sinpe_subscriptions"
+  export type $audit_logsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "audit_logs"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
-      sinpe_number: string
-      sinpe_client_name: string
-      sinpe_bank_code: string
-    }, ExtArgs["result"]["sinpe_subscriptions"]>
+      id: number
+      transaction_id: string
+      previous_status: $Enums.audit_logs_previous_status | null
+      new_status: $Enums.audit_logs_new_status
+      changed_at: Date
+      changed_by: string | null
+    }, ExtArgs["result"]["audit_logs"]>
     composites: {}
   }
 
-  type sinpe_subscriptionsGetPayload<S extends boolean | null | undefined | sinpe_subscriptionsDefaultArgs> = $Result.GetResult<Prisma.$sinpe_subscriptionsPayload, S>
+  type audit_logsGetPayload<S extends boolean | null | undefined | audit_logsDefaultArgs> = $Result.GetResult<Prisma.$audit_logsPayload, S>
 
-  type sinpe_subscriptionsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<sinpe_subscriptionsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: Sinpe_subscriptionsCountAggregateInputType | true
+  type audit_logsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<audit_logsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: Audit_logsCountAggregateInputType | true
     }
 
-  export interface sinpe_subscriptionsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['sinpe_subscriptions'], meta: { name: 'sinpe_subscriptions' } }
+  export interface audit_logsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['audit_logs'], meta: { name: 'audit_logs' } }
     /**
-     * Find zero or one Sinpe_subscriptions that matches the filter.
-     * @param {sinpe_subscriptionsFindUniqueArgs} args - Arguments to find a Sinpe_subscriptions
+     * Find zero or one Audit_logs that matches the filter.
+     * @param {audit_logsFindUniqueArgs} args - Arguments to find a Audit_logs
      * @example
-     * // Get one Sinpe_subscriptions
-     * const sinpe_subscriptions = await prisma.sinpe_subscriptions.findUnique({
+     * // Get one Audit_logs
+     * const audit_logs = await prisma.audit_logs.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends sinpe_subscriptionsFindUniqueArgs>(args: SelectSubset<T, sinpe_subscriptionsFindUniqueArgs<ExtArgs>>): Prisma__sinpe_subscriptionsClient<$Result.GetResult<Prisma.$sinpe_subscriptionsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends audit_logsFindUniqueArgs>(args: SelectSubset<T, audit_logsFindUniqueArgs<ExtArgs>>): Prisma__audit_logsClient<$Result.GetResult<Prisma.$audit_logsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one Sinpe_subscriptions that matches the filter or throw an error with `error.code='P2025'`
+     * Find one Audit_logs that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {sinpe_subscriptionsFindUniqueOrThrowArgs} args - Arguments to find a Sinpe_subscriptions
+     * @param {audit_logsFindUniqueOrThrowArgs} args - Arguments to find a Audit_logs
      * @example
-     * // Get one Sinpe_subscriptions
-     * const sinpe_subscriptions = await prisma.sinpe_subscriptions.findUniqueOrThrow({
+     * // Get one Audit_logs
+     * const audit_logs = await prisma.audit_logs.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends sinpe_subscriptionsFindUniqueOrThrowArgs>(args: SelectSubset<T, sinpe_subscriptionsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__sinpe_subscriptionsClient<$Result.GetResult<Prisma.$sinpe_subscriptionsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends audit_logsFindUniqueOrThrowArgs>(args: SelectSubset<T, audit_logsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__audit_logsClient<$Result.GetResult<Prisma.$audit_logsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Sinpe_subscriptions that matches the filter.
+     * Find the first Audit_logs that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {sinpe_subscriptionsFindFirstArgs} args - Arguments to find a Sinpe_subscriptions
+     * @param {audit_logsFindFirstArgs} args - Arguments to find a Audit_logs
      * @example
-     * // Get one Sinpe_subscriptions
-     * const sinpe_subscriptions = await prisma.sinpe_subscriptions.findFirst({
+     * // Get one Audit_logs
+     * const audit_logs = await prisma.audit_logs.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends sinpe_subscriptionsFindFirstArgs>(args?: SelectSubset<T, sinpe_subscriptionsFindFirstArgs<ExtArgs>>): Prisma__sinpe_subscriptionsClient<$Result.GetResult<Prisma.$sinpe_subscriptionsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends audit_logsFindFirstArgs>(args?: SelectSubset<T, audit_logsFindFirstArgs<ExtArgs>>): Prisma__audit_logsClient<$Result.GetResult<Prisma.$audit_logsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Sinpe_subscriptions that matches the filter or
+     * Find the first Audit_logs that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {sinpe_subscriptionsFindFirstOrThrowArgs} args - Arguments to find a Sinpe_subscriptions
+     * @param {audit_logsFindFirstOrThrowArgs} args - Arguments to find a Audit_logs
      * @example
-     * // Get one Sinpe_subscriptions
-     * const sinpe_subscriptions = await prisma.sinpe_subscriptions.findFirstOrThrow({
+     * // Get one Audit_logs
+     * const audit_logs = await prisma.audit_logs.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends sinpe_subscriptionsFindFirstOrThrowArgs>(args?: SelectSubset<T, sinpe_subscriptionsFindFirstOrThrowArgs<ExtArgs>>): Prisma__sinpe_subscriptionsClient<$Result.GetResult<Prisma.$sinpe_subscriptionsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends audit_logsFindFirstOrThrowArgs>(args?: SelectSubset<T, audit_logsFindFirstOrThrowArgs<ExtArgs>>): Prisma__audit_logsClient<$Result.GetResult<Prisma.$audit_logsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more Sinpe_subscriptions that matches the filter.
+     * Find zero or more Audit_logs that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {sinpe_subscriptionsFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {audit_logsFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all Sinpe_subscriptions
-     * const sinpe_subscriptions = await prisma.sinpe_subscriptions.findMany()
+     * // Get all Audit_logs
+     * const audit_logs = await prisma.audit_logs.findMany()
      * 
-     * // Get first 10 Sinpe_subscriptions
-     * const sinpe_subscriptions = await prisma.sinpe_subscriptions.findMany({ take: 10 })
+     * // Get first 10 Audit_logs
+     * const audit_logs = await prisma.audit_logs.findMany({ take: 10 })
      * 
-     * // Only select the `sinpe_number`
-     * const sinpe_subscriptionsWithSinpe_numberOnly = await prisma.sinpe_subscriptions.findMany({ select: { sinpe_number: true } })
+     * // Only select the `id`
+     * const audit_logsWithIdOnly = await prisma.audit_logs.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends sinpe_subscriptionsFindManyArgs>(args?: SelectSubset<T, sinpe_subscriptionsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$sinpe_subscriptionsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends audit_logsFindManyArgs>(args?: SelectSubset<T, audit_logsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$audit_logsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a Sinpe_subscriptions.
-     * @param {sinpe_subscriptionsCreateArgs} args - Arguments to create a Sinpe_subscriptions.
+     * Create a Audit_logs.
+     * @param {audit_logsCreateArgs} args - Arguments to create a Audit_logs.
      * @example
-     * // Create one Sinpe_subscriptions
-     * const Sinpe_subscriptions = await prisma.sinpe_subscriptions.create({
+     * // Create one Audit_logs
+     * const Audit_logs = await prisma.audit_logs.create({
      *   data: {
-     *     // ... data to create a Sinpe_subscriptions
+     *     // ... data to create a Audit_logs
      *   }
      * })
      * 
      */
-    create<T extends sinpe_subscriptionsCreateArgs>(args: SelectSubset<T, sinpe_subscriptionsCreateArgs<ExtArgs>>): Prisma__sinpe_subscriptionsClient<$Result.GetResult<Prisma.$sinpe_subscriptionsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends audit_logsCreateArgs>(args: SelectSubset<T, audit_logsCreateArgs<ExtArgs>>): Prisma__audit_logsClient<$Result.GetResult<Prisma.$audit_logsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many Sinpe_subscriptions.
-     * @param {sinpe_subscriptionsCreateManyArgs} args - Arguments to create many Sinpe_subscriptions.
+     * Create many Audit_logs.
+     * @param {audit_logsCreateManyArgs} args - Arguments to create many Audit_logs.
      * @example
-     * // Create many Sinpe_subscriptions
-     * const sinpe_subscriptions = await prisma.sinpe_subscriptions.createMany({
+     * // Create many Audit_logs
+     * const audit_logs = await prisma.audit_logs.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends sinpe_subscriptionsCreateManyArgs>(args?: SelectSubset<T, sinpe_subscriptionsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends audit_logsCreateManyArgs>(args?: SelectSubset<T, audit_logsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Delete a Sinpe_subscriptions.
-     * @param {sinpe_subscriptionsDeleteArgs} args - Arguments to delete one Sinpe_subscriptions.
+     * Delete a Audit_logs.
+     * @param {audit_logsDeleteArgs} args - Arguments to delete one Audit_logs.
      * @example
-     * // Delete one Sinpe_subscriptions
-     * const Sinpe_subscriptions = await prisma.sinpe_subscriptions.delete({
+     * // Delete one Audit_logs
+     * const Audit_logs = await prisma.audit_logs.delete({
      *   where: {
-     *     // ... filter to delete one Sinpe_subscriptions
+     *     // ... filter to delete one Audit_logs
      *   }
      * })
      * 
      */
-    delete<T extends sinpe_subscriptionsDeleteArgs>(args: SelectSubset<T, sinpe_subscriptionsDeleteArgs<ExtArgs>>): Prisma__sinpe_subscriptionsClient<$Result.GetResult<Prisma.$sinpe_subscriptionsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends audit_logsDeleteArgs>(args: SelectSubset<T, audit_logsDeleteArgs<ExtArgs>>): Prisma__audit_logsClient<$Result.GetResult<Prisma.$audit_logsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one Sinpe_subscriptions.
-     * @param {sinpe_subscriptionsUpdateArgs} args - Arguments to update one Sinpe_subscriptions.
+     * Update one Audit_logs.
+     * @param {audit_logsUpdateArgs} args - Arguments to update one Audit_logs.
      * @example
-     * // Update one Sinpe_subscriptions
-     * const sinpe_subscriptions = await prisma.sinpe_subscriptions.update({
+     * // Update one Audit_logs
+     * const audit_logs = await prisma.audit_logs.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -5604,30 +5740,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends sinpe_subscriptionsUpdateArgs>(args: SelectSubset<T, sinpe_subscriptionsUpdateArgs<ExtArgs>>): Prisma__sinpe_subscriptionsClient<$Result.GetResult<Prisma.$sinpe_subscriptionsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends audit_logsUpdateArgs>(args: SelectSubset<T, audit_logsUpdateArgs<ExtArgs>>): Prisma__audit_logsClient<$Result.GetResult<Prisma.$audit_logsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more Sinpe_subscriptions.
-     * @param {sinpe_subscriptionsDeleteManyArgs} args - Arguments to filter Sinpe_subscriptions to delete.
+     * Delete zero or more Audit_logs.
+     * @param {audit_logsDeleteManyArgs} args - Arguments to filter Audit_logs to delete.
      * @example
-     * // Delete a few Sinpe_subscriptions
-     * const { count } = await prisma.sinpe_subscriptions.deleteMany({
+     * // Delete a few Audit_logs
+     * const { count } = await prisma.audit_logs.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends sinpe_subscriptionsDeleteManyArgs>(args?: SelectSubset<T, sinpe_subscriptionsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends audit_logsDeleteManyArgs>(args?: SelectSubset<T, audit_logsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Sinpe_subscriptions.
+     * Update zero or more Audit_logs.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {sinpe_subscriptionsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {audit_logsUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many Sinpe_subscriptions
-     * const sinpe_subscriptions = await prisma.sinpe_subscriptions.updateMany({
+     * // Update many Audit_logs
+     * const audit_logs = await prisma.audit_logs.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -5637,56 +5773,56 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends sinpe_subscriptionsUpdateManyArgs>(args: SelectSubset<T, sinpe_subscriptionsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends audit_logsUpdateManyArgs>(args: SelectSubset<T, audit_logsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create or update one Sinpe_subscriptions.
-     * @param {sinpe_subscriptionsUpsertArgs} args - Arguments to update or create a Sinpe_subscriptions.
+     * Create or update one Audit_logs.
+     * @param {audit_logsUpsertArgs} args - Arguments to update or create a Audit_logs.
      * @example
-     * // Update or create a Sinpe_subscriptions
-     * const sinpe_subscriptions = await prisma.sinpe_subscriptions.upsert({
+     * // Update or create a Audit_logs
+     * const audit_logs = await prisma.audit_logs.upsert({
      *   create: {
-     *     // ... data to create a Sinpe_subscriptions
+     *     // ... data to create a Audit_logs
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the Sinpe_subscriptions we want to update
+     *     // ... the filter for the Audit_logs we want to update
      *   }
      * })
      */
-    upsert<T extends sinpe_subscriptionsUpsertArgs>(args: SelectSubset<T, sinpe_subscriptionsUpsertArgs<ExtArgs>>): Prisma__sinpe_subscriptionsClient<$Result.GetResult<Prisma.$sinpe_subscriptionsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends audit_logsUpsertArgs>(args: SelectSubset<T, audit_logsUpsertArgs<ExtArgs>>): Prisma__audit_logsClient<$Result.GetResult<Prisma.$audit_logsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
 
     /**
-     * Count the number of Sinpe_subscriptions.
+     * Count the number of Audit_logs.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {sinpe_subscriptionsCountArgs} args - Arguments to filter Sinpe_subscriptions to count.
+     * @param {audit_logsCountArgs} args - Arguments to filter Audit_logs to count.
      * @example
-     * // Count the number of Sinpe_subscriptions
-     * const count = await prisma.sinpe_subscriptions.count({
+     * // Count the number of Audit_logs
+     * const count = await prisma.audit_logs.count({
      *   where: {
-     *     // ... the filter for the Sinpe_subscriptions we want to count
+     *     // ... the filter for the Audit_logs we want to count
      *   }
      * })
     **/
-    count<T extends sinpe_subscriptionsCountArgs>(
-      args?: Subset<T, sinpe_subscriptionsCountArgs>,
+    count<T extends audit_logsCountArgs>(
+      args?: Subset<T, audit_logsCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], Sinpe_subscriptionsCountAggregateOutputType>
+          : GetScalarType<T['select'], Audit_logsCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a Sinpe_subscriptions.
+     * Allows you to perform aggregations operations on a Audit_logs.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {Sinpe_subscriptionsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {Audit_logsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -5706,13 +5842,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends Sinpe_subscriptionsAggregateArgs>(args: Subset<T, Sinpe_subscriptionsAggregateArgs>): Prisma.PrismaPromise<GetSinpe_subscriptionsAggregateType<T>>
+    aggregate<T extends Audit_logsAggregateArgs>(args: Subset<T, Audit_logsAggregateArgs>): Prisma.PrismaPromise<GetAudit_logsAggregateType<T>>
 
     /**
-     * Group by Sinpe_subscriptions.
+     * Group by Audit_logs.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {sinpe_subscriptionsGroupByArgs} args - Group by arguments.
+     * @param {audit_logsGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -5727,14 +5863,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends sinpe_subscriptionsGroupByArgs,
+      T extends audit_logsGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: sinpe_subscriptionsGroupByArgs['orderBy'] }
-        : { orderBy?: sinpe_subscriptionsGroupByArgs['orderBy'] },
+        ? { orderBy: audit_logsGroupByArgs['orderBy'] }
+        : { orderBy?: audit_logsGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -5783,20 +5919,20 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, sinpe_subscriptionsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSinpe_subscriptionsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, audit_logsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAudit_logsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the sinpe_subscriptions model
+   * Fields of the audit_logs model
    */
-  readonly fields: sinpe_subscriptionsFieldRefs;
+  readonly fields: audit_logsFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for sinpe_subscriptions.
+   * The delegate class that acts as a "Promise-like" for audit_logs.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__sinpe_subscriptionsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__audit_logsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -5824,330 +5960,333 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the sinpe_subscriptions model
+   * Fields of the audit_logs model
    */
-  interface sinpe_subscriptionsFieldRefs {
-    readonly sinpe_number: FieldRef<"sinpe_subscriptions", 'String'>
-    readonly sinpe_client_name: FieldRef<"sinpe_subscriptions", 'String'>
-    readonly sinpe_bank_code: FieldRef<"sinpe_subscriptions", 'String'>
+  interface audit_logsFieldRefs {
+    readonly id: FieldRef<"audit_logs", 'Int'>
+    readonly transaction_id: FieldRef<"audit_logs", 'String'>
+    readonly previous_status: FieldRef<"audit_logs", 'audit_logs_previous_status'>
+    readonly new_status: FieldRef<"audit_logs", 'audit_logs_new_status'>
+    readonly changed_at: FieldRef<"audit_logs", 'DateTime'>
+    readonly changed_by: FieldRef<"audit_logs", 'String'>
   }
     
 
   // Custom InputTypes
   /**
-   * sinpe_subscriptions findUnique
+   * audit_logs findUnique
    */
-  export type sinpe_subscriptionsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type audit_logsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the sinpe_subscriptions
+     * Select specific fields to fetch from the audit_logs
      */
-    select?: sinpe_subscriptionsSelect<ExtArgs> | null
+    select?: audit_logsSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the sinpe_subscriptions
+     * Omit specific fields from the audit_logs
      */
-    omit?: sinpe_subscriptionsOmit<ExtArgs> | null
+    omit?: audit_logsOmit<ExtArgs> | null
     /**
-     * Filter, which sinpe_subscriptions to fetch.
+     * Filter, which audit_logs to fetch.
      */
-    where: sinpe_subscriptionsWhereUniqueInput
+    where: audit_logsWhereUniqueInput
   }
 
   /**
-   * sinpe_subscriptions findUniqueOrThrow
+   * audit_logs findUniqueOrThrow
    */
-  export type sinpe_subscriptionsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type audit_logsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the sinpe_subscriptions
+     * Select specific fields to fetch from the audit_logs
      */
-    select?: sinpe_subscriptionsSelect<ExtArgs> | null
+    select?: audit_logsSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the sinpe_subscriptions
+     * Omit specific fields from the audit_logs
      */
-    omit?: sinpe_subscriptionsOmit<ExtArgs> | null
+    omit?: audit_logsOmit<ExtArgs> | null
     /**
-     * Filter, which sinpe_subscriptions to fetch.
+     * Filter, which audit_logs to fetch.
      */
-    where: sinpe_subscriptionsWhereUniqueInput
+    where: audit_logsWhereUniqueInput
   }
 
   /**
-   * sinpe_subscriptions findFirst
+   * audit_logs findFirst
    */
-  export type sinpe_subscriptionsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type audit_logsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the sinpe_subscriptions
+     * Select specific fields to fetch from the audit_logs
      */
-    select?: sinpe_subscriptionsSelect<ExtArgs> | null
+    select?: audit_logsSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the sinpe_subscriptions
+     * Omit specific fields from the audit_logs
      */
-    omit?: sinpe_subscriptionsOmit<ExtArgs> | null
+    omit?: audit_logsOmit<ExtArgs> | null
     /**
-     * Filter, which sinpe_subscriptions to fetch.
+     * Filter, which audit_logs to fetch.
      */
-    where?: sinpe_subscriptionsWhereInput
+    where?: audit_logsWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of sinpe_subscriptions to fetch.
+     * Determine the order of audit_logs to fetch.
      */
-    orderBy?: sinpe_subscriptionsOrderByWithRelationInput | sinpe_subscriptionsOrderByWithRelationInput[]
+    orderBy?: audit_logsOrderByWithRelationInput | audit_logsOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for sinpe_subscriptions.
+     * Sets the position for searching for audit_logs.
      */
-    cursor?: sinpe_subscriptionsWhereUniqueInput
+    cursor?: audit_logsWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` sinpe_subscriptions from the position of the cursor.
+     * Take `±n` audit_logs from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` sinpe_subscriptions.
+     * Skip the first `n` audit_logs.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of sinpe_subscriptions.
+     * Filter by unique combinations of audit_logs.
      */
-    distinct?: Sinpe_subscriptionsScalarFieldEnum | Sinpe_subscriptionsScalarFieldEnum[]
+    distinct?: Audit_logsScalarFieldEnum | Audit_logsScalarFieldEnum[]
   }
 
   /**
-   * sinpe_subscriptions findFirstOrThrow
+   * audit_logs findFirstOrThrow
    */
-  export type sinpe_subscriptionsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type audit_logsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the sinpe_subscriptions
+     * Select specific fields to fetch from the audit_logs
      */
-    select?: sinpe_subscriptionsSelect<ExtArgs> | null
+    select?: audit_logsSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the sinpe_subscriptions
+     * Omit specific fields from the audit_logs
      */
-    omit?: sinpe_subscriptionsOmit<ExtArgs> | null
+    omit?: audit_logsOmit<ExtArgs> | null
     /**
-     * Filter, which sinpe_subscriptions to fetch.
+     * Filter, which audit_logs to fetch.
      */
-    where?: sinpe_subscriptionsWhereInput
+    where?: audit_logsWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of sinpe_subscriptions to fetch.
+     * Determine the order of audit_logs to fetch.
      */
-    orderBy?: sinpe_subscriptionsOrderByWithRelationInput | sinpe_subscriptionsOrderByWithRelationInput[]
+    orderBy?: audit_logsOrderByWithRelationInput | audit_logsOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for sinpe_subscriptions.
+     * Sets the position for searching for audit_logs.
      */
-    cursor?: sinpe_subscriptionsWhereUniqueInput
+    cursor?: audit_logsWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` sinpe_subscriptions from the position of the cursor.
+     * Take `±n` audit_logs from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` sinpe_subscriptions.
+     * Skip the first `n` audit_logs.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of sinpe_subscriptions.
+     * Filter by unique combinations of audit_logs.
      */
-    distinct?: Sinpe_subscriptionsScalarFieldEnum | Sinpe_subscriptionsScalarFieldEnum[]
+    distinct?: Audit_logsScalarFieldEnum | Audit_logsScalarFieldEnum[]
   }
 
   /**
-   * sinpe_subscriptions findMany
+   * audit_logs findMany
    */
-  export type sinpe_subscriptionsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type audit_logsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the sinpe_subscriptions
+     * Select specific fields to fetch from the audit_logs
      */
-    select?: sinpe_subscriptionsSelect<ExtArgs> | null
+    select?: audit_logsSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the sinpe_subscriptions
+     * Omit specific fields from the audit_logs
      */
-    omit?: sinpe_subscriptionsOmit<ExtArgs> | null
+    omit?: audit_logsOmit<ExtArgs> | null
     /**
-     * Filter, which sinpe_subscriptions to fetch.
+     * Filter, which audit_logs to fetch.
      */
-    where?: sinpe_subscriptionsWhereInput
+    where?: audit_logsWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of sinpe_subscriptions to fetch.
+     * Determine the order of audit_logs to fetch.
      */
-    orderBy?: sinpe_subscriptionsOrderByWithRelationInput | sinpe_subscriptionsOrderByWithRelationInput[]
+    orderBy?: audit_logsOrderByWithRelationInput | audit_logsOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing sinpe_subscriptions.
+     * Sets the position for listing audit_logs.
      */
-    cursor?: sinpe_subscriptionsWhereUniqueInput
+    cursor?: audit_logsWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` sinpe_subscriptions from the position of the cursor.
+     * Take `±n` audit_logs from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` sinpe_subscriptions.
+     * Skip the first `n` audit_logs.
      */
     skip?: number
-    distinct?: Sinpe_subscriptionsScalarFieldEnum | Sinpe_subscriptionsScalarFieldEnum[]
+    distinct?: Audit_logsScalarFieldEnum | Audit_logsScalarFieldEnum[]
   }
 
   /**
-   * sinpe_subscriptions create
+   * audit_logs create
    */
-  export type sinpe_subscriptionsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type audit_logsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the sinpe_subscriptions
+     * Select specific fields to fetch from the audit_logs
      */
-    select?: sinpe_subscriptionsSelect<ExtArgs> | null
+    select?: audit_logsSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the sinpe_subscriptions
+     * Omit specific fields from the audit_logs
      */
-    omit?: sinpe_subscriptionsOmit<ExtArgs> | null
+    omit?: audit_logsOmit<ExtArgs> | null
     /**
-     * The data needed to create a sinpe_subscriptions.
+     * The data needed to create a audit_logs.
      */
-    data: XOR<sinpe_subscriptionsCreateInput, sinpe_subscriptionsUncheckedCreateInput>
+    data: XOR<audit_logsCreateInput, audit_logsUncheckedCreateInput>
   }
 
   /**
-   * sinpe_subscriptions createMany
+   * audit_logs createMany
    */
-  export type sinpe_subscriptionsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type audit_logsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many sinpe_subscriptions.
+     * The data used to create many audit_logs.
      */
-    data: sinpe_subscriptionsCreateManyInput | sinpe_subscriptionsCreateManyInput[]
+    data: audit_logsCreateManyInput | audit_logsCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * sinpe_subscriptions update
+   * audit_logs update
    */
-  export type sinpe_subscriptionsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type audit_logsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the sinpe_subscriptions
+     * Select specific fields to fetch from the audit_logs
      */
-    select?: sinpe_subscriptionsSelect<ExtArgs> | null
+    select?: audit_logsSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the sinpe_subscriptions
+     * Omit specific fields from the audit_logs
      */
-    omit?: sinpe_subscriptionsOmit<ExtArgs> | null
+    omit?: audit_logsOmit<ExtArgs> | null
     /**
-     * The data needed to update a sinpe_subscriptions.
+     * The data needed to update a audit_logs.
      */
-    data: XOR<sinpe_subscriptionsUpdateInput, sinpe_subscriptionsUncheckedUpdateInput>
+    data: XOR<audit_logsUpdateInput, audit_logsUncheckedUpdateInput>
     /**
-     * Choose, which sinpe_subscriptions to update.
+     * Choose, which audit_logs to update.
      */
-    where: sinpe_subscriptionsWhereUniqueInput
+    where: audit_logsWhereUniqueInput
   }
 
   /**
-   * sinpe_subscriptions updateMany
+   * audit_logs updateMany
    */
-  export type sinpe_subscriptionsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type audit_logsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update sinpe_subscriptions.
+     * The data used to update audit_logs.
      */
-    data: XOR<sinpe_subscriptionsUpdateManyMutationInput, sinpe_subscriptionsUncheckedUpdateManyInput>
+    data: XOR<audit_logsUpdateManyMutationInput, audit_logsUncheckedUpdateManyInput>
     /**
-     * Filter which sinpe_subscriptions to update
+     * Filter which audit_logs to update
      */
-    where?: sinpe_subscriptionsWhereInput
+    where?: audit_logsWhereInput
     /**
-     * Limit how many sinpe_subscriptions to update.
+     * Limit how many audit_logs to update.
      */
     limit?: number
   }
 
   /**
-   * sinpe_subscriptions upsert
+   * audit_logs upsert
    */
-  export type sinpe_subscriptionsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type audit_logsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the sinpe_subscriptions
+     * Select specific fields to fetch from the audit_logs
      */
-    select?: sinpe_subscriptionsSelect<ExtArgs> | null
+    select?: audit_logsSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the sinpe_subscriptions
+     * Omit specific fields from the audit_logs
      */
-    omit?: sinpe_subscriptionsOmit<ExtArgs> | null
+    omit?: audit_logsOmit<ExtArgs> | null
     /**
-     * The filter to search for the sinpe_subscriptions to update in case it exists.
+     * The filter to search for the audit_logs to update in case it exists.
      */
-    where: sinpe_subscriptionsWhereUniqueInput
+    where: audit_logsWhereUniqueInput
     /**
-     * In case the sinpe_subscriptions found by the `where` argument doesn't exist, create a new sinpe_subscriptions with this data.
+     * In case the audit_logs found by the `where` argument doesn't exist, create a new audit_logs with this data.
      */
-    create: XOR<sinpe_subscriptionsCreateInput, sinpe_subscriptionsUncheckedCreateInput>
+    create: XOR<audit_logsCreateInput, audit_logsUncheckedCreateInput>
     /**
-     * In case the sinpe_subscriptions was found with the provided `where` argument, update it with this data.
+     * In case the audit_logs was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<sinpe_subscriptionsUpdateInput, sinpe_subscriptionsUncheckedUpdateInput>
+    update: XOR<audit_logsUpdateInput, audit_logsUncheckedUpdateInput>
   }
 
   /**
-   * sinpe_subscriptions delete
+   * audit_logs delete
    */
-  export type sinpe_subscriptionsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type audit_logsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the sinpe_subscriptions
+     * Select specific fields to fetch from the audit_logs
      */
-    select?: sinpe_subscriptionsSelect<ExtArgs> | null
+    select?: audit_logsSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the sinpe_subscriptions
+     * Omit specific fields from the audit_logs
      */
-    omit?: sinpe_subscriptionsOmit<ExtArgs> | null
+    omit?: audit_logsOmit<ExtArgs> | null
     /**
-     * Filter which sinpe_subscriptions to delete.
+     * Filter which audit_logs to delete.
      */
-    where: sinpe_subscriptionsWhereUniqueInput
+    where: audit_logsWhereUniqueInput
   }
 
   /**
-   * sinpe_subscriptions deleteMany
+   * audit_logs deleteMany
    */
-  export type sinpe_subscriptionsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type audit_logsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which sinpe_subscriptions to delete
+     * Filter which audit_logs to delete
      */
-    where?: sinpe_subscriptionsWhereInput
+    where?: audit_logsWhereInput
     /**
-     * Limit how many sinpe_subscriptions to delete.
+     * Limit how many audit_logs to delete.
      */
     limit?: number
   }
 
   /**
-   * sinpe_subscriptions without action
+   * audit_logs without action
    */
-  export type sinpe_subscriptionsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type audit_logsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the sinpe_subscriptions
+     * Select specific fields to fetch from the audit_logs
      */
-    select?: sinpe_subscriptionsSelect<ExtArgs> | null
+    select?: audit_logsSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the sinpe_subscriptions
+     * Omit specific fields from the audit_logs
      */
-    omit?: sinpe_subscriptionsOmit<ExtArgs> | null
+    omit?: audit_logsOmit<ExtArgs> | null
   }
 
 
@@ -6196,6 +6335,9 @@ export namespace Prisma {
     created_at: 'created_at',
     origin_iban: 'origin_iban',
     destination_iban: 'destination_iban',
+    origin_phone: 'origin_phone',
+    destination_phone: 'destination_phone',
+    transaction_type: 'transaction_type',
     amount: 'amount',
     currency: 'currency',
     status: 'status',
@@ -6224,13 +6366,16 @@ export namespace Prisma {
   export type UsersScalarFieldEnum = (typeof UsersScalarFieldEnum)[keyof typeof UsersScalarFieldEnum]
 
 
-  export const Sinpe_subscriptionsScalarFieldEnum: {
-    sinpe_number: 'sinpe_number',
-    sinpe_client_name: 'sinpe_client_name',
-    sinpe_bank_code: 'sinpe_bank_code'
+  export const Audit_logsScalarFieldEnum: {
+    id: 'id',
+    transaction_id: 'transaction_id',
+    previous_status: 'previous_status',
+    new_status: 'new_status',
+    changed_at: 'changed_at',
+    changed_by: 'changed_by'
   };
 
-  export type Sinpe_subscriptionsScalarFieldEnum = (typeof Sinpe_subscriptionsScalarFieldEnum)[keyof typeof Sinpe_subscriptionsScalarFieldEnum]
+  export type Audit_logsScalarFieldEnum = (typeof Audit_logsScalarFieldEnum)[keyof typeof Audit_logsScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -6270,6 +6415,8 @@ export namespace Prisma {
     transaction_id: 'transaction_id',
     origin_iban: 'origin_iban',
     destination_iban: 'destination_iban',
+    origin_phone: 'origin_phone',
+    destination_phone: 'destination_phone',
     currency: 'currency',
     description: 'description',
     hmac_md5: 'hmac_md5'
@@ -6293,13 +6440,12 @@ export namespace Prisma {
   export type usersOrderByRelevanceFieldEnum = (typeof usersOrderByRelevanceFieldEnum)[keyof typeof usersOrderByRelevanceFieldEnum]
 
 
-  export const sinpe_subscriptionsOrderByRelevanceFieldEnum: {
-    sinpe_number: 'sinpe_number',
-    sinpe_client_name: 'sinpe_client_name',
-    sinpe_bank_code: 'sinpe_bank_code'
+  export const audit_logsOrderByRelevanceFieldEnum: {
+    transaction_id: 'transaction_id',
+    changed_by: 'changed_by'
   };
 
-  export type sinpe_subscriptionsOrderByRelevanceFieldEnum = (typeof sinpe_subscriptionsOrderByRelevanceFieldEnum)[keyof typeof sinpe_subscriptionsOrderByRelevanceFieldEnum]
+  export type audit_logsOrderByRelevanceFieldEnum = (typeof audit_logsOrderByRelevanceFieldEnum)[keyof typeof audit_logsOrderByRelevanceFieldEnum]
 
 
   /**
@@ -6357,9 +6503,30 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'transactions_transaction_type'
+   */
+  export type Enumtransactions_transaction_typeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'transactions_transaction_type'>
+    
+
+
+  /**
    * Reference to a field of type 'transactions_status'
    */
   export type Enumtransactions_statusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'transactions_status'>
+    
+
+
+  /**
+   * Reference to a field of type 'audit_logs_previous_status'
+   */
+  export type Enumaudit_logs_previous_statusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'audit_logs_previous_status'>
+    
+
+
+  /**
+   * Reference to a field of type 'audit_logs_new_status'
+   */
+  export type Enumaudit_logs_new_statusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'audit_logs_new_status'>
     
 
 
@@ -6515,8 +6682,11 @@ export namespace Prisma {
     NOT?: transactionsWhereInput | transactionsWhereInput[]
     transaction_id?: StringFilter<"transactions"> | string
     created_at?: DateTimeFilter<"transactions"> | Date | string
-    origin_iban?: StringFilter<"transactions"> | string
-    destination_iban?: StringFilter<"transactions"> | string
+    origin_iban?: StringNullableFilter<"transactions"> | string | null
+    destination_iban?: StringNullableFilter<"transactions"> | string | null
+    origin_phone?: StringNullableFilter<"transactions"> | string | null
+    destination_phone?: StringNullableFilter<"transactions"> | string | null
+    transaction_type?: Enumtransactions_transaction_typeFilter<"transactions"> | $Enums.transactions_transaction_type
     amount?: DecimalFilter<"transactions"> | Decimal | DecimalJsLike | number | string
     currency?: StringFilter<"transactions"> | string
     status?: Enumtransactions_statusFilter<"transactions"> | $Enums.transactions_status
@@ -6528,8 +6698,11 @@ export namespace Prisma {
   export type transactionsOrderByWithRelationInput = {
     transaction_id?: SortOrder
     created_at?: SortOrder
-    origin_iban?: SortOrder
-    destination_iban?: SortOrder
+    origin_iban?: SortOrderInput | SortOrder
+    destination_iban?: SortOrderInput | SortOrder
+    origin_phone?: SortOrderInput | SortOrder
+    destination_phone?: SortOrderInput | SortOrder
+    transaction_type?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
@@ -6545,8 +6718,11 @@ export namespace Prisma {
     OR?: transactionsWhereInput[]
     NOT?: transactionsWhereInput | transactionsWhereInput[]
     created_at?: DateTimeFilter<"transactions"> | Date | string
-    origin_iban?: StringFilter<"transactions"> | string
-    destination_iban?: StringFilter<"transactions"> | string
+    origin_iban?: StringNullableFilter<"transactions"> | string | null
+    destination_iban?: StringNullableFilter<"transactions"> | string | null
+    origin_phone?: StringNullableFilter<"transactions"> | string | null
+    destination_phone?: StringNullableFilter<"transactions"> | string | null
+    transaction_type?: Enumtransactions_transaction_typeFilter<"transactions"> | $Enums.transactions_transaction_type
     amount?: DecimalFilter<"transactions"> | Decimal | DecimalJsLike | number | string
     currency?: StringFilter<"transactions"> | string
     status?: Enumtransactions_statusFilter<"transactions"> | $Enums.transactions_status
@@ -6558,8 +6734,11 @@ export namespace Prisma {
   export type transactionsOrderByWithAggregationInput = {
     transaction_id?: SortOrder
     created_at?: SortOrder
-    origin_iban?: SortOrder
-    destination_iban?: SortOrder
+    origin_iban?: SortOrderInput | SortOrder
+    destination_iban?: SortOrderInput | SortOrder
+    origin_phone?: SortOrderInput | SortOrder
+    destination_phone?: SortOrderInput | SortOrder
+    transaction_type?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
@@ -6579,8 +6758,11 @@ export namespace Prisma {
     NOT?: transactionsScalarWhereWithAggregatesInput | transactionsScalarWhereWithAggregatesInput[]
     transaction_id?: StringWithAggregatesFilter<"transactions"> | string
     created_at?: DateTimeWithAggregatesFilter<"transactions"> | Date | string
-    origin_iban?: StringWithAggregatesFilter<"transactions"> | string
-    destination_iban?: StringWithAggregatesFilter<"transactions"> | string
+    origin_iban?: StringNullableWithAggregatesFilter<"transactions"> | string | null
+    destination_iban?: StringNullableWithAggregatesFilter<"transactions"> | string | null
+    origin_phone?: StringNullableWithAggregatesFilter<"transactions"> | string | null
+    destination_phone?: StringNullableWithAggregatesFilter<"transactions"> | string | null
+    transaction_type?: Enumtransactions_transaction_typeWithAggregatesFilter<"transactions"> | $Enums.transactions_transaction_type
     amount?: DecimalWithAggregatesFilter<"transactions"> | Decimal | DecimalJsLike | number | string
     currency?: StringWithAggregatesFilter<"transactions"> | string
     status?: Enumtransactions_statusWithAggregatesFilter<"transactions"> | $Enums.transactions_status
@@ -6678,47 +6860,64 @@ export namespace Prisma {
     updated_at?: DateTimeWithAggregatesFilter<"users"> | Date | string
   }
 
-  export type sinpe_subscriptionsWhereInput = {
-    AND?: sinpe_subscriptionsWhereInput | sinpe_subscriptionsWhereInput[]
-    OR?: sinpe_subscriptionsWhereInput[]
-    NOT?: sinpe_subscriptionsWhereInput | sinpe_subscriptionsWhereInput[]
-    sinpe_number?: StringFilter<"sinpe_subscriptions"> | string
-    sinpe_client_name?: StringFilter<"sinpe_subscriptions"> | string
-    sinpe_bank_code?: StringFilter<"sinpe_subscriptions"> | string
+  export type audit_logsWhereInput = {
+    AND?: audit_logsWhereInput | audit_logsWhereInput[]
+    OR?: audit_logsWhereInput[]
+    NOT?: audit_logsWhereInput | audit_logsWhereInput[]
+    id?: IntFilter<"audit_logs"> | number
+    transaction_id?: StringFilter<"audit_logs"> | string
+    previous_status?: Enumaudit_logs_previous_statusNullableFilter<"audit_logs"> | $Enums.audit_logs_previous_status | null
+    new_status?: Enumaudit_logs_new_statusFilter<"audit_logs"> | $Enums.audit_logs_new_status
+    changed_at?: DateTimeFilter<"audit_logs"> | Date | string
+    changed_by?: StringNullableFilter<"audit_logs"> | string | null
   }
 
-  export type sinpe_subscriptionsOrderByWithRelationInput = {
-    sinpe_number?: SortOrder
-    sinpe_client_name?: SortOrder
-    sinpe_bank_code?: SortOrder
-    _relevance?: sinpe_subscriptionsOrderByRelevanceInput
+  export type audit_logsOrderByWithRelationInput = {
+    id?: SortOrder
+    transaction_id?: SortOrder
+    previous_status?: SortOrderInput | SortOrder
+    new_status?: SortOrder
+    changed_at?: SortOrder
+    changed_by?: SortOrderInput | SortOrder
+    _relevance?: audit_logsOrderByRelevanceInput
   }
 
-  export type sinpe_subscriptionsWhereUniqueInput = Prisma.AtLeast<{
-    sinpe_number?: string
-    sinpe_client_name?: string
-    AND?: sinpe_subscriptionsWhereInput | sinpe_subscriptionsWhereInput[]
-    OR?: sinpe_subscriptionsWhereInput[]
-    NOT?: sinpe_subscriptionsWhereInput | sinpe_subscriptionsWhereInput[]
-    sinpe_bank_code?: StringFilter<"sinpe_subscriptions"> | string
-  }, "sinpe_number" | "sinpe_client_name">
+  export type audit_logsWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: audit_logsWhereInput | audit_logsWhereInput[]
+    OR?: audit_logsWhereInput[]
+    NOT?: audit_logsWhereInput | audit_logsWhereInput[]
+    transaction_id?: StringFilter<"audit_logs"> | string
+    previous_status?: Enumaudit_logs_previous_statusNullableFilter<"audit_logs"> | $Enums.audit_logs_previous_status | null
+    new_status?: Enumaudit_logs_new_statusFilter<"audit_logs"> | $Enums.audit_logs_new_status
+    changed_at?: DateTimeFilter<"audit_logs"> | Date | string
+    changed_by?: StringNullableFilter<"audit_logs"> | string | null
+  }, "id">
 
-  export type sinpe_subscriptionsOrderByWithAggregationInput = {
-    sinpe_number?: SortOrder
-    sinpe_client_name?: SortOrder
-    sinpe_bank_code?: SortOrder
-    _count?: sinpe_subscriptionsCountOrderByAggregateInput
-    _max?: sinpe_subscriptionsMaxOrderByAggregateInput
-    _min?: sinpe_subscriptionsMinOrderByAggregateInput
+  export type audit_logsOrderByWithAggregationInput = {
+    id?: SortOrder
+    transaction_id?: SortOrder
+    previous_status?: SortOrderInput | SortOrder
+    new_status?: SortOrder
+    changed_at?: SortOrder
+    changed_by?: SortOrderInput | SortOrder
+    _count?: audit_logsCountOrderByAggregateInput
+    _avg?: audit_logsAvgOrderByAggregateInput
+    _max?: audit_logsMaxOrderByAggregateInput
+    _min?: audit_logsMinOrderByAggregateInput
+    _sum?: audit_logsSumOrderByAggregateInput
   }
 
-  export type sinpe_subscriptionsScalarWhereWithAggregatesInput = {
-    AND?: sinpe_subscriptionsScalarWhereWithAggregatesInput | sinpe_subscriptionsScalarWhereWithAggregatesInput[]
-    OR?: sinpe_subscriptionsScalarWhereWithAggregatesInput[]
-    NOT?: sinpe_subscriptionsScalarWhereWithAggregatesInput | sinpe_subscriptionsScalarWhereWithAggregatesInput[]
-    sinpe_number?: StringWithAggregatesFilter<"sinpe_subscriptions"> | string
-    sinpe_client_name?: StringWithAggregatesFilter<"sinpe_subscriptions"> | string
-    sinpe_bank_code?: StringWithAggregatesFilter<"sinpe_subscriptions"> | string
+  export type audit_logsScalarWhereWithAggregatesInput = {
+    AND?: audit_logsScalarWhereWithAggregatesInput | audit_logsScalarWhereWithAggregatesInput[]
+    OR?: audit_logsScalarWhereWithAggregatesInput[]
+    NOT?: audit_logsScalarWhereWithAggregatesInput | audit_logsScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"audit_logs"> | number
+    transaction_id?: StringWithAggregatesFilter<"audit_logs"> | string
+    previous_status?: Enumaudit_logs_previous_statusNullableWithAggregatesFilter<"audit_logs"> | $Enums.audit_logs_previous_status | null
+    new_status?: Enumaudit_logs_new_statusWithAggregatesFilter<"audit_logs"> | $Enums.audit_logs_new_status
+    changed_at?: DateTimeWithAggregatesFilter<"audit_logs"> | Date | string
+    changed_by?: StringNullableWithAggregatesFilter<"audit_logs"> | string | null
   }
 
   export type accountsCreateInput = {
@@ -6864,8 +7063,11 @@ export namespace Prisma {
   export type transactionsCreateInput = {
     transaction_id?: string
     created_at?: Date | string
-    origin_iban: string
-    destination_iban: string
+    origin_iban?: string | null
+    destination_iban?: string | null
+    origin_phone?: string | null
+    destination_phone?: string | null
+    transaction_type: $Enums.transactions_transaction_type
     amount: Decimal | DecimalJsLike | number | string
     currency?: string
     status?: $Enums.transactions_status
@@ -6877,8 +7079,11 @@ export namespace Prisma {
   export type transactionsUncheckedCreateInput = {
     transaction_id?: string
     created_at?: Date | string
-    origin_iban: string
-    destination_iban: string
+    origin_iban?: string | null
+    destination_iban?: string | null
+    origin_phone?: string | null
+    destination_phone?: string | null
+    transaction_type: $Enums.transactions_transaction_type
     amount: Decimal | DecimalJsLike | number | string
     currency?: string
     status?: $Enums.transactions_status
@@ -6890,8 +7095,11 @@ export namespace Prisma {
   export type transactionsUpdateInput = {
     transaction_id?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    origin_iban?: StringFieldUpdateOperationsInput | string
-    destination_iban?: StringFieldUpdateOperationsInput | string
+    origin_iban?: NullableStringFieldUpdateOperationsInput | string | null
+    destination_iban?: NullableStringFieldUpdateOperationsInput | string | null
+    origin_phone?: NullableStringFieldUpdateOperationsInput | string | null
+    destination_phone?: NullableStringFieldUpdateOperationsInput | string | null
+    transaction_type?: Enumtransactions_transaction_typeFieldUpdateOperationsInput | $Enums.transactions_transaction_type
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     status?: Enumtransactions_statusFieldUpdateOperationsInput | $Enums.transactions_status
@@ -6903,8 +7111,11 @@ export namespace Prisma {
   export type transactionsUncheckedUpdateInput = {
     transaction_id?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    origin_iban?: StringFieldUpdateOperationsInput | string
-    destination_iban?: StringFieldUpdateOperationsInput | string
+    origin_iban?: NullableStringFieldUpdateOperationsInput | string | null
+    destination_iban?: NullableStringFieldUpdateOperationsInput | string | null
+    origin_phone?: NullableStringFieldUpdateOperationsInput | string | null
+    destination_phone?: NullableStringFieldUpdateOperationsInput | string | null
+    transaction_type?: Enumtransactions_transaction_typeFieldUpdateOperationsInput | $Enums.transactions_transaction_type
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     status?: Enumtransactions_statusFieldUpdateOperationsInput | $Enums.transactions_status
@@ -6916,8 +7127,11 @@ export namespace Prisma {
   export type transactionsCreateManyInput = {
     transaction_id?: string
     created_at?: Date | string
-    origin_iban: string
-    destination_iban: string
+    origin_iban?: string | null
+    destination_iban?: string | null
+    origin_phone?: string | null
+    destination_phone?: string | null
+    transaction_type: $Enums.transactions_transaction_type
     amount: Decimal | DecimalJsLike | number | string
     currency?: string
     status?: $Enums.transactions_status
@@ -6929,8 +7143,11 @@ export namespace Prisma {
   export type transactionsUpdateManyMutationInput = {
     transaction_id?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    origin_iban?: StringFieldUpdateOperationsInput | string
-    destination_iban?: StringFieldUpdateOperationsInput | string
+    origin_iban?: NullableStringFieldUpdateOperationsInput | string | null
+    destination_iban?: NullableStringFieldUpdateOperationsInput | string | null
+    origin_phone?: NullableStringFieldUpdateOperationsInput | string | null
+    destination_phone?: NullableStringFieldUpdateOperationsInput | string | null
+    transaction_type?: Enumtransactions_transaction_typeFieldUpdateOperationsInput | $Enums.transactions_transaction_type
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     status?: Enumtransactions_statusFieldUpdateOperationsInput | $Enums.transactions_status
@@ -6942,8 +7159,11 @@ export namespace Prisma {
   export type transactionsUncheckedUpdateManyInput = {
     transaction_id?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    origin_iban?: StringFieldUpdateOperationsInput | string
-    destination_iban?: StringFieldUpdateOperationsInput | string
+    origin_iban?: NullableStringFieldUpdateOperationsInput | string | null
+    destination_iban?: NullableStringFieldUpdateOperationsInput | string | null
+    origin_phone?: NullableStringFieldUpdateOperationsInput | string | null
+    destination_phone?: NullableStringFieldUpdateOperationsInput | string | null
+    transaction_type?: Enumtransactions_transaction_typeFieldUpdateOperationsInput | $Enums.transactions_transaction_type
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     status?: Enumtransactions_statusFieldUpdateOperationsInput | $Enums.transactions_status
@@ -7053,46 +7273,64 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type sinpe_subscriptionsCreateInput = {
-    sinpe_number: string
-    sinpe_client_name: string
-    sinpe_bank_code: string
+  export type audit_logsCreateInput = {
+    transaction_id: string
+    previous_status?: $Enums.audit_logs_previous_status | null
+    new_status: $Enums.audit_logs_new_status
+    changed_at?: Date | string
+    changed_by?: string | null
   }
 
-  export type sinpe_subscriptionsUncheckedCreateInput = {
-    sinpe_number: string
-    sinpe_client_name: string
-    sinpe_bank_code: string
+  export type audit_logsUncheckedCreateInput = {
+    id?: number
+    transaction_id: string
+    previous_status?: $Enums.audit_logs_previous_status | null
+    new_status: $Enums.audit_logs_new_status
+    changed_at?: Date | string
+    changed_by?: string | null
   }
 
-  export type sinpe_subscriptionsUpdateInput = {
-    sinpe_number?: StringFieldUpdateOperationsInput | string
-    sinpe_client_name?: StringFieldUpdateOperationsInput | string
-    sinpe_bank_code?: StringFieldUpdateOperationsInput | string
+  export type audit_logsUpdateInput = {
+    transaction_id?: StringFieldUpdateOperationsInput | string
+    previous_status?: NullableEnumaudit_logs_previous_statusFieldUpdateOperationsInput | $Enums.audit_logs_previous_status | null
+    new_status?: Enumaudit_logs_new_statusFieldUpdateOperationsInput | $Enums.audit_logs_new_status
+    changed_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    changed_by?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type sinpe_subscriptionsUncheckedUpdateInput = {
-    sinpe_number?: StringFieldUpdateOperationsInput | string
-    sinpe_client_name?: StringFieldUpdateOperationsInput | string
-    sinpe_bank_code?: StringFieldUpdateOperationsInput | string
+  export type audit_logsUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    transaction_id?: StringFieldUpdateOperationsInput | string
+    previous_status?: NullableEnumaudit_logs_previous_statusFieldUpdateOperationsInput | $Enums.audit_logs_previous_status | null
+    new_status?: Enumaudit_logs_new_statusFieldUpdateOperationsInput | $Enums.audit_logs_new_status
+    changed_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    changed_by?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type sinpe_subscriptionsCreateManyInput = {
-    sinpe_number: string
-    sinpe_client_name: string
-    sinpe_bank_code: string
+  export type audit_logsCreateManyInput = {
+    id?: number
+    transaction_id: string
+    previous_status?: $Enums.audit_logs_previous_status | null
+    new_status: $Enums.audit_logs_new_status
+    changed_at?: Date | string
+    changed_by?: string | null
   }
 
-  export type sinpe_subscriptionsUpdateManyMutationInput = {
-    sinpe_number?: StringFieldUpdateOperationsInput | string
-    sinpe_client_name?: StringFieldUpdateOperationsInput | string
-    sinpe_bank_code?: StringFieldUpdateOperationsInput | string
+  export type audit_logsUpdateManyMutationInput = {
+    transaction_id?: StringFieldUpdateOperationsInput | string
+    previous_status?: NullableEnumaudit_logs_previous_statusFieldUpdateOperationsInput | $Enums.audit_logs_previous_status | null
+    new_status?: Enumaudit_logs_new_statusFieldUpdateOperationsInput | $Enums.audit_logs_new_status
+    changed_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    changed_by?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type sinpe_subscriptionsUncheckedUpdateManyInput = {
-    sinpe_number?: StringFieldUpdateOperationsInput | string
-    sinpe_client_name?: StringFieldUpdateOperationsInput | string
-    sinpe_bank_code?: StringFieldUpdateOperationsInput | string
+  export type audit_logsUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    transaction_id?: StringFieldUpdateOperationsInput | string
+    previous_status?: NullableEnumaudit_logs_previous_statusFieldUpdateOperationsInput | $Enums.audit_logs_previous_status | null
+    new_status?: Enumaudit_logs_new_statusFieldUpdateOperationsInput | $Enums.audit_logs_new_status
+    changed_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    changed_by?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -7357,13 +7595,6 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
-  export type Enumtransactions_statusFilter<$PrismaModel = never> = {
-    equals?: $Enums.transactions_status | Enumtransactions_statusFieldRefInput<$PrismaModel>
-    in?: $Enums.transactions_status[]
-    notIn?: $Enums.transactions_status[]
-    not?: NestedEnumtransactions_statusFilter<$PrismaModel> | $Enums.transactions_status
-  }
-
   export type StringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -7377,6 +7608,20 @@ export namespace Prisma {
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     search?: string
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type Enumtransactions_transaction_typeFilter<$PrismaModel = never> = {
+    equals?: $Enums.transactions_transaction_type | Enumtransactions_transaction_typeFieldRefInput<$PrismaModel>
+    in?: $Enums.transactions_transaction_type[]
+    notIn?: $Enums.transactions_transaction_type[]
+    not?: NestedEnumtransactions_transaction_typeFilter<$PrismaModel> | $Enums.transactions_transaction_type
+  }
+
+  export type Enumtransactions_statusFilter<$PrismaModel = never> = {
+    equals?: $Enums.transactions_status | Enumtransactions_statusFieldRefInput<$PrismaModel>
+    in?: $Enums.transactions_status[]
+    notIn?: $Enums.transactions_status[]
+    not?: NestedEnumtransactions_statusFilter<$PrismaModel> | $Enums.transactions_status
   }
 
   export type SortOrderInput = {
@@ -7395,6 +7640,9 @@ export namespace Prisma {
     created_at?: SortOrder
     origin_iban?: SortOrder
     destination_iban?: SortOrder
+    origin_phone?: SortOrder
+    destination_phone?: SortOrder
+    transaction_type?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
@@ -7412,6 +7660,9 @@ export namespace Prisma {
     created_at?: SortOrder
     origin_iban?: SortOrder
     destination_iban?: SortOrder
+    origin_phone?: SortOrder
+    destination_phone?: SortOrder
+    transaction_type?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
@@ -7425,6 +7676,9 @@ export namespace Prisma {
     created_at?: SortOrder
     origin_iban?: SortOrder
     destination_iban?: SortOrder
+    origin_phone?: SortOrder
+    destination_phone?: SortOrder
+    transaction_type?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
@@ -7435,16 +7689,6 @@ export namespace Prisma {
 
   export type transactionsSumOrderByAggregateInput = {
     amount?: SortOrder
-  }
-
-  export type Enumtransactions_statusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.transactions_status | Enumtransactions_statusFieldRefInput<$PrismaModel>
-    in?: $Enums.transactions_status[]
-    notIn?: $Enums.transactions_status[]
-    not?: NestedEnumtransactions_statusWithAggregatesFilter<$PrismaModel> | $Enums.transactions_status
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumtransactions_statusFilter<$PrismaModel>
-    _max?: NestedEnumtransactions_statusFilter<$PrismaModel>
   }
 
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -7463,6 +7707,26 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type Enumtransactions_transaction_typeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.transactions_transaction_type | Enumtransactions_transaction_typeFieldRefInput<$PrismaModel>
+    in?: $Enums.transactions_transaction_type[]
+    notIn?: $Enums.transactions_transaction_type[]
+    not?: NestedEnumtransactions_transaction_typeWithAggregatesFilter<$PrismaModel> | $Enums.transactions_transaction_type
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumtransactions_transaction_typeFilter<$PrismaModel>
+    _max?: NestedEnumtransactions_transaction_typeFilter<$PrismaModel>
+  }
+
+  export type Enumtransactions_statusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.transactions_status | Enumtransactions_statusFieldRefInput<$PrismaModel>
+    in?: $Enums.transactions_status[]
+    notIn?: $Enums.transactions_status[]
+    not?: NestedEnumtransactions_statusWithAggregatesFilter<$PrismaModel> | $Enums.transactions_status
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumtransactions_statusFilter<$PrismaModel>
+    _max?: NestedEnumtransactions_statusFilter<$PrismaModel>
   }
 
   export type Mfa_codesListRelationFilter = {
@@ -7528,28 +7792,79 @@ export namespace Prisma {
     updated_at?: SortOrder
   }
 
-  export type sinpe_subscriptionsOrderByRelevanceInput = {
-    fields: sinpe_subscriptionsOrderByRelevanceFieldEnum | sinpe_subscriptionsOrderByRelevanceFieldEnum[]
+  export type Enumaudit_logs_previous_statusNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.audit_logs_previous_status | Enumaudit_logs_previous_statusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.audit_logs_previous_status[] | null
+    notIn?: $Enums.audit_logs_previous_status[] | null
+    not?: NestedEnumaudit_logs_previous_statusNullableFilter<$PrismaModel> | $Enums.audit_logs_previous_status | null
+  }
+
+  export type Enumaudit_logs_new_statusFilter<$PrismaModel = never> = {
+    equals?: $Enums.audit_logs_new_status | Enumaudit_logs_new_statusFieldRefInput<$PrismaModel>
+    in?: $Enums.audit_logs_new_status[]
+    notIn?: $Enums.audit_logs_new_status[]
+    not?: NestedEnumaudit_logs_new_statusFilter<$PrismaModel> | $Enums.audit_logs_new_status
+  }
+
+  export type audit_logsOrderByRelevanceInput = {
+    fields: audit_logsOrderByRelevanceFieldEnum | audit_logsOrderByRelevanceFieldEnum[]
     sort: SortOrder
     search: string
   }
 
-  export type sinpe_subscriptionsCountOrderByAggregateInput = {
-    sinpe_number?: SortOrder
-    sinpe_client_name?: SortOrder
-    sinpe_bank_code?: SortOrder
+  export type audit_logsCountOrderByAggregateInput = {
+    id?: SortOrder
+    transaction_id?: SortOrder
+    previous_status?: SortOrder
+    new_status?: SortOrder
+    changed_at?: SortOrder
+    changed_by?: SortOrder
   }
 
-  export type sinpe_subscriptionsMaxOrderByAggregateInput = {
-    sinpe_number?: SortOrder
-    sinpe_client_name?: SortOrder
-    sinpe_bank_code?: SortOrder
+  export type audit_logsAvgOrderByAggregateInput = {
+    id?: SortOrder
   }
 
-  export type sinpe_subscriptionsMinOrderByAggregateInput = {
-    sinpe_number?: SortOrder
-    sinpe_client_name?: SortOrder
-    sinpe_bank_code?: SortOrder
+  export type audit_logsMaxOrderByAggregateInput = {
+    id?: SortOrder
+    transaction_id?: SortOrder
+    previous_status?: SortOrder
+    new_status?: SortOrder
+    changed_at?: SortOrder
+    changed_by?: SortOrder
+  }
+
+  export type audit_logsMinOrderByAggregateInput = {
+    id?: SortOrder
+    transaction_id?: SortOrder
+    previous_status?: SortOrder
+    new_status?: SortOrder
+    changed_at?: SortOrder
+    changed_by?: SortOrder
+  }
+
+  export type audit_logsSumOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
+  export type Enumaudit_logs_previous_statusNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.audit_logs_previous_status | Enumaudit_logs_previous_statusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.audit_logs_previous_status[] | null
+    notIn?: $Enums.audit_logs_previous_status[] | null
+    not?: NestedEnumaudit_logs_previous_statusNullableWithAggregatesFilter<$PrismaModel> | $Enums.audit_logs_previous_status | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumaudit_logs_previous_statusNullableFilter<$PrismaModel>
+    _max?: NestedEnumaudit_logs_previous_statusNullableFilter<$PrismaModel>
+  }
+
+  export type Enumaudit_logs_new_statusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.audit_logs_new_status | Enumaudit_logs_new_statusFieldRefInput<$PrismaModel>
+    in?: $Enums.audit_logs_new_status[]
+    notIn?: $Enums.audit_logs_new_status[]
+    not?: NestedEnumaudit_logs_new_statusWithAggregatesFilter<$PrismaModel> | $Enums.audit_logs_new_status
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumaudit_logs_new_statusFilter<$PrismaModel>
+    _max?: NestedEnumaudit_logs_new_statusFilter<$PrismaModel>
   }
 
   export type usersCreateNestedManyWithoutAccountsInput = {
@@ -7644,12 +7959,16 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type Enumtransactions_statusFieldUpdateOperationsInput = {
-    set?: $Enums.transactions_status
-  }
-
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+  }
+
+  export type Enumtransactions_transaction_typeFieldUpdateOperationsInput = {
+    set?: $Enums.transactions_transaction_type
+  }
+
+  export type Enumtransactions_statusFieldUpdateOperationsInput = {
+    set?: $Enums.transactions_status
   }
 
   export type mfa_codesCreateNestedManyWithoutUsersInput = {
@@ -7706,6 +8025,14 @@ export namespace Prisma {
     update?: mfa_codesUpdateWithWhereUniqueWithoutUsersInput | mfa_codesUpdateWithWhereUniqueWithoutUsersInput[]
     updateMany?: mfa_codesUpdateManyWithWhereWithoutUsersInput | mfa_codesUpdateManyWithWhereWithoutUsersInput[]
     deleteMany?: mfa_codesScalarWhereInput | mfa_codesScalarWhereInput[]
+  }
+
+  export type NullableEnumaudit_logs_previous_statusFieldUpdateOperationsInput = {
+    set?: $Enums.audit_logs_previous_status | null
+  }
+
+  export type Enumaudit_logs_new_statusFieldUpdateOperationsInput = {
+    set?: $Enums.audit_logs_new_status
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -7878,13 +8205,6 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
-  export type NestedEnumtransactions_statusFilter<$PrismaModel = never> = {
-    equals?: $Enums.transactions_status | Enumtransactions_statusFieldRefInput<$PrismaModel>
-    in?: $Enums.transactions_status[]
-    notIn?: $Enums.transactions_status[]
-    not?: NestedEnumtransactions_statusFilter<$PrismaModel> | $Enums.transactions_status
-  }
-
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -7900,14 +8220,18 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type NestedEnumtransactions_statusWithAggregatesFilter<$PrismaModel = never> = {
+  export type NestedEnumtransactions_transaction_typeFilter<$PrismaModel = never> = {
+    equals?: $Enums.transactions_transaction_type | Enumtransactions_transaction_typeFieldRefInput<$PrismaModel>
+    in?: $Enums.transactions_transaction_type[]
+    notIn?: $Enums.transactions_transaction_type[]
+    not?: NestedEnumtransactions_transaction_typeFilter<$PrismaModel> | $Enums.transactions_transaction_type
+  }
+
+  export type NestedEnumtransactions_statusFilter<$PrismaModel = never> = {
     equals?: $Enums.transactions_status | Enumtransactions_statusFieldRefInput<$PrismaModel>
     in?: $Enums.transactions_status[]
     notIn?: $Enums.transactions_status[]
-    not?: NestedEnumtransactions_statusWithAggregatesFilter<$PrismaModel> | $Enums.transactions_status
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumtransactions_statusFilter<$PrismaModel>
-    _max?: NestedEnumtransactions_statusFilter<$PrismaModel>
+    not?: NestedEnumtransactions_statusFilter<$PrismaModel> | $Enums.transactions_status
   }
 
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -7937,6 +8261,60 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedEnumtransactions_transaction_typeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.transactions_transaction_type | Enumtransactions_transaction_typeFieldRefInput<$PrismaModel>
+    in?: $Enums.transactions_transaction_type[]
+    notIn?: $Enums.transactions_transaction_type[]
+    not?: NestedEnumtransactions_transaction_typeWithAggregatesFilter<$PrismaModel> | $Enums.transactions_transaction_type
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumtransactions_transaction_typeFilter<$PrismaModel>
+    _max?: NestedEnumtransactions_transaction_typeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumtransactions_statusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.transactions_status | Enumtransactions_statusFieldRefInput<$PrismaModel>
+    in?: $Enums.transactions_status[]
+    notIn?: $Enums.transactions_status[]
+    not?: NestedEnumtransactions_statusWithAggregatesFilter<$PrismaModel> | $Enums.transactions_status
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumtransactions_statusFilter<$PrismaModel>
+    _max?: NestedEnumtransactions_statusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumaudit_logs_previous_statusNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.audit_logs_previous_status | Enumaudit_logs_previous_statusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.audit_logs_previous_status[] | null
+    notIn?: $Enums.audit_logs_previous_status[] | null
+    not?: NestedEnumaudit_logs_previous_statusNullableFilter<$PrismaModel> | $Enums.audit_logs_previous_status | null
+  }
+
+  export type NestedEnumaudit_logs_new_statusFilter<$PrismaModel = never> = {
+    equals?: $Enums.audit_logs_new_status | Enumaudit_logs_new_statusFieldRefInput<$PrismaModel>
+    in?: $Enums.audit_logs_new_status[]
+    notIn?: $Enums.audit_logs_new_status[]
+    not?: NestedEnumaudit_logs_new_statusFilter<$PrismaModel> | $Enums.audit_logs_new_status
+  }
+
+  export type NestedEnumaudit_logs_previous_statusNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.audit_logs_previous_status | Enumaudit_logs_previous_statusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.audit_logs_previous_status[] | null
+    notIn?: $Enums.audit_logs_previous_status[] | null
+    not?: NestedEnumaudit_logs_previous_statusNullableWithAggregatesFilter<$PrismaModel> | $Enums.audit_logs_previous_status | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumaudit_logs_previous_statusNullableFilter<$PrismaModel>
+    _max?: NestedEnumaudit_logs_previous_statusNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumaudit_logs_new_statusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.audit_logs_new_status | Enumaudit_logs_new_statusFieldRefInput<$PrismaModel>
+    in?: $Enums.audit_logs_new_status[]
+    notIn?: $Enums.audit_logs_new_status[]
+    not?: NestedEnumaudit_logs_new_statusWithAggregatesFilter<$PrismaModel> | $Enums.audit_logs_new_status
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumaudit_logs_new_statusFilter<$PrismaModel>
+    _max?: NestedEnumaudit_logs_new_statusFilter<$PrismaModel>
   }
 
   export type usersCreateWithoutAccountsInput = {

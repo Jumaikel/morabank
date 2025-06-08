@@ -7,12 +7,12 @@ export interface NewTransaction {
   destinationIban: string;
   amount: number;
   currency?: string;
-  reason?: string;
+  description?: string;
 }
 
 export interface UpdateTransaction {
   status?: "PENDING" | "COMPLETED" | "REJECTED";
-  reason?: string | null;
+  description?: string | null;
   currency?: string;
 }
 
@@ -26,9 +26,12 @@ function mapRawToEntity(raw: any): Transaction {
     amount: Number(raw.amount),
     currency: raw.currency,
     status: raw.status,
-    reason: raw.reason,
+    description: raw.description,
     hmacMd5: raw.hmac_md5,
     updatedAt: raw.updated_at,
+    destinationPhone: raw.destination_phone,
+    originPhone: raw.origin_phone,
+    transactionType: raw.transaction_type,
   };
 }
 
@@ -76,7 +79,7 @@ export const transactionService = {
         destination_iban: tx.destinationIban,
         amount: tx.amount,
         currency: tx.currency,
-        reason: tx.reason,
+        description: tx.description,
       };
 
       const response = await fetch(URL, {
@@ -107,8 +110,8 @@ export const transactionService = {
       if (updates.status !== undefined) {
         payload.status = updates.status;
       }
-      if (updates.reason !== undefined) {
-        payload.reason = updates.reason;
+      if (updates.description !== undefined) {
+        payload.description = updates.description;
       }
       if (updates.currency !== undefined) {
         payload.currency = updates.currency;

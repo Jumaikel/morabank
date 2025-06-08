@@ -58,24 +58,47 @@ CREATE TABLE
 -- 6) Tabla: transactions (SIN FOREIGN KEY en origin_iban y destination_iban)
 --    - Se eliminan las restricciones FOREIGN KEY para permitir IBANs externos
 -- ------------------------------------------------------------
-CREATE TABLE
-  IF NOT EXISTS transactions (
-    transaction_id VARCHAR(36) NOT NULL DEFAULT (UUID ()) COMMENT 'UUID v4 de la transacción',
-    created_at DATETIME (6) NOT NULL DEFAULT (CURRENT_TIMESTAMP(6)) COMMENT 'Fecha creación (UTC)',
-    origin_iban VARCHAR(24) NOT NULL COMMENT 'IBAN origen (puede ser externo)',
-    destination_iban VARCHAR(24) NOT NULL COMMENT 'IBAN destino (puede ser externo)',
-    amount DECIMAL(15, 2) NOT NULL COMMENT 'Monto > 0',
-    currency VARCHAR(3) NOT NULL DEFAULT 'CRC' COMMENT 'Código ISO 4217 (CRC, USD, EUR)',
-    status ENUM ('PENDING', 'COMPLETED', 'REJECTED') NOT NULL DEFAULT 'PENDING' COMMENT 'Estado de la transacción',
-    description VARCHAR(255) NULL COMMENT 'Descripción / razón del movimiento',
-    hmac_md5 VARCHAR(32) NOT NULL COMMENT 'HMAC-MD5 enviado por el emisor (hexadecimal)',
-    updated_at DATETIME (6) NOT NULL DEFAULT (CURRENT_TIMESTAMP(6)) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'Última actualización',
-    PRIMARY KEY (transaction_id),
-    INDEX idx_trans_origin (origin_iban),
-    INDEX idx_trans_destination (destination_iban),
-    INDEX idx_trans_timestamp (created_at),
-    CHECK (amount > 0)
-  ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Registro de transacciones (origen y destino en IBAN)';
+-- ------------------------------------------------------------
+-- (Actualización) Tabla: transactions (con nuevos campos)
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS transactions;
+
+CREATE TABLE transactions (
+  transaction_id VARCHAR(36) NOT NULL DEFAULT (UUID()) COMMENT 'UUID v4 de la transacción',
+  created_at DATETIME(6) NOT NULL DEFAULT (CURRENT_TIMESTAMP(6)) COMMENT 'Fecha creación (UTC)',
+  origin_iban VARCHAR(24) NULL COMMENT 'IBAN origen (puede ser externo)',
+  destination_iban VARCHAR(24) NULL COMMENT 'IBAN destino (puede ser externo)',
+  origin_phone VARCHAR(15) NULL COMMENT 'Número de teléfono origen (solo SINPEMÓVIL)',
+  destination_phone VARCHAR(15) NULL COMMENT 'Número de teléfono destino (solo SINPEMÓVIL)',
+  transaction_type ENUM('INTERNA', 'EXTERNA', 'SINPEMOVIL') NOT NULL COMMENT 'Tipo de transacción',
+  amount DECIMAL(15, 2) NOT NULL COMMENT 'Monto > 0',
+  currency VARCHAR(3) NOT NULL DEFAULT 'CRC' COMMENT 'Código ISO 4217 (CRC, USD, EUR)',
+  status ENUM('PENDING', 'COMPLETED', 'REJECTED') NOT NULL DEFAULT 'PENDING' COMMENT 'Estado de la transacción',
+  description VARCHAR(255) NULL COMMENT 'Descripción / razón del movimiento',
+  hmac_md5 VARCHAR(32) NOT NULL COMMENT 'HMAC-MD5 enviado por el emisor (hexadecimal)',
+  updated_at DATETIME(6) NOT NULL DEFAULT (CURRENT_TIMESTAMP(6)) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'Última actualización',
+  PRIMARY KEY (transaction_id),
+  INDEX idx_trans_origin (origin_iban),
+  INDEX idx_trans_destination (destination_iban),
+  INDEX idx_trans_timestamp (created_at),
+  CHECK (amount > 0)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Registro de transacciones (origen y destino en IBAN)';
+
+-- ------------------------------------------------------------
+-- Nueva Tabla: audit_logs
+--    - Historial de cambios de estado por transacción
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id INT NOT NULL AUTO_INCREMENT COMMENT 'ID interno del log',
+  transaction_id VARCHAR(36) NOT NULL COMMENT 'FK lógica a transactions.transaction_id',
+  previous_status ENUM('PENDING', 'COMPLETED', 'REJECTED') NULL COMMENT 'Estado anterior',
+  new_status ENUM('PENDING', 'COMPLETED', 'REJECTED') NOT NULL COMMENT 'Estado nuevo',
+  changed_at DATETIME(6) NOT NULL DEFAULT (CURRENT_TIMESTAMP(6)) COMMENT 'Fecha del cambio',
+  changed_by VARCHAR(100) NULL COMMENT 'Sistema, banco o usuario que generó el cambio',
+  PRIMARY KEY (id),
+  INDEX idx_audit_trans (transaction_id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Historial de cambios de estado de transacciones';
+
 
 -- ------------------------------------------------------------
 -- 7) Tabla: mfa_codes
@@ -114,7 +137,7 @@ VALUES
     'CR2101110001571903865386',
     '9152203447634362',
     'CORRIENTE',
-    'Jumaikel Chinchilla',
+    'Jumaikel Chinchilla Mora',
     1000000.00,
     'ACTIVO',
     '2025-06-05 21:34:53.679481',

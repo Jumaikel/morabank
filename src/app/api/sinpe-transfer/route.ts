@@ -30,13 +30,19 @@ interface ExternalSinpeIbanPayload {
 }
 
 export async function POST(req: NextRequest) {
+  console.log(`\n▶️ [SINPE-EXTERNAL] Inicio procesamiento IBAN→IBAN: ${new Date().toISOString()}`);
+
+  // 1) Parseo y validación de JSON
   let payload: ExternalSinpeIbanPayload;
   try {
     payload = (await req.json()) as ExternalSinpeIbanPayload;
-    console.log("✅ [SINPE-EXTERNAL] Payload recibido:", payload);
+    console.log("✅ [SINPE-EXTERNAL] Payload parseado:", payload);
   } catch (err) {
-    console.error("❌ [SINPE-EXTERNAL] JSON inválido:", err);
-    return NextResponse.json({ error: "JSON inválido en body." }, { status: 400 });
+    console.error("❌ [SINPE-EXTERNAL] JSON inválido en body:", err);
+    return NextResponse.json(
+      { error: "JSON inválido en body." },
+      { status: 400 }
+    );
   }
 
   const {
@@ -50,7 +56,8 @@ export async function POST(req: NextRequest) {
     hmac_md5,
   } = payload;
 
-  // 1) Campos mínimo
+  // 2) Validación de campos obligatorios
+  console.log("🔍 [SINPE-EXTERNAL] Validando campos obligatorios...");
   if (
     !version ||
     !timestamp ||
@@ -63,7 +70,7 @@ export async function POST(req: NextRequest) {
     console.warn("⚠️ [SINPE-EXTERNAL] Faltan campos obligatorios:", {
       version,
       timestamp,
-      tx: transaction_id,
+      transaction_id,
       receiver: receiver.account_number,
       receiverCode: receiver.bank_code,
       amount: amount?.value,
@@ -74,8 +81,10 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+  console.log("✅ [SINPE-EXTERNAL] Campos obligatorios presentes.");
 
-  // 2) Solo permitimos crédito hacia cuentas de este banco
+  // 3) Validar bank_code receptor
+  console.log(`🔍 [SINPE-EXTERNAL] Verificando receptor.bank_code (${receiver.bank_code}) vs OUR_BANK_CODE (${OUR_BANK_CODE})`);
   if (receiver.bank_code !== OUR_BANK_CODE) {
     console.warn(
       "⚠️ [SINPE-EXTERNAL] Bank code receptor inválido:",
@@ -86,19 +95,26 @@ export async function POST(req: NextRequest) {
       { status: 403 }
     );
   }
+  console.log("✅ [SINPE-EXTERNAL] Bank code receptor válido.");
 
-  // 3) Log raw
+  // 4) Log raw en el servicio
+  console.log("ℹ️ [SINPE-EXTERNAL] Registrando payload crudo...");
   await logTransaction(payload);
-  console.log("ℹ️ [SINPE-EXTERNAL] Payload registrado.");
+  console.log("✅ [SINPE-EXTERNAL] Payload registrado en logTransaction.");
 
-  // 4) Verificar HMAC (solo por account_number, pues es IBAN)
+  // 5) Verificar HMAC (IBAN)
+  console.log("🔐 [SINPE-EXTERNAL] Verificando HMAC...");
   if (!verifyHmac(payload, hmac_md5)) {
-    console.warn("🔐 [SINPE-EXTERNAL] HMAC inválido.", { expected: payload, got: hmac_md5 });
-    return NextResponse.json({ error: "HMAC inválido." }, { status: 401 });
+    console.warn("🔐 [SINPE-EXTERNAL] HMAC inválido para transaction_id:", transaction_id);
+    return NextResponse.json(
+      { error: "HMAC inválido." },
+      { status: 401 }
+    );
   }
-  console.log("🔐 [SINPE-EXTERNAL] HMAC válido.");
+  console.log("✅ [SINPE-EXTERNAL] HMAC válido.");
 
-  // 5) Ejecutar crédito externo
+  // 6) Ejecutar crédito externo
+  console.log(`💸 [SINPE-EXTERNAL] Ejecutando createExternalCredit para tx ${transaction_id}...`);
   try {
     await createExternalCredit({
       version,
@@ -120,7 +136,6 @@ export async function POST(req: NextRequest) {
     });
     console.log("✅ [SINPE-EXTERNAL] Crédito externo completado.");
     return NextResponse.json({ success: true }, { status: 200 });
-
   } catch (err: any) {
     console.error("❌ [SINPE-EXTERNAL] Error al acreditar:", err);
     return NextResponse.json(
@@ -131,6 +146,6 @@ export async function POST(req: NextRequest) {
 }
 
 export async function OPTIONS() {
-  // Para preflight si fuese necesario
+  console.log("ℹ️ [SINPE-EXTERNAL] OPTIONS request recibida.");
   return NextResponse.next();
 }

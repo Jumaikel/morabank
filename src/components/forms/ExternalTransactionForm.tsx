@@ -166,7 +166,7 @@ export const ExternalTransactionForm = () => {
 
       <div className="mb-4">
         <Input
-          label="Nombre Destinatario"
+          label="Nombre Completo del Destinatario"
           value={destName}
           onChange={(e) => setDestName(e.target.value)}
           placeholder="p.ej. Ana Gómez"

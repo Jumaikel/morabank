@@ -1,5 +1,3 @@
-// src/services/externalTransferService.ts
-
 import { v4 as uuidv4 } from "uuid";
 import { generateHmacForAccountTransfer, generateHmacForPhoneTransfer } from "@/lib/hmac";
 

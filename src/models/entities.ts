@@ -1,50 +1,67 @@
 export type AccountType = "CORRIENTE" | "AHORROS";
-export type AccountStatus = "ACTIVE" | "BLOCKED" | "CLOSED";
+export type AccountStatus = "ACTIVO" | "BLOQUEADO" | "CERRADO";
 export type TransactionStatus = "PENDING" | "COMPLETED" | "REJECTED";
+export type TransactionType = "INTERNA" | "EXTERNA" | "SINPEMOVIL";
 export type UserType = "A" | "C";
 
 export interface Account {
-  iban: string;             // VARCHAR(24) (PK)
-  accountNumber: string;    // VARCHAR(20) (unique)
-  accountType: AccountType; // ENUM('CORRIENTE','AHORROS')
-  accountHolder: string;    // VARCHAR(100)
-  balance: number;          // DECIMAL(15,2)
-  status: AccountStatus;    // ENUM('ACTIVE','BLOCKED','CLOSED')
-  createdAt: string;        // DateTime (ISO string)
-  updatedAt: string;        // DateTime (ISO string)
+  iban: string;             // @db.VarChar(24)
+  accountNumber: string;    // @db.VarChar(20)
+  accountType: AccountType; // accounts_account_type
+  accountHolder: string;    // @db.VarChar(100)
+  balance: number;          // @db.Decimal(15,2)
+  status: AccountStatus;    // accounts_status
+  createdAt: string;        // @db.DateTime(6)
+  updatedAt: string;        // @db.DateTime(6)
 }
 
 export interface MfaCode {
-  id: number;           // INT AUTO_INCREMENT (PK)
-  userId: string;       // VARCHAR(20) (FK → users.identification)
-  mfaCode: string;      // VARCHAR(6)
-  createdAt: string;    // DateTime (ISO string)
-  expiresAt: string;    // DateTime (ISO string)
+  id: number;           // INT AUTO_INCREMENT
+  userId: string;       // @db.VarChar(20)
+  mfaCode: string;      // @db.VarChar(6)
+  createdAt: string;    // @db.DateTime(6)
+  expiresAt: string;    // @db.DateTime(6)
   used: boolean;        // BOOLEAN
 }
 
 export interface Transaction {
-  transactionId: string;    // CHAR(36) UUID (PK)
-  createdAt: string;        // DateTime (ISO string)
-  originIban: string;       // VARCHAR(24) (FK → accounts.iban)
-  destinationIban: string;  // VARCHAR(24) (FK → accounts.iban)
-  amount: number;           // DECIMAL(15,2)
-  currency: string;         // VARCHAR(3) (e.g. "CRC", "USD", "EUR")
-  status: TransactionStatus;// ENUM('PENDING','COMPLETED','REJECTED')
-  reason: string | null;    // VARCHAR(255) | NULL
-  hmacMd5: string;          // VARCHAR(32)
-  updatedAt: string;        // DateTime (ISO string)
+  transactionId: string;     // @db.VarChar(36)
+  createdAt: string;         // @db.DateTime(6)
+  originIban: string | null; // @db.VarChar(24)?
+  destinationIban: string | null; // @db.VarChar(24)?
+  originPhone: string | null;      // @db.VarChar(15)?
+  destinationPhone: string | null; // @db.VarChar(15)?
+  transactionType: TransactionType; // transactions_transaction_type
+  amount: number;            // @db.Decimal(15,2)
+  currency: string;          // @db.VarChar(3)
+  status: TransactionStatus; // transactions_status
+  description: string | null;// @db.VarChar(255)?
+  hmacMd5: string;           // @db.VarChar(32)
+  updatedAt: string;         // @db.DateTime(6)
 }
 
 export interface User {
-  identification: string;     // VARCHAR(20) (PK)
-  name: string;               // VARCHAR(100)
-  lastName: string;           // VARCHAR(100)
-  secondLastName: string | null; // VARCHAR(100) | NULL
-  phone: string;              // VARCHAR(15) (unique)
-  accountIban: string;        // VARCHAR(24) (FK → accounts.iban)
-  email: string;              // VARCHAR(100) (unique)
-  userType: UserType;         // CHAR(1) ('A' or 'C')
-  createdAt: string;          // DateTime (ISO string)
-  updatedAt: string;          // DateTime (ISO string)
+  identification: string;      // @db.VarChar(20)
+  name: string;                // @db.VarChar(100)
+  lastName: string;            // @db.VarChar(100)
+  secondLastName: string | null; // @db.VarChar(100)?
+  phone: string;               // @db.VarChar(15)
+  email: string;               // @db.VarChar(100)
+  passwordHash: string;        // @db.VarChar(255)
+  userType: UserType;          // CHAR(1)
+  accountIban: string;         // @db.VarChar(24)
+  createdAt: string;           // @db.DateTime(6)
+  updatedAt: string;           // @db.DateTime(6)
+}
+
+export type AuditLogsPreviousStatus = "PENDING" | "COMPLETED" | "REJECTED";
+export type AuditLogsNewStatus = "PENDING" | "COMPLETED" | "REJECTED";
+
+export interface AuditLog {
+  id: number;                   // INT AUTO_INCREMENT
+  transactionId: string;        // @db.VarChar(36)
+  previousStatus: AuditLogsPreviousStatus | null; // audit_logs_previous_status?
+  newStatus: AuditLogsNewStatus;                // audit_logs_new_status
+  changedAt: string;            // @db.DateTime(6)
+  changedBy: string | null;     // @db.VarChar(100)?
 }
