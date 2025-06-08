@@ -45,8 +45,11 @@ export async function GET(
     const formatted: TransactionResponse[] = transactions.map((tx) => ({
       transaction_id: tx.transaction_id,
       created_at: tx.created_at.toISOString(),
-      origin_iban: tx.origin_iban,
-      destination_iban: tx.destination_iban,
+      origin_iban: tx.origin_iban!,
+      destination_iban: tx.destination_iban!,
+      origin_phone: tx.origin_phone,
+      destination_phone: tx.destination_phone,
+      transaction_type: tx.transaction_type,
       amount: Number(tx.amount),
       currency: tx.currency,
       status: tx.status,

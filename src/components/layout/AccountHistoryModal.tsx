@@ -19,6 +19,9 @@ function mapTx(tx: any) {
     createdAt: tx.created_at,
     originIban: tx.origin_iban,
     destinationIban: tx.destination_iban,
+    originPhone: tx.origin_phone,
+    destinationPhone: tx.destination_phone,
+    transactionType: tx.transaction_type,
     amount: tx.amount,
     currency: tx.currency,
     status: tx.status,
@@ -27,7 +30,6 @@ function mapTx(tx: any) {
     updatedAt: tx.updated_at,
   };
 }
-
 
 export const AccountHistoryModal: React.FC<AccountHistoryModalProps> = ({
   iban,
@@ -41,7 +43,7 @@ export const AccountHistoryModal: React.FC<AccountHistoryModalProps> = ({
 
   return createPortal(
     <div className="fixed inset-0 z-50 w-screen flex items-center justify-center bg-black bg-opacity-40">
-      <div className="relative w-11/12 max-w-5xl bg-white border border-neutral-950 rounded-xl shadow-xl overflow-hidden">
+      <div className="relative w-11/12 max-w-4xl bg-white border border-neutral-950 rounded-xl shadow-xl overflow-hidden">
         <div className="flex justify-between items-center p-4 border-b border-neutral-950 bg-neutral-100">
           <h2 className="text-xl font-semibold text-neutral-950">
             Historial de Transacciones
@@ -78,7 +80,13 @@ export const AccountHistoryModal: React.FC<AccountHistoryModalProps> = ({
                     Tipo
                   </th>
                   <th className="px-3 py-2 text-left text-sm font-medium text-neutral-950 border-b border-neutral-950">
-                    Contraparte
+                    IBAN
+                  </th>
+                  <th className="px-3 py-2 text-left text-sm font-medium text-neutral-950 border-b border-neutral-950">
+                    Teléfono
+                  </th>
+                  <th className="px-3 py-2 text-left text-sm font-medium text-neutral-950 border-b border-neutral-950">
+                    Transacción
                   </th>
                   <th className="px-3 py-2 text-right text-sm font-medium text-neutral-950 border-b border-neutral-950">
                     Monto
@@ -92,16 +100,12 @@ export const AccountHistoryModal: React.FC<AccountHistoryModalProps> = ({
                 {accountTransactions.map((tx: any, idx: number) => {
                   const mappedTx = mapTx(tx);
                   const isSent = mappedTx.originIban === iban;
-                  const otherParty = isSent
-                    ? mappedTx.destinationIban
-                    : mappedTx.originIban;
-                  const typeLabel = isSent ? "Enviado" : "Recibido";
-                  const amountClass = isSent
-                    ? "text-red-600"
-                    : "text-green-600";
+                  const typeLabel = isSent ? "Enviado a" : "Recibido de";
+                  const ibanToShow = isSent ? mappedTx.destinationIban : mappedTx.originIban;
+                  const phoneToShow = isSent ? mappedTx.destinationPhone : mappedTx.originPhone;
+                  const amountClass = isSent ? "text-red-600" : "text-green-600";
                   const sign = isSent ? "-" : "+";
-                  const key =
-                    mappedTx.transactionId || `${mappedTx.createdAt}-${idx}`;
+                  const key = mappedTx.transactionId || `${mappedTx.createdAt}-${idx}`;
 
                   return (
                     <tr
@@ -115,11 +119,15 @@ export const AccountHistoryModal: React.FC<AccountHistoryModalProps> = ({
                         {typeLabel}
                       </td>
                       <td className="px-3 py-2 text-sm text-neutral-700">
-                        {otherParty}
+                        {ibanToShow || "—"}
                       </td>
-                      <td
-                        className={`px-3 py-2 text-sm text-right font-bold ${amountClass}`}
-                      >
+                      <td className="px-3 py-2 text-sm text-neutral-700">
+                        {phoneToShow || "—"}
+                      </td>
+                      <td className="px-3 py-2 text-sm text-neutral-950">
+                        {mappedTx.transactionType || "—"}
+                      </td>
+                      <td className={`px-3 py-2 text-sm text-right font-bold ${amountClass}`}>
                         {sign}
                         {Number(mappedTx.amount).toFixed(2)} {mappedTx.currency}
                       </td>
