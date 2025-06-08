@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import useAuthStore from "@/stores/authStore";
 import useUserStore from "@/stores/userStore";
 import useAccountStore from "@/stores/accountStore";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 import { ExternalTransactionFormSkeleton } from "./ExternalTransactionFormSkeleton";
+import { BANK_ENDPOINTS as BANK_NAMES } from "@/config/bankNames";
 
 export const ExternalTransactionForm = () => {
   const identification = useAuthStore((state) => state.identification);
@@ -42,10 +43,7 @@ export const ExternalTransactionForm = () => {
     }
   }, [selectedUser, selectedAccount, fetchAccount]);
 
-  const extractBankCodeFromIban = (iban: string) => {
-    // Formato: "CR" + 2 dígitos de control + "0" + 3 dígitos de código de banco + ...
-    return iban.slice(5, 8);
-  };
+  const extractBankCodeFromIban = (iban: string) => iban.slice(5, 8);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,8 +56,8 @@ export const ExternalTransactionForm = () => {
       toast.error("IBAN destino es obligatorio.");
       return;
     }
-    const receiverIbanTrimmed = destIban.trim();
-    if (!/^[A-Z]{2}\d{2}0\d{3}\d{4}\d{12}$/.test(receiverIbanTrimmed)) {
+    const receiverIban = destIban.trim();
+    if (!/^[A-Z]{2}\d{2}0\d{3}\d{4}\d{12}$/.test(receiverIban)) {
       toast.error("El IBAN destino no tiene formato válido.");
       return;
     }
@@ -73,17 +71,15 @@ export const ExternalTransactionForm = () => {
       return;
     }
 
-    // Verificar si es el mismo banco
-    const senderBankCode = extractBankCodeFromIban(selectedAccount.iban);
-    const receiverBankCode = extractBankCodeFromIban(receiverIbanTrimmed);
-    if (senderBankCode === receiverBankCode) {
+    const senderCode = extractBankCodeFromIban(selectedAccount.iban);
+    const receiverCode = extractBankCodeFromIban(receiverIban);
+    if (senderCode === receiverCode) {
       toast.error(
         "El IBAN destino pertenece al mismo banco. Por favor usa la Transferencia Interna."
       );
       return;
     }
 
-    // Abrir modal de confirmación
     setShowModal(true);
   };
 
@@ -91,16 +87,16 @@ export const ExternalTransactionForm = () => {
     setSubmitting(true);
     try {
       const senderIban = selectedAccount!.iban;
-      const senderBankCode = extractBankCodeFromIban(senderIban);
+      const senderCode = extractBankCodeFromIban(senderIban);
       const receiverIban = destIban.trim();
-      const receiverBankCode = extractBankCodeFromIban(receiverIban);
+      const receiverCode = extractBankCodeFromIban(receiverIban);
 
       await sendIbanTransfer(
         senderIban,
-        senderBankCode,
+        senderCode,
         `${selectedUser!.name} ${selectedUser!.lastName} ${selectedUser!.secondLastName || ""}`,
         receiverIban,
-        receiverBankCode,
+        receiverCode,
         destName.trim() || "",
         parseFloat(amount),
         currency.trim().toUpperCase(),
@@ -122,15 +118,13 @@ export const ExternalTransactionForm = () => {
     }
   };
 
-  if (!selectedAccount || !selectedUser) {
-    return (
-      <p className="text-center text-red-500">No se encontró tu cuenta.</p>
-    );
-  }
+  if (!selectedAccount || !selectedUser) return <p className="text-center text-red-500">No se encontró tu cuenta.</p>;
+  if (userLoading || accountLoading) return <ExternalTransactionFormSkeleton />;
 
-  if (userLoading || accountLoading) {
-    return <ExternalTransactionFormSkeleton />;
-  }
+  const originCode = extractBankCodeFromIban(selectedAccount.iban);
+  const originName = BANK_NAMES[originCode];
+  const destCode = destIban ? extractBankCodeFromIban(destIban.trim()) : "";
+  const destBankName = BANK_NAMES[destCode];
 
   return (
     <>
@@ -153,14 +147,18 @@ export const ExternalTransactionForm = () => {
             className="bg-gray-100"
           />
         </div>
-
         <div className="mb-4">
           <Input
             label="Banco Origen"
-            value={extractBankCodeFromIban(selectedAccount.iban)}
+            value={originCode}
             disabled
             className="bg-gray-100"
           />
+          {originName ? (
+            <p className="text-sm text-green-600 mb-4">{originName}</p>
+          ) : (
+            <p className="text-sm text-red-500 mb-4">Banco no encontrado</p>
+          )}
         </div>
 
         <div className="mb-4">
@@ -172,17 +170,19 @@ export const ExternalTransactionForm = () => {
             required
           />
         </div>
-
         <div className="mb-4">
           <Input
             label="Banco Destino"
-            value={
-              destIban ? extractBankCodeFromIban(destIban.trim()) : ""
-            }
+            value={destCode}
             disabled
             className="bg-gray-100"
             placeholder="Se extrae automáticamente del IBAN"
           />
+          {destBankName ? (
+            <p className="text-sm text-green-600 mb-4">{destBankName}</p>
+          ) : (
+            <p className="text-sm text-red-500 mb-4">Banco no encontrado</p>
+          )}
         </div>
 
         <div className="mb-4">
@@ -193,7 +193,6 @@ export const ExternalTransactionForm = () => {
             placeholder="p.ej. Ana Gómez"
           />
         </div>
-
         <div className="mb-4">
           <Input
             label="Monto"
@@ -205,7 +204,6 @@ export const ExternalTransactionForm = () => {
             required
           />
         </div>
-
         <div className="mb-4">
           <Input
             label="Currency"
@@ -214,7 +212,6 @@ export const ExternalTransactionForm = () => {
             required
           />
         </div>
-
         <div className="mb-4">
           <Input
             label="Descripción (opcional)"
@@ -229,19 +226,18 @@ export const ExternalTransactionForm = () => {
         </Button>
       </form>
 
-      {/* Modal de Confirmación */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white text-black rounded-lg shadow-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold text-center mb-4">
               Confirma la transferencia
             </h3>
-            <div className="border-b border-neutral-500 mb-4"></div>
+            <div className="border-b border-neutral-500 mb-4" />
             <ul className="mb-4 space-y-2">
-              <li><strong>Origen:</strong> {selectedAccount.iban}</li>
-              <li><strong>Banco Origen:</strong> {extractBankCodeFromIban(selectedAccount.iban)}</li>
-              <li><strong>Destino:</strong> {destIban}</li>
-              <li><strong>Banco Destino:</strong> {destIban ? extractBankCodeFromIban(destIban.trim()) : ""}</li>
+              <li><strong>Origen (IBAN):</strong> {selectedAccount.iban}</li>
+              <li><strong>Banco Origen:</strong> {originCode} - {originName || 'Desconocido'}</li>
+              <li><strong>Destino (IBAN):</strong> {destIban}</li>
+              <li><strong>Banco Destino:</strong> {destCode} - {destBankName || 'Desconocido'}</li>
               {destName && <li><strong>Destinatario:</strong> {destName}</li>}
               <li><strong>Monto:</strong> {amount} {currency}</li>
               {description && <li><strong>Descripción:</strong> {description}</li>}

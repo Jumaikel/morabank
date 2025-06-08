@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 import { SinpeTransactionFormSkeleton } from "./SinpeTransactionFormSkeleton";
+import { BANK_ENDPOINTS as BANK_NAMES } from "@/config/bankNames";
 
 export const SinpeTransactionForm = () => {
   const identification = useAuthStore((state) => state.identification);
@@ -99,7 +100,6 @@ export const SinpeTransactionForm = () => {
       return;
     }
 
-    // Abrir modal para confirmar datos
     setShowModal(true);
   };
 
@@ -107,7 +107,9 @@ export const SinpeTransactionForm = () => {
     setSubmitting(true);
     try {
       const senderPhone = selectedUser!.phone;
-      const senderBankCode = extractBankCodeFromIban(selectedAccount!.iban);
+      const senderBankCode = extractBankCodeFromIban(
+        selectedAccount!.iban
+      );
       const senderName = `${selectedUser!.name} ${selectedUser!.lastName}`;
       const receiverPhone = destPhone.trim();
       const receiverBankCode = destSubscription!.sinpe_bank_code;
@@ -142,9 +144,10 @@ export const SinpeTransactionForm = () => {
 
   if (userLoading || accountLoading) return <SinpeTransactionFormSkeleton />;
   if (!selectedUser || !selectedAccount)
-    return (
-      <p className="text-center text-red-500">No se encontró tu cuenta.</p>
-    );
+    return <p className="text-center text-red-500">No se encontró tu cuenta.</p>;
+
+  const bankCode = destSubscription?.sinpe_bank_code || "";
+  const bankName = bankCode ? BANK_NAMES[bankCode] : undefined;
 
   return (
     <>
@@ -185,9 +188,8 @@ export const SinpeTransactionForm = () => {
         )}
         {phoneError && <p className="text-sm text-red-500">{phoneError}</p>}
         {destSubscription && (
-          <p className="text-sm text-green-600 mb-4">
-            Suscrito: {destSubscription.sinpe_client_name} (
-            {destSubscription.sinpe_bank_code})
+          <p className={`text-sm mb-4 ${bankName ? "text-green-600" : "text-red-500"}`}>
+            Suscrito: {destSubscription.sinpe_client_name} ({bankCode}{bankName ? ` - ${bankName}` : ""})
           </p>
         )}
 
@@ -225,7 +227,7 @@ export const SinpeTransactionForm = () => {
             <h3 className="text-lg font-semibold text-center mb-4">
               Confirma la transferencia SINPE
             </h3>
-            <div className="border-b border-neutral-500 mb-4"></div>
+            <div className="border-b border-neutral-500 mb-4" />
             <ul className="mb-4 space-y-2">
               <li>
                 <strong>Cuenta (IBAN):</strong> {selectedAccount.iban}
@@ -237,11 +239,10 @@ export const SinpeTransactionForm = () => {
                 <strong>Celular Destino:</strong> {destPhone}
               </li>
               <li>
-                <strong>Destinatario:</strong>{" "}
-                {destSubscription?.sinpe_client_name}
+                <strong>Destinatario:</strong> {destSubscription?.sinpe_client_name}
               </li>
               <li>
-                <strong>Banco:</strong> {destSubscription?.sinpe_bank_code}
+                <strong>Banco:</strong> {bankCode}{bankName ? ` - ${bankName}` : " (Desconocido)"}
               </li>
               <li>
                 <strong>Monto:</strong> {amount} CRC
