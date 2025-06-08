@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import prisma from "@/lib/prisma";
 import { Decimal } from "@prisma/client/runtime/library";
 import { generateHmacForAccountTransfer } from "@/lib/hmac";
+import { sendTransactionNotification } from "../sse/route";
 
 interface CreateTransactionBody {
   origin_iban: string;
@@ -196,7 +197,13 @@ export async function POST(req: NextRequest) {
   console.log(
     `✅ [TRANSFERS-INTERNAL] Transacción COMPLETED y audit log creado.`
   );
-
+  sendTransactionNotification({
+    type: "NEW_TRANSACTION",
+    txId: tx.transaction_id,
+    amount,
+    to: destination_iban,
+    timestamp,
+  });
   // Formatear y devolver respuesta
   const finalTx = await prisma.transactions.findUnique({
     where: { transaction_id: tx.transaction_id },

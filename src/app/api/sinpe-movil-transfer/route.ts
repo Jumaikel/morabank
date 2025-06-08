@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSinpeSubscription } from "@/app/api/services/sinpe_subscription.service";
+//import { getSinpeSubscription } from "@/app/api/services/sinpe_subscription.service";
 import { createExternalCredit } from "@/app/api/services/transaction.service";
 import { generateHmacForPhoneTransfer } from "@/lib/hmac";
 
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
   console.log("✅ [SINPE-MÓVIL] Campos obligatorios presentes.");
 
   // 3) Verificar la suscripción del remitente
-  console.log("ℹ️ [SINPE-MÓVIL] Verificando suscripción del remitente...");
+  /*console.log("ℹ️ [SINPE-MÓVIL] Verificando suscripción del remitente...");
   try {
     const sub = await getSinpeSubscription(sender.phone_number);
     console.log("ℹ️ [SINPE-MÓVIL] Subscripción encontrada:", sub);
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
       { error: `Número remitente no suscrito: ${sender.phone_number}` },
       { status: 404 }
     );
-  }
+  }*/
 
   // 4) Verificar HMAC
   console.log("🔐 [SINPE-MÓVIL] Verificando HMAC...");

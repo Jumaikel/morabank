@@ -4,12 +4,16 @@ import {
   generateHmacForAccountTransfer,
   generateHmacForPhoneTransfer,
 } from "@/lib/hmac";
+import { sendTransactionNotification } from "../sse/route";
 
 /**
  * 1) logTransaction: registra el payload entrante.
  */
 export async function logTransaction(payload: unknown) {
-  console.log(`ℹ️ [TRANSACTION-SERVICE] Transacción entrante: ${new Date().toISOString()}`, payload);
+  console.log(
+    `ℹ️ [TRANSACTION-SERVICE] Transacción entrante: ${new Date().toISOString()}`,
+    payload
+  );
 }
 
 /**
@@ -24,7 +28,9 @@ export function verifyHmac(
   },
   hmac_md5: string
 ): boolean {
-  console.log(`🔐 [TRANSACTION-SERVICE] Verificando HMAC para tx=${payload.transaction_id}`);
+  console.log(
+    `🔐 [TRANSACTION-SERVICE] Verificando HMAC para tx=${payload.transaction_id}`
+  );
   const { sender, timestamp, transaction_id, amount } = payload;
   let generated: string;
 
@@ -43,12 +49,16 @@ export function verifyHmac(
       amount.value
     );
   } else {
-    console.warn(`⚠️ [TRANSACTION-SERVICE] No sender identifier for HMAC: tx=${transaction_id}`);
+    console.warn(
+      `⚠️ [TRANSACTION-SERVICE] No sender identifier for HMAC: tx=${transaction_id}`
+    );
     return false;
   }
 
   const valid = generated === hmac_md5;
-  console.log(`🔐 [TRANSACTION-SERVICE] HMAC generado=${generated}, recibido=${hmac_md5}, válido=${valid}`);
+  console.log(
+    `🔐 [TRANSACTION-SERVICE] HMAC generado=${generated}, recibido=${hmac_md5}, válido=${valid}`
+  );
   return valid;
 }
 
@@ -76,12 +86,18 @@ export async function createExternalCredit(payload: {
   description?: string;
   hmac_md5: string;
 }) {
-  console.log(`▶️ [TRANSACTION-SERVICE] Iniciando createExternalCredit: tx=${payload.transaction_id} at ${new Date().toISOString()}`);
+  console.log(
+    `▶️ [TRANSACTION-SERVICE] Iniciando createExternalCredit: tx=${
+      payload.transaction_id
+    } at ${new Date().toISOString()}`
+  );
 
   // 1) log y verificación de HMAC
   await logTransaction(payload);
   if (!verifyHmac(payload, payload.hmac_md5)) {
-    console.error(`❌ [TRANSACTION-SERVICE] HMAC inválido: tx=${payload.transaction_id}`);
+    console.error(
+      `❌ [TRANSACTION-SERVICE] HMAC inválido: tx=${payload.transaction_id}`
+    );
     throw new Error("HMAC inválido");
   }
 
@@ -96,7 +112,9 @@ export async function createExternalCredit(payload: {
   } = payload;
 
   // 2) Determinar tipo de transacción y origen
-  console.log(`ℹ️ [TRANSACTION-SERVICE] Determinando tipo/origen: tx=${transaction_id}`);
+  console.log(
+    `ℹ️ [TRANSACTION-SERVICE] Determinando tipo/origen: tx=${transaction_id}`
+  );
   let originIban: string | null = null;
   let originPhone: string | null = null;
   let transactionType: "EXTERNA" | "SINPEMOVIL";
@@ -104,15 +122,21 @@ export async function createExternalCredit(payload: {
   if (sender.account_number) {
     originIban = sender.account_number;
     transactionType = "EXTERNA";
-    console.log(`ℹ️ [TRANSACTION-SERVICE] Tipo=EXTERNA, originIban=${originIban}`);
+    console.log(
+      `ℹ️ [TRANSACTION-SERVICE] Tipo=EXTERNA, originIban=${originIban}`
+    );
   } else {
     originPhone = sender.phone_number!;
     transactionType = "SINPEMOVIL";
-    console.log(`ℹ️ [TRANSACTION-SERVICE] Tipo=SINPEMOVIL, originPhone=${originPhone}`);
+    console.log(
+      `ℹ️ [TRANSACTION-SERVICE] Tipo=SINPEMOVIL, originPhone=${originPhone}`
+    );
   }
 
   // 3) Determinar destino (IBAN o teléfono → IBAN)
-  console.log(`ℹ️ [TRANSACTION-SERVICE] Determinando destino: tx=${transaction_id}`);
+  console.log(
+    `ℹ️ [TRANSACTION-SERVICE] Determinando destino: tx=${transaction_id}`
+  );
   let destinationIban: string;
   let destinationPhone: string | null = null;
 
@@ -120,30 +144,46 @@ export async function createExternalCredit(payload: {
     destinationIban = receiver.account_number;
     console.log(`ℹ️ [TRANSACTION-SERVICE] Destino IBAN=${destinationIban}`);
   } else {
-    console.log(`ℹ️ [TRANSACTION-SERVICE] Buscando destino por teléfono=${receiver.phone_number}`);
+    console.log(
+      `ℹ️ [TRANSACTION-SERVICE] Buscando destino por teléfono=${receiver.phone_number}`
+    );
     const userDest = await prisma.users.findUnique({
       where: { phone: receiver.phone_number! },
     });
     if (!userDest) {
-      console.error(`❌ [TRANSACTION-SERVICE] No existe usuario con teléfono=${receiver.phone_number}`);
-      throw new Error(`No existe usuario con teléfono: ${receiver.phone_number}`);
+      console.error(
+        `❌ [TRANSACTION-SERVICE] No existe usuario con teléfono=${receiver.phone_number}`
+      );
+      throw new Error(
+        `No existe usuario con teléfono: ${receiver.phone_number}`
+      );
     }
     destinationIban = userDest.account_iban;
     destinationPhone = receiver.phone_number!;
-    console.log(`ℹ️ [TRANSACTION-SERVICE] Destino encontrado IBAN=${destinationIban}`);
+    console.log(
+      `ℹ️ [TRANSACTION-SERVICE] Destino encontrado IBAN=${destinationIban}`
+    );
   }
 
   // 4) Validar cuenta destino
-  console.log(`🔍 [TRANSACTION-SERVICE] Validando cuenta destino=${destinationIban}`);
-  const toAccount = await prisma.accounts.findUnique({ where: { iban: destinationIban } });
+  console.log(
+    `🔍 [TRANSACTION-SERVICE] Validando cuenta destino=${destinationIban}`
+  );
+  const toAccount = await prisma.accounts.findUnique({
+    where: { iban: destinationIban },
+  });
   if (!toAccount || toAccount.status !== "ACTIVO") {
-    console.error(`❌ [TRANSACTION-SERVICE] Cuenta destino inválida: ${destinationIban}`);
+    console.error(
+      `❌ [TRANSACTION-SERVICE] Cuenta destino inválida: ${destinationIban}`
+    );
     throw new Error(`Cuenta destino inválida o cerrada: ${destinationIban}`);
   }
   console.log(`✅ [TRANSACTION-SERVICE] Cuenta destino válida`);
 
   // 5) Acreditar saldo
-  console.log(`💰 [TRANSACTION-SERVICE] Acreditando monto=${amount.value} ${amount.currency} a=${destinationIban}`);
+  console.log(
+    `💰 [TRANSACTION-SERVICE] Acreditando monto=${amount.value} ${amount.currency} a=${destinationIban}`
+  );
   await prisma.accounts.update({
     where: { iban: destinationIban },
     data: { balance: { increment: amount.value } },
@@ -151,7 +191,9 @@ export async function createExternalCredit(payload: {
   console.log(`✅ [TRANSACTION-SERVICE] Saldo actualizado`);
 
   // 6) Crear transacción y audit_log
-  console.log(`💾 [TRANSACTION-SERVICE] Creando registro transaction y audit_log`);
+  console.log(
+    `💾 [TRANSACTION-SERVICE] Creando registro transaction y audit_log`
+  );
   const tx = await prisma.transactions.create({
     data: {
       transaction_id,
@@ -169,7 +211,9 @@ export async function createExternalCredit(payload: {
       status: "COMPLETED",
     },
   });
-  console.log(`✅ [TRANSACTION-SERVICE] Transaction creada txID=${tx.transaction_id}`);
+  console.log(
+    `✅ [TRANSACTION-SERVICE] Transaction creada txID=${tx.transaction_id}`
+  );
 
   await prisma.audit_logs.create({
     data: {
@@ -181,6 +225,15 @@ export async function createExternalCredit(payload: {
   });
   console.log(`✅ [TRANSACTION-SERVICE] Audit log creado`);
 
-  console.log(`✔️ [TRANSACTION-SERVICE] Finalizado createExternalCredit: tx=${transaction_id}`);
+  console.log(
+    `✔️ [TRANSACTION-SERVICE] Finalizado createExternalCredit: tx=${transaction_id}`
+  );
+  sendTransactionNotification({
+    type: "NEW_TRANSACTION",
+    txId: transaction_id,
+    amount,
+    to: destinationIban ,
+    timestamp,
+  });
   return tx;
 }

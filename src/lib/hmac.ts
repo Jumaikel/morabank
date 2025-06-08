@@ -1,5 +1,5 @@
 import crypto from "crypto";
-
+const KEY = process.env.ENCRYPTION_KEY!;
 /**
  * Genera un HMAC MD5 para transferencias normales (por número de cuenta).
  * @param accountNumber Número de cuenta del remitente
@@ -14,7 +14,7 @@ export function generateHmacForAccountTransfer(
   transactionId: string,
   amount: number
 ): string {
-  const secret = "supersecreta123";
+  const secret = KEY || "supersecreta123";
   const message = `${accountNumber}${timestamp}${transactionId}${amount.toFixed(2)}`;
   return crypto
     .createHmac("md5", secret)
@@ -36,7 +36,7 @@ export function generateHmacForPhoneTransfer(
   transactionId: string,
   amount: number
 ): string {
-  const secret = "supersecreta123";
+  const secret = KEY || "supersecreta123";
   const message = `${phoneNumber}${timestamp}${transactionId}${amount.toFixed(2)}`;
   return crypto
     .createHmac("md5", secret)

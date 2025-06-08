@@ -5,9 +5,10 @@ const TOKEN_COOKIE = "auth-token";
 
 const PUBLIC_PATHS = [
   "/login",
-  "/api/auth", 
+  "/api/auth",
   "/api/sinpe-movil-transfer",
   "/api/sinpe-transfer",
+  "/api/sse",
   "/favicon.ico",
   "/_next",
   "/static",
@@ -18,6 +19,7 @@ function isPublic(path: string) {
   if (path.startsWith("/api/auth")) return true;
   if (path.startsWith("/api/sinpe-movil-transfer")) return true;
   if (path.startsWith("/api/sinpe-transfer")) return true;
+  if (path.startsWith("/api/sse")) return true;
   return PUBLIC_PATHS.some((pub) => path === pub || path.startsWith(pub + "/"));
 }
 
