@@ -1,13 +1,19 @@
 export const BANK_ENDPOINTS: Record<string, string> = {
-  "152": "Banco QC de Costa Rica",
+  "777": "MG",
 
-  "111": "Banco de Costa Rica",
+  "111": "MoraBank",
 
-  "241": "Banco Popular",
+  "119": "Marconi",
 
-  "876": "BAC Credomatic",
+  "152": "Kendall",
 
-  "110": "Scotiabank",
+  "876": "DJR",
 
-  "112": "Banco Nacional de Costa Rica",
+  "241": "Brayan",
+
+  "223": "Kendall2",
+
+  "151": "Marco",
+
+  "333": "Jordan",
 };

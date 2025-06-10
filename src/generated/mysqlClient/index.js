@@ -253,7 +253,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\JUMAIKEL\\Documents\\Repositorios\\morabank\\src\\generated\\mysqlClient",
+      "value": "C:\\Users\\Massiel Valverde\\Documents\\Proyecto de redes\\morabank\\src\\generated\\mysqlClient",
       "fromEnvVar": null
     },
     "config": {
@@ -267,7 +267,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\JUMAIKEL\\Documents\\Repositorios\\morabank\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\Massiel Valverde\\Documents\\Proyecto de redes\\morabank\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
