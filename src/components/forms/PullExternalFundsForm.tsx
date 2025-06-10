@@ -80,7 +80,7 @@ export const PullExternalFundsForm = () => {
         <label className="block text-sm font-medium text-neutral-700">
           Monto a solicitar
         </label>
-        <input
+        <Input
           type="number"
           value={monto}
           onChange={(e) => setMonto(e.target.value)}
