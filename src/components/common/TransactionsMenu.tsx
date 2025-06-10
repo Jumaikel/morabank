@@ -32,6 +32,15 @@ export const TransactionsMenu = () => {
       >
         SINPE Móvil
       </Button>
+
+            <Button
+        asLink
+        href="/internet-banking/transactions/pull"
+        className="px-5 py-2 transition w-80 md:w-2xl h-11"
+        variant={"secondary"}
+      >
+        Pull de Fondos
+      </Button>
     </div>
   );
 };

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { pullExternalFunds } from "@/services/pullExternalFundsService";
 import useUserStore from "@/stores/userStore";
+import { Input } from "../ui/Input";
+import { Button } from "../ui/Button";
 
 export const PullExternalFundsForm = () => {
   const selectedUser = useUserStore((s) => s.selectedUser);
@@ -65,12 +67,12 @@ export const PullExternalFundsForm = () => {
         <label className="block text-sm font-medium text-neutral-700">
           Número de cuenta remota
         </label>
-        <input
+        <Input
           type="text"
           value={cuentaRemota}
           onChange={(e) => setCuentaRemota(e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="CR22XXXX..."
+          className="w-full"
+          placeholder="CR21XXXX..."
         />
       </div>
 
@@ -82,20 +84,20 @@ export const PullExternalFundsForm = () => {
           type="number"
           value={monto}
           onChange={(e) => setMonto(e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full"
           placeholder="₡"
           min={0}
           step={0.01}
         />
       </div>
 
-      <button
+      <Button
         type="submit"
         disabled={loading}
-        className="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
+        className="w-full"
       >
         {loading ? "Solicitando..." : "Solicitar Fondos"}
-      </button>
+      </Button>
     </form>
   );
 };

@@ -8,6 +8,7 @@ const PUBLIC_PATHS = [
   "/api/auth",
   "/api/sinpe-movil-transfer",
   "/api/sinpe-transfer",
+  "/api/pull-funds",
   "/api/sse",
   "/favicon.ico",
   "/_next",
@@ -20,6 +21,7 @@ function isPublic(path: string) {
   if (path.startsWith("/api/sinpe-movil-transfer")) return true;
   if (path.startsWith("/api/sinpe-transfer")) return true;
   if (path.startsWith("/api/sse")) return true;
+  if (path.startsWith("/api/pull-funds")) return true;
   return PUBLIC_PATHS.some((pub) => path === pub || path.startsWith(pub + "/"));
 }
 

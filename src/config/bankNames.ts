@@ -16,4 +16,6 @@ export const BANK_ENDPOINTS: Record<string, string> = {
   "151": "Marco",
 
   "333": "Jordan",
+
+  "969": "Allan",
 };
