@@ -34,7 +34,7 @@
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/morabank.git
+git clone https://github.com/Jumaikel/morabank.git
 cd morabank
 ```
 
@@ -51,12 +51,18 @@ yarn install
 Copia `.env.example` a `.env` y ajusta los valores:
 
 ```env
+# MySQL connection string (format: mysql://USER:PASSWORD@HOST:PORT/DATABASE)
 DATABASE_URL="mysql://root:password@localhost:3306/morabank"
-JWT_SECRET="tu_secreto_jwt"
-HMAC_SECRET="tu_secreto_hmac"
-GMAIL_USER="tu-email@gmail.com"
-GMAIL_PASS="tu_contraseña_email"
+
+ENCRYPTION_KEY="your_encryp_secret_here"
+JWT_SECRET="your_jwt_secret_here"
+HMAC_SECRET="your_hmac_shared_secret"
+
+# Email SMTP settings (for MFA codes)
+GMAIL_USER="your-email@example.com"
+GMAIL_PASS="your email password"
 EMAIL_FROM="noreply@morabank.app"
+
 BANK_CODE="111"
 ```
 
@@ -88,7 +94,7 @@ npm run dev
 yarn dev
 ```
 
-Accede a [http://localhost:3000](http://localhost:3000)
+Accede a [http://localhost:3443](http://localhost:3443)
 
 ---
 
