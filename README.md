@@ -96,18 +96,16 @@ Create a `.env` file in the project root:
 # MySQL connection string (format: mysql://USER:PASSWORD@HOST:PORT/DATABASE)
 DATABASE_URL="mysql://root:password@localhost:3306/morabank"
 
-# JWT secret (for session/token signing)
+ENCRYPTION_KEY="your_encryp_secret_here"
 JWT_SECRET="your_jwt_secret_here"
-
-# HMAC secret (for transaction signing)
 HMAC_SECRET="your_hmac_shared_secret"
 
 # Email SMTP settings (for MFA codes)
-EMAIL_HOST="smtp.example.com"
-EMAIL_PORT=587
-EMAIL_USER="your-email@example.com"
-EMAIL_PASS="your-email-password"
+GMAIL_USER="your-email@example.com"
+GMAIL_PASS="your email password"
 EMAIL_FROM="noreply@morabank.app"
+
+BANK_CODE="111"
 ```
 
 > **Note**: Never commit `.env` to version control. Use environment variable management in your deployment platform (Vercel, Netlify, etc.).
